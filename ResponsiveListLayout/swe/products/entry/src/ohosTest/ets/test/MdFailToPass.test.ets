@@ -1,6 +1,6 @@
 import { describe, beforeAll, it, expect, Level } from '@ohos/hypium';
 import { Driver } from '@kit.TestKit';
-import { estimateLanesById, getCurrentBreakpoint, getDriver, prepareEntryAbility } from './TestHelper';
+import { getCurrentBreakpoint, getDriver, getVerticalGapVp, prepareEntryAbility } from './TestHelper';
 
 export default function mdFailToPassTest() {
   describe('MdFailToPassTest', () => {
@@ -12,11 +12,11 @@ export default function mdFailToPassTest() {
       bundleName = await prepareEntryAbility();
     });
 
-    it('should_show_list_as_two_lanes_on_medium_breakpoint', Level.LEVEL2, async (done: Function) => {
+    it('should_keep_order_list_row_space_12_on_medium_breakpoint', Level.LEVEL2, async (done: Function) => {
       const breakpoint = await getCurrentBreakpoint(driver, bundleName);
       if (breakpoint === 'md') {
-        const lanes = await estimateLanesById(driver, 'order-list', 'order-list-item0');
-        expect(lanes).assertEqual(2);
+        const gap = await getVerticalGapVp(driver, 'order-list-item0', 'order-list-item1');
+        expect(gap >= 10 && gap <= 14).assertTrue();
       } else {
         expect(true).assertTrue();
       }

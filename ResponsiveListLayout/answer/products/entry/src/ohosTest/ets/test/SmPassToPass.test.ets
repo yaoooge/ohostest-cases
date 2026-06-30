@@ -1,6 +1,6 @@
 import { describe, beforeAll, it, expect, Level } from '@ohos/hypium';
 import { Driver } from '@kit.TestKit';
-import { estimateLanesById, getCurrentBreakpoint, getDriver, prepareEntryAbility } from './TestHelper';
+import { estimateLanesById, getCurrentBreakpoint, getDriver, getVerticalGapVp, prepareEntryAbility } from './TestHelper';
 
 export default function smPassToPassTest() {
   describe('SmPassToPassTest', () => {
@@ -17,6 +17,17 @@ export default function smPassToPassTest() {
       if (breakpoint === 'sm') {
         const lanes = await estimateLanesById(driver, 'order-list', 'order-list-item0');
         expect(lanes).assertEqual(1);
+      } else {
+        expect(true).assertTrue();
+      }
+      done();
+    });
+
+    it('should_keep_order_list_row_space_8_on_small_breakpoint', Level.LEVEL2, async (done: Function) => {
+      const breakpoint = await getCurrentBreakpoint(driver, bundleName);
+      if (breakpoint === 'sm') {
+        const gap = await getVerticalGapVp(driver, 'order-list-item0', 'order-list-item1');
+        expect(gap >= 6 && gap <= 10).assertTrue();
       } else {
         expect(true).assertTrue();
       }

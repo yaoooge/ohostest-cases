@@ -124,7 +124,7 @@ export struct OrderList {
 
   @Computed
   get space(): number {
-    return new BreakpointModel<number>(8, 12, 16).getValue(this.currentBreakpoint.value);
+    return new BreakpointModel<number>(8, 12, 12).getValue(this.currentBreakpoint.value);
   }
 
   @Computed

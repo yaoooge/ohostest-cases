@@ -132,6 +132,42 @@ export async function estimateLanesById(driver: Driver, containerId: string, ite
   }
 }
 
+export async function getHorizontalGapVp(driver: Driver, leftItemId: string, rightItemId: string): Promise<number> {
+  try {
+    await waitForComponentById(driver, leftItemId, 6);
+    await waitForComponentById(driver, rightItemId, 6);
+    const leftItem = await driver.findComponent(ON.id(leftItemId));
+    const rightItem = await driver.findComponent(ON.id(rightItemId));
+    if (leftItem === null || leftItem === undefined || rightItem === null || rightItem === undefined) {
+      return -1;
+    }
+    const leftBounds = await leftItem.getBounds();
+    const rightBounds = await rightItem.getBounds();
+    return px2vp(rightBounds.left - leftBounds.right);
+  } catch (e) {
+    console.error('getHorizontalGapVp failed: ' + JSON.stringify(e));
+    return -1;
+  }
+}
+
+export async function getVerticalGapVp(driver: Driver, topItemId: string, bottomItemId: string): Promise<number> {
+  try {
+    await waitForComponentById(driver, topItemId, 6);
+    await waitForComponentById(driver, bottomItemId, 6);
+    const topItem = await driver.findComponent(ON.id(topItemId));
+    const bottomItem = await driver.findComponent(ON.id(bottomItemId));
+    if (topItem === null || topItem === undefined || bottomItem === null || bottomItem === undefined) {
+      return -1;
+    }
+    const topBounds = await topItem.getBounds();
+    const bottomBounds = await bottomItem.getBounds();
+    return px2vp(bottomBounds.top - topBounds.bottom);
+  } catch (e) {
+    console.error('getVerticalGapVp failed: ' + JSON.stringify(e));
+    return -1;
+  }
+}
+
 export async function assertNoHorizontalOverflow(driver: Driver, containerId: string, itemId: string): Promise<void> {
   const container = await driver.findComponent(ON.id(containerId));
   const items = await driver.findComponents(ON.id(itemId));
