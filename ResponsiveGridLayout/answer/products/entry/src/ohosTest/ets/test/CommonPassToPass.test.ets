@@ -24,13 +24,21 @@ export default function commonPassToPassTest() {
 
     it('should_show_grid_page_content', Level.LEVEL2, async (done: Function) => {
       await assertComponentById(driver, 'grid-header');
-      await assertComponentByText(driver, '分类宫格');
+      await assertComponentByText(driver, '分类');
       done();
     });
 
     it('should_show_grid_items', Level.LEVEL2, async (done: Function) => {
       await assertComponentById(driver, 'category-grid');
       await assertComponentById(driver, 'category-grid-item0');
+      done();
+    });
+
+    it('should_show_product_category_content', Level.LEVEL2, async (done: Function) => {
+      await assertComponentById(driver, 'primary-category-list');
+      await assertComponentByText(driver, '配件中心');
+      await assertComponentByText(driver, '通用配件');
+      await assertComponentByText(driver, '华为 6A 数据线');
       done();
     });
 

@@ -1,5 +1,16 @@
-export interface GridCard {
+export interface CategoryProduct {
+  name: string;
+  detail: string;
+  image: ResourceStr;
+}
+
+export interface SecondaryCategory {
+  label: string;
   title: string;
-  desc: string;
-  color: string;
+  products: CategoryProduct[];
+}
+
+export interface PrimaryCategory {
+  label: string;
+  sections: SecondaryCategory[];
 }

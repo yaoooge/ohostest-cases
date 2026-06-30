@@ -133,7 +133,6 @@ export struct OrderList {
           .id('order-list-item' + index)
         }, (item: ListCard) => item.orderNo)
       }
-      .lanes(1, 12)
       .width('100%')
       .layoutWeight(1)
       .padding({ left: 16, right: 16, bottom: 16 })

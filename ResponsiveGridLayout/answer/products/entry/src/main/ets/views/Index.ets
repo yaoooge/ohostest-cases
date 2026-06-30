@@ -19,8 +19,8 @@ struct Index {
   build() {
     Column() {
       PageHeader({
-        title: '分类宫格',
-        subtitle: '等宽网格随窗口宽度切换列数',
+        title: '分类',
+        subtitle: '一级分类与二级分类联动浏览商品',
         testId: 'grid-header',
       })
       CategoryGrid()

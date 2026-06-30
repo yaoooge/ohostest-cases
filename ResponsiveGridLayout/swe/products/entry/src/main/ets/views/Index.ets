@@ -7,8 +7,8 @@ struct Index {
   build() {
     Column() {
       PageHeader({
-        title: '分类宫格',
-        subtitle: '常用分类入口',
+        title: '分类',
+        subtitle: '一级分类与二级分类联动浏览商品',
         testId: 'grid-header',
       })
       CategoryGrid()
