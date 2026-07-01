@@ -16,7 +16,13 @@ let hasStartedEntryAbility: boolean = false;
 
 export function getDriver(): Driver {
   if (sharedDriver === undefined) {
-    sharedDriver = Driver.create();
+    try {
+      sharedDriver = Driver.create();
+    } catch (e) {
+      console.error('Driver.create failed: ' + JSON.stringify(e));
+      expect(false).assertTrue();
+      throw new Error('Driver.create failed');
+    }
   }
   return sharedDriver;
 }
@@ -36,7 +42,12 @@ async function startEntryAbility(driver: Driver): Promise<string> {
     bundleName: bundleName,
     abilityName: 'EntryAbility',
   };
-  await delegator.startAbility(want);
+  try {
+    await delegator.startAbility(want);
+  } catch (e) {
+    console.error('startEntryAbility failed: ' + JSON.stringify(e));
+    expect(false).assertTrue();
+  }
   await waitForComponentById(driver, ROOT_ID, 10);
   return bundleName;
 }
@@ -89,7 +100,11 @@ export async function waitForComponentById(driver: Driver, id: string, retries: 
       expect(true).assertTrue();
       return;
     }
-    await driver.waitForIdle(200, 500);
+    try {
+      await driver.waitForIdle(200, 500);
+    } catch (e) {
+      console.error('waitForComponentById waitForIdle failed: ' + JSON.stringify(e));
+    }
   }
   expect(false).assertTrue();
 }
@@ -104,7 +119,11 @@ export async function waitForComponentByText(driver: Driver, text: string, retri
       }
     } catch (e) {
     }
-    await driver.waitForIdle(200, 500);
+    try {
+      await driver.waitForIdle(200, 500);
+    } catch (e) {
+      console.error('waitForComponentByText waitForIdle failed: ' + JSON.stringify(e));
+    }
   }
   expect(false).assertTrue();
 }
@@ -131,14 +150,19 @@ export async function estimateLanesById(driver: Driver, containerId: string, ite
 }
 
 export async function assertNoHorizontalOverflow(driver: Driver, containerId: string, itemId: string): Promise<void> {
-  const container = await driver.findComponent(ON.id(containerId));
-  const items = await driver.findComponents(ON.id(itemId));
-  expect(container !== null && container !== undefined).assertTrue();
-  expect(items !== null && items !== undefined && items.length > 0).assertTrue();
-  const containerBounds = await container.getBounds();
-  for (let index = 0; index < items.length; index++) {
-    const itemBounds = await items[index].getBounds();
-    expect(itemBounds.left >= containerBounds.left - 1).assertTrue();
-    expect(itemBounds.right <= containerBounds.right + 1).assertTrue();
+  try {
+    const container = await driver.findComponent(ON.id(containerId));
+    const items = await driver.findComponents(ON.id(itemId));
+    expect(container !== null && container !== undefined).assertTrue();
+    expect(items !== null && items !== undefined && items.length > 0).assertTrue();
+    const containerBounds = await container.getBounds();
+    for (let index = 0; index < items.length; index++) {
+      const itemBounds = await items[index].getBounds();
+      expect(itemBounds.left >= containerBounds.left - 1).assertTrue();
+      expect(itemBounds.right <= containerBounds.right + 1).assertTrue();
+    }
+  } catch (e) {
+    console.error('assertNoHorizontalOverflow failed: ' + JSON.stringify(e));
+    expect(false).assertTrue();
   }
 }
