@@ -24,7 +24,7 @@ export default function commonPassToPassTest() {
 
     it('should_show_grid_page_content', Level.LEVEL2, async (done: Function) => {
       await assertComponentById(driver, 'grid-header');
-      await assertComponentByText(driver, '分类');
+      await assertComponentByText(driver, '商品分类');
       done();
     });
 

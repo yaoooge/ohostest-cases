@@ -7,8 +7,7 @@ struct Index {
   build() {
     Column() {
       PageHeader({
-        title: '首页',
-        subtitle: '精选好物',
+        title: '精选好物',
         testId: 'waterflow-header',
       })
       ProductWaterFlow()

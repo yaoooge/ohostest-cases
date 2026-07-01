@@ -1,7 +1,6 @@
 @ComponentV2
 export struct PageHeader {
   @Param title: string = '';
-  @Param subtitle: string = '';
   @Param testId: string = 'page-header';
 
   build() {
@@ -31,14 +30,6 @@ export struct PageHeader {
       }
       .width('100%')
       .alignItems(VerticalAlign.Center)
-
-      Text(this.subtitle)
-        .fontSize(25)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#111827')
-        .margin({ top: 44 })
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .alignItems(HorizontalAlign.Start)
     .width('100%')

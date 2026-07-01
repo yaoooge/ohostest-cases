@@ -24,7 +24,6 @@ export default function commonPassToPassTest() {
 
     it('should_show_waterflow_page_content', Level.LEVEL2, async (done: Function) => {
       await assertComponentById(driver, 'waterflow-header');
-      await assertComponentByText(driver, '首页');
       await assertComponentByText(driver, '精选好物');
       done();
     });
