@@ -33,12 +33,12 @@ export struct CategoryGrid {
 
   @Computed
   get columns(): number {
-    return new BreakpointModel<number>(2, 3, 4).getValue(this.currentBreakpoint.value);
+    return new BreakpointModel<number>(2, 3, 5).getValue(this.currentBreakpoint.value);
   }
 
   @Computed
   get gap(): number {
-    return new BreakpointModel<number>(8, 12, 12).getValue(this.currentBreakpoint.value);
+    return new BreakpointModel<number>(8, 12, 16).getValue(this.currentBreakpoint.value);
   }
 
   @Computed
@@ -87,6 +87,7 @@ export struct CategoryGrid {
                 Column() {
                   Image(item.image)
                     .categoryProductImageStyle(this.imageSize)
+                    .id('category-grid-image' + index)
                   Text(item.name)
                     .fontSize(14)
                     .fontWeight(FontWeight.Bold)

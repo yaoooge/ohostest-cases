@@ -64,6 +64,7 @@ export struct CategoryGrid {
                 Column() {
                   Image(item.image)
                     .categoryProductImageStyle()
+                    .id('category-grid-image' + index)
                   Text(item.name)
                     .fontSize(14)
                     .fontWeight(FontWeight.Bold)

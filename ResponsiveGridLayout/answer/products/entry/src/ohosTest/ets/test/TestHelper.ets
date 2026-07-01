@@ -149,6 +149,50 @@ export async function estimateLanesById(driver: Driver, containerId: string, ite
   }
 }
 
+export async function estimateHorizontalGapByIds(driver: Driver, firstItemId: string, secondItemId: string): Promise<number> {
+  try {
+    const firstItem = await driver.findComponent(ON.id(firstItemId));
+    const secondItem = await driver.findComponent(ON.id(secondItemId));
+    if (firstItem === null || firstItem === undefined || secondItem === null || secondItem === undefined) {
+      return -1;
+    }
+    const firstBounds = await firstItem.getBounds();
+    const secondBounds = await secondItem.getBounds();
+    return Math.round(px2vp(secondBounds.left - firstBounds.right));
+  } catch (e) {
+    console.error('estimateHorizontalGapByIds failed: ' + JSON.stringify(e));
+    return -1;
+  }
+}
+
+export async function estimateComponentVpWidthById(driver: Driver, id: string): Promise<number> {
+  try {
+    const component = await driver.findComponent(ON.id(id));
+    if (component === null || component === undefined) {
+      return -1;
+    }
+    const bounds = await component.getBounds();
+    return Math.round(px2vp(bounds.right - bounds.left));
+  } catch (e) {
+    console.error('estimateComponentVpWidthById failed: ' + JSON.stringify(e));
+    return -1;
+  }
+}
+
+export async function estimateComponentVpHeightById(driver: Driver, id: string): Promise<number> {
+  try {
+    const component = await driver.findComponent(ON.id(id));
+    if (component === null || component === undefined) {
+      return -1;
+    }
+    const bounds = await component.getBounds();
+    return Math.round(px2vp(bounds.bottom - bounds.top));
+  } catch (e) {
+    console.error('estimateComponentVpHeightById failed: ' + JSON.stringify(e));
+    return -1;
+  }
+}
+
 export async function assertNoHorizontalOverflow(driver: Driver, containerId: string, itemId: string): Promise<void> {
   try {
     const container = await driver.findComponent(ON.id(containerId));
