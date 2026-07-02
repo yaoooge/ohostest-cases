@@ -1,0 +1,37 @@
+# HarmonyOS / DevEco Studio
+**/.ohostest-runs/
+**/.hvigor/
+**/.preview/
+**/.test/
+**/.appanalyzer/
+**/build/
+**/BuildProfile.ets
+local.properties
+
+# Dependencies and package locks generated per imported case
+**/node_modules/
+**/oh_modules/
+**/oh-package-lock.json5
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+.clangd
+.clang-format
+.clang-tidy
+
+# Native and build caches
+.cxx/
+coverage/
+dist/
+out/
+tmp/
+temp/
+
+# Logs and OS files
+*.log
+*.tmp
+*.swp
+*.DS_Store
+Thumbs.db
