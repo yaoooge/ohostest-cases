@@ -1,0 +1,23 @@
+# ohosTest case command log
+
+## Command 1
+$ GIT_CEILING_DIRECTORIES=/Users/guoyutong/codeRepo/01-mine/ohostest-cases/ResponsiveGridLayout/case/.ohostest-runs/2026-07-02T08-11-55-123Z/work git apply --check /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ResponsiveGridLayout/case/test_patch.patch
+exitCode: 0
+durationMs: 13
+stdout:
+stderr:
+
+## Command 2
+$ GIT_CEILING_DIRECTORIES=/Users/guoyutong/codeRepo/01-mine/ohostest-cases/ResponsiveGridLayout/case/.ohostest-runs/2026-07-02T08-11-55-123Z/work git apply /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ResponsiveGridLayout/case/test_patch.patch
+exitCode: 0
+durationMs: 9
+stdout:
+stderr:
+
+## Command 3
+$ ohpm install
+exitCode: 0
+durationMs: 757
+stdout:
+[32minstall completed in 0s 50ms[39m
+stderr:

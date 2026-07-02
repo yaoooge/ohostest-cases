@@ -1,0 +1,204 @@
+diff --git a/products/entry/src/main/ets/components/CategoryGrid.ets b/products/entry/src/main/ets/components/CategoryGrid.ets
+index bea10d0..3574433 100644
+--- a/products/entry/src/main/ets/components/CategoryGrid.ets
++++ b/products/entry/src/main/ets/components/CategoryGrid.ets
+@@ -1,5 +1,6 @@
+ import { PRIMARY_CATEGORIES } from '../model/DemoData';
+ import { CategoryProduct, PrimaryCategory, SecondaryCategory } from '../model/Types';
++import { BreakpointModel, BreakpointStorage, BreakpointSystem } from '../utils/BreakpointSystem';
+ 
+ @Extend(Text)
+ function categorySingleLineText() {
+@@ -14,20 +15,42 @@ function categoryDoubleLineText() {
+ }
+ 
+ @Extend(Image)
+-function categoryProductImageStyle() {
+-  .width(58)
+-  .height(58)
++function categoryProductImageStyle(size: number) {
++  .width(size)
++  .height(size)
+   .objectFit(ImageFit.Contain)
+   .draggable(false)
+ }
+ 
+ @ComponentV2
+ export struct CategoryGrid {
++  @Local
++  currentBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint;
+   @Local
+   activePrimaryIndex: number = 3;
+   @Local
+   activeSecondaryIndex: number = 0;
+ 
++  @Computed
++  get columns(): number {
++    return new BreakpointModel<number>(2, 3, 5).getValue(this.currentBreakpoint.value);
++  }
++
++  @Computed
++  get gap(): number {
++    return new BreakpointModel<number>(8, 12, 16).getValue(this.currentBreakpoint.value);
++  }
++
++  @Computed
++  get sideWidth(): number {
++    return new BreakpointModel<number>(96, 120, 148).getValue(this.currentBreakpoint.value);
++  }
++
++  @Computed
++  get imageSize(): number {
++    return new BreakpointModel<number>(58, 68, 76).getValue(this.currentBreakpoint.value);
++  }
++
+   @Computed
+   get activePrimary(): PrimaryCategory {
+     if (this.activePrimaryIndex < 0 || this.activePrimaryIndex >= PRIMARY_CATEGORIES.length) {
+@@ -63,7 +86,7 @@ export struct CategoryGrid {
+               GridItem() {
+                 Column() {
+                   Image(item.image)
+-                    .categoryProductImageStyle()
++                    .categoryProductImageStyle(this.imageSize)
+                     .id('category-grid-image' + index)
+                   Text(item.name)
+                     .fontSize(14)
+@@ -87,9 +110,9 @@ export struct CategoryGrid {
+               .id('category-grid-item' + index)
+             }, (item: CategoryProduct) => item.name)
+           }
+-          .columnsTemplate('repeat(2, 1fr)')
+-          .columnsGap(8)
+-          .rowsGap(8)
++          .columnsTemplate(`repeat(${this.columns}, 1fr)`)
++          .columnsGap(this.gap)
++          .rowsGap(this.gap)
+           .width('100%')
+           .layoutWeight(1)
+           .scrollBar(BarState.Off)
+@@ -135,7 +158,7 @@ export struct CategoryGrid {
+       .width('100%')
+       .padding({ top: 4, bottom: 12 })
+     }
+-    .width(96)
++    .width(this.sideWidth)
+     .height('100%')
+     .align(Alignment.Top)
+     .backgroundColor('#EEF2F5')
+diff --git a/products/entry/src/main/ets/utils/BreakpointSystem.ets b/products/entry/src/main/ets/utils/BreakpointSystem.ets
+new file mode 100644
+index 0000000..a538d99
+--- /dev/null
++++ b/products/entry/src/main/ets/utils/BreakpointSystem.ets
+@@ -0,0 +1,84 @@
++import { AppStorageV2, window } from '@kit.ArkUI';
++
++export enum BreakpointTypeEnum {
++  SM = 'sm',
++  MD = 'md',
++  LG = 'lg',
++}
++
++export class BreakpointModel<T> {
++  private sm: T;
++  private md: T;
++  private lg: T;
++
++  constructor(sm: T, md: T, lg: T) {
++    this.sm = sm;
++    this.md = md;
++    this.lg = lg;
++  }
++
++  getValue(currentBreakpoint: BreakpointTypeEnum): T {
++    if (currentBreakpoint === BreakpointTypeEnum.SM) {
++      return this.sm;
++    }
++    if (currentBreakpoint === BreakpointTypeEnum.MD) {
++      return this.md;
++    }
++    return this.lg;
++  }
++}
++
++@ObservedV2
++export class BreakpointStorage {
++  @Trace
++  value: BreakpointTypeEnum = BreakpointTypeEnum.SM;
++}
++
++@ObservedV2
++class BreakpointSystem {
++  @Trace
++  public currentBreakpoint: BreakpointStorage = AppStorageV2.connect(
++    BreakpointStorage,
++    () => new BreakpointStorage(),
++  )!;
++  private uiContext: UIContext | undefined;
++  private windowClass: window.Window | undefined;
++
++  public register(uiContext: UIContext): void {
++    this.uiContext = uiContext;
++    this.updateBreakpoint();
++    window.getLastWindow(uiContext.getHostContext())
++      .then((win: window.Window) => {
++        this.windowClass = win;
++        this.windowClass.on('windowSizeChange', () => {
++          this.updateBreakpoint();
++        });
++      })
++      .catch(() => {
++      });
++  }
++
++  public unregister(): void {
++    if (this.windowClass) {
++      this.windowClass.off('windowSizeChange');
++    }
++  }
++
++  public updateBreakpoint(): void {
++    if (!this.uiContext) {
++      return;
++    }
++    const current = this.uiContext.getWindowWidthBreakpoint();
++    if (current === WidthBreakpoint.WIDTH_XS || current === WidthBreakpoint.WIDTH_SM) {
++      this.currentBreakpoint.value = BreakpointTypeEnum.SM;
++    } else if (current === WidthBreakpoint.WIDTH_MD) {
++      this.currentBreakpoint.value = BreakpointTypeEnum.MD;
++    } else {
++      this.currentBreakpoint.value = BreakpointTypeEnum.LG;
++    }
++  }
++}
++
++const breakpointSystem = new BreakpointSystem();
++
++export { breakpointSystem as BreakpointSystem };
+diff --git a/products/entry/src/main/ets/views/Index.ets b/products/entry/src/main/ets/views/Index.ets
+index e5af5cb..ad1f764 100644
+--- a/products/entry/src/main/ets/views/Index.ets
++++ b/products/entry/src/main/ets/views/Index.ets
+@@ -1,9 +1,21 @@
++import { common } from '@kit.AbilityKit';
+ import { PageHeader } from '../components/PageHeader';
+ import { CategoryGrid } from '../components/CategoryGrid';
++import { BreakpointSystem } from '../utils/BreakpointSystem';
+ 
+ @Entry
+ @ComponentV2
+ struct Index {
++  aboutToAppear(): void {
++    const uiContext = this.getUIContext();
++    uiContext.getHostContext() as common.UIAbilityContext;
++    BreakpointSystem.register(uiContext);
++  }
++
++  aboutToDisappear(): void {
++    BreakpointSystem.unregister();
++  }
++
+   build() {
+     Column() {
+       PageHeader({

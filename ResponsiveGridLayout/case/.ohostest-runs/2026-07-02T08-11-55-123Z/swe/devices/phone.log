@@ -1,0 +1,180 @@
+device: phone
+target: 127.0.0.1:15001
+emulatorStartExitCode: 0
+suiteClass: CommonPassToPassTest
+aaTestClass: CommonPassToPassTest
+aaTestStdout:
+start ability successfully.
+
+OHOS_REPORT_SUM: 5
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=1
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_start_ability_successfully
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=1
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_start_ability_successfully
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=8
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=2
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_page_content
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=2
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_page_content
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=13
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=3
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_items
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=3
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_items
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=12
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=4
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_product_category_content
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=4
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_product_category_content
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=17
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=5
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_keep_grid_items_without_horizontal_overflow
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: current=5
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=5
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_keep_grid_items_without_horizontal_overflow
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=20
+
+
+OHOS_REPORT_STATUS: class=CommonPassToPassTest
+OHOS_REPORT_STATUS: suiteconsuming=70
+
+
+OHOS_REPORT_RESULT: stream=Tests run: 5, Failure: 0, Error: 0, Pass: 5, Ignore: 0
+OHOS_REPORT_CODE: 0
+OHOS_REPORT_STATUS: taskconsuming=70
+
+TestFinished-ResultCode: 0
+TestFinished-ResultMsg: your test finished!!!
+user test finished.
+aaTestStderr:
+
+suiteClass: SmPassToPassTest
+aaTestClass: SmPassToPassTest
+aaTestStdout:
+start ability successfully.
+
+OHOS_REPORT_SUM: 2
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+
+
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+OHOS_REPORT_STATUS: current=1
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=2
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_as_two_columns_on_small_breakpoint
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+OHOS_REPORT_STATUS: current=1
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=2
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_show_grid_as_two_columns_on_small_breakpoint
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=33
+
+
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+OHOS_REPORT_STATUS: current=2
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=2
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_use_58vp_product_image_on_small_breakpoint
+OHOS_REPORT_STATUS_CODE: 1
+
+
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+OHOS_REPORT_STATUS: current=2
+OHOS_REPORT_STATUS: id=JS
+OHOS_REPORT_STATUS: numtests=2
+OHOS_REPORT_STATUS: stream=
+OHOS_REPORT_STATUS: test=should_use_58vp_product_image_on_small_breakpoint
+OHOS_REPORT_STATUS_CODE: 0
+OHOS_REPORT_STATUS: consuming=22
+
+
+OHOS_REPORT_STATUS: class=SmPassToPassTest
+OHOS_REPORT_STATUS: suiteconsuming=55
+
+
+OHOS_REPORT_RESULT: stream=Tests run: 2, Failure: 0, Error: 0, Pass: 2, Ignore: 0
+OHOS_REPORT_CODE: 0
+OHOS_REPORT_STATUS: taskconsuming=55
+
+TestFinished-ResultCode: 0
+TestFinished-ResultMsg: your test finished!!!
+user test finished.
+aaTestStderr:
+
