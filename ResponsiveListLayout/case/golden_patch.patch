@@ -1,0 +1,196 @@
+diff --git a/products/entry/oh-package.json5 b/products/entry/oh-package.json5
+index 421be66..be8baf4 100644
+--- a/products/entry/oh-package.json5
++++ b/products/entry/oh-package.json5
+@@ -1,7 +1,7 @@
+ {
+   "name": "entry",
+   "version": "1.0.0",
+-  "description": "订单列表示例",
++  "description": "响应式布局-列表重复布局原子工程",
+   "main": "",
+   "dependencies": {}
+ }
+diff --git a/products/entry/src/main/ets/components/OrderList.ets b/products/entry/src/main/ets/components/OrderList.ets
+index 85632f4..a733b69 100644
+--- a/products/entry/src/main/ets/components/OrderList.ets
++++ b/products/entry/src/main/ets/components/OrderList.ets
+@@ -5,6 +5,7 @@ import {
+ } from '@kit.ArkUI';
+ import { LIST_CARDS, ORDER_TABS } from '../model/DemoData';
+ import { ListCard, OrderTabItem } from '../model/Types';
++import { BreakpointModel, BreakpointStorage, BreakpointSystem } from '../utils/BreakpointSystem';
+ 
+ @Extend(Text)
+ function orderSingleLineText() {
+@@ -100,6 +101,8 @@ function orderActionButtonStyle(isPrimary: boolean) {
+ 
+ @ComponentV2
+ export struct OrderList {
++  @Local
++  currentBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint;
+   @Local
+   activeStatus: string = 'all';
+   @Local
+@@ -114,6 +117,16 @@ export struct OrderList {
+     }),
+   );
+ 
++  @Computed
++  get lanes(): number {
++    return new BreakpointModel<number>(1, 1, 2).getValue(this.currentBreakpoint.value);
++  }
++
++  @Computed
++  get space(): number {
++    return new BreakpointModel<number>(8, 12, 12).getValue(this.currentBreakpoint.value);
++  }
++
+   @Computed
+   get filteredOrders(): ListCard[] {
+     if (this.activeStatus === 'all') {
+@@ -125,7 +138,7 @@ export struct OrderList {
+   build() {
+     Column() {
+       this.statusTabs()
+-      List({ space: 8 }) {
++      List({ space: this.space }) {
+         ForEach(this.filteredOrders, (item: ListCard, index: number) => {
+           ListItem() {
+             this.orderCard(item)
+@@ -133,6 +146,7 @@ export struct OrderList {
+           .id('order-list-item' + index)
+         }, (item: ListCard) => item.orderNo)
+       }
++      .lanes(this.lanes, 12)
+       .width('100%')
+       .layoutWeight(1)
+       .padding({ left: 16, right: 16, bottom: 16 })
+diff --git a/products/entry/src/main/ets/model/DemoData.ets b/products/entry/src/main/ets/model/DemoData.ets
+index 848fb6d..45e9a18 100644
+--- a/products/entry/src/main/ets/model/DemoData.ets
++++ b/products/entry/src/main/ets/model/DemoData.ets
+@@ -91,6 +91,6 @@ export const LIST_CARDS: ListCard[] = [
+     price: '¥49',
+     payPrice: '¥49',
+     totalText: '共1件商品，待付：',
+-    actions: ['取消订单', '修改订单', '去支付'],
++    actions: ['取消订单', '去支付'],
+   },
+ ];
+diff --git a/products/entry/src/main/ets/utils/BreakpointSystem.ets b/products/entry/src/main/ets/utils/BreakpointSystem.ets
+new file mode 100644
+index 0000000..a538d99
+--- /dev/null
++++ b/products/entry/src/main/ets/utils/BreakpointSystem.ets
+@@ -0,0 +1,84 @@
++import { AppStorageV2, window } from '@kit.ArkUI';
++
++export enum BreakpointTypeEnum {
++  SM = 'sm',
++  MD = 'md',
++  LG = 'lg',
++}
++
++export class BreakpointModel<T> {
++  private sm: T;
++  private md: T;
++  private lg: T;
++
++  constructor(sm: T, md: T, lg: T) {
++    this.sm = sm;
++    this.md = md;
++    this.lg = lg;
++  }
++
++  getValue(currentBreakpoint: BreakpointTypeEnum): T {
++    if (currentBreakpoint === BreakpointTypeEnum.SM) {
++      return this.sm;
++    }
++    if (currentBreakpoint === BreakpointTypeEnum.MD) {
++      return this.md;
++    }
++    return this.lg;
++  }
++}
++
++@ObservedV2
++export class BreakpointStorage {
++  @Trace
++  value: BreakpointTypeEnum = BreakpointTypeEnum.SM;
++}
++
++@ObservedV2
++class BreakpointSystem {
++  @Trace
++  public currentBreakpoint: BreakpointStorage = AppStorageV2.connect(
++    BreakpointStorage,
++    () => new BreakpointStorage(),
++  )!;
++  private uiContext: UIContext | undefined;
++  private windowClass: window.Window | undefined;
++
++  public register(uiContext: UIContext): void {
++    this.uiContext = uiContext;
++    this.updateBreakpoint();
++    window.getLastWindow(uiContext.getHostContext())
++      .then((win: window.Window) => {
++        this.windowClass = win;
++        this.windowClass.on('windowSizeChange', () => {
++          this.updateBreakpoint();
++        });
++      })
++      .catch(() => {
++      });
++  }
++
++  public unregister(): void {
++    if (this.windowClass) {
++      this.windowClass.off('windowSizeChange');
++    }
++  }
++
++  public updateBreakpoint(): void {
++    if (!this.uiContext) {
++      return;
++    }
++    const current = this.uiContext.getWindowWidthBreakpoint();
++    if (current === WidthBreakpoint.WIDTH_XS || current === WidthBreakpoint.WIDTH_SM) {
++      this.currentBreakpoint.value = BreakpointTypeEnum.SM;
++    } else if (current === WidthBreakpoint.WIDTH_MD) {
++      this.currentBreakpoint.value = BreakpointTypeEnum.MD;
++    } else {
++      this.currentBreakpoint.value = BreakpointTypeEnum.LG;
++    }
++  }
++}
++
++const breakpointSystem = new BreakpointSystem();
++
++export { breakpointSystem as BreakpointSystem };
+diff --git a/products/entry/src/main/ets/views/Index.ets b/products/entry/src/main/ets/views/Index.ets
+index 2affff6..ceb98f6 100644
+--- a/products/entry/src/main/ets/views/Index.ets
++++ b/products/entry/src/main/ets/views/Index.ets
+@@ -1,9 +1,21 @@
++import { common } from '@kit.AbilityKit';
+ import { PageHeader } from '../components/PageHeader';
+ import { OrderList } from '../components/OrderList';
++import { BreakpointSystem } from '../utils/BreakpointSystem';
+ 
+ @Entry
+ @ComponentV2
+ struct Index {
++  aboutToAppear(): void {
++    const uiContext = this.getUIContext();
++    uiContext.getHostContext() as common.UIAbilityContext;
++    BreakpointSystem.register(uiContext);
++  }
++
++  aboutToDisappear(): void {
++    BreakpointSystem.unregister();
++  }
++
+   build() {
+     Column() {
+       PageHeader({
