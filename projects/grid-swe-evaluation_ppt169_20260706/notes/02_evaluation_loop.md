@@ -1,0 +1,1 @@
+这一页的结论是，完整评测闭环同时验证题目可信度和 Agent 产物质量。第一步把 task、golden patch 和 test patch 合在一起跑，确认参考实现可以通过全部测试。第二步只合入 task 和 test patch，确认基线工程确实会暴露 fail to pass，同时 pass to pass 仍然成功。第三步把 task 作为基础工程，把 README 里的提示词交给 Agent 生成 implement patch。第四步把 implement patch 和 test patch 合入 task，使用同一套测试判断 Agent 是否修好。最后一步比较 implement patch 和 golden patch，重点看是否真的引入断点体系、是否用断点驱动 Grid 列数、间距和图片尺寸，以及有没有绕过测试或破坏原功能。
