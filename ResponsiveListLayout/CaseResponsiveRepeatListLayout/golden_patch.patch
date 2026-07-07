@@ -1,16 +1,3 @@
-diff --git a/products/entry/oh-package.json5 b/products/entry/oh-package.json5
-index 421be66..be8baf4 100644
---- a/products/entry/oh-package.json5
-+++ b/products/entry/oh-package.json5
-@@ -1,7 +1,7 @@
- {
-   "name": "entry",
-   "version": "1.0.0",
--  "description": "订单列表示例",
-+  "description": "响应式布局-列表重复布局原子工程",
-   "main": "",
-   "dependencies": {}
- }
 diff --git a/products/entry/src/main/ets/components/OrderList.ets b/products/entry/src/main/ets/components/OrderList.ets
 index 85632f4..a733b69 100644
 --- a/products/entry/src/main/ets/components/OrderList.ets
@@ -66,18 +53,6 @@ index 85632f4..a733b69 100644
        .width('100%')
        .layoutWeight(1)
        .padding({ left: 16, right: 16, bottom: 16 })
-diff --git a/products/entry/src/main/ets/model/DemoData.ets b/products/entry/src/main/ets/model/DemoData.ets
-index 848fb6d..45e9a18 100644
---- a/products/entry/src/main/ets/model/DemoData.ets
-+++ b/products/entry/src/main/ets/model/DemoData.ets
-@@ -91,6 +91,6 @@ export const LIST_CARDS: ListCard[] = [
-     price: '¥49',
-     payPrice: '¥49',
-     totalText: '共1件商品，待付：',
--    actions: ['取消订单', '修改订单', '去支付'],
-+    actions: ['取消订单', '去支付'],
-   },
- ];
 diff --git a/products/entry/src/main/ets/utils/BreakpointSystem.ets b/products/entry/src/main/ets/utils/BreakpointSystem.ets
 new file mode 100644
 index 0000000..a538d99

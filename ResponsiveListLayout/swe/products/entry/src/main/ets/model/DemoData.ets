@@ -91,6 +91,6 @@ export const LIST_CARDS: ListCard[] = [
     price: '¥49',
     payPrice: '¥49',
     totalText: '共1件商品，待付：',
-    actions: ['取消订单', '修改订单', '去支付'],
+    actions: ['取消订单', '去支付'],
   },
 ];

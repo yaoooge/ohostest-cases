@@ -1,29 +1,3 @@
-diff --git a/AppScope/resources/base/element/string.json b/AppScope/resources/base/element/string.json
-index 5e82038..abbf700 100644
---- a/AppScope/resources/base/element/string.json
-+++ b/AppScope/resources/base/element/string.json
-@@ -2,7 +2,7 @@
-   "string": [
-     {
-       "name": "app_name",
--      "value": "商品瀑布流"
-+      "value": "响应式布局-重复布局"
-     }
-   ]
- }
-diff --git a/products/entry/oh-package.json5 b/products/entry/oh-package.json5
-index b09468f..c0167e6 100644
---- a/products/entry/oh-package.json5
-+++ b/products/entry/oh-package.json5
-@@ -1,7 +1,7 @@
- {
-   "name": "entry",
-   "version": "1.0.0",
--  "description": "商品瀑布流示例",
-+  "description": "响应式布局-瀑布流重复布局原子工程",
-   "main": "",
-   "dependencies": {}
- }
 diff --git a/products/entry/src/main/ets/components/ProductWaterFlow.ets b/products/entry/src/main/ets/components/ProductWaterFlow.ets
 index fd726d0..11676d8 100644
 --- a/products/entry/src/main/ets/components/ProductWaterFlow.ets
@@ -193,16 +167,3 @@ index af4266a..266479c 100644
    build() {
      Column() {
        PageHeader({
-diff --git a/products/entry/src/main/resources/base/element/string.json b/products/entry/src/main/resources/base/element/string.json
-index b8e2e6f..1156b45 100644
---- a/products/entry/src/main/resources/base/element/string.json
-+++ b/products/entry/src/main/resources/base/element/string.json
-@@ -2,7 +2,7 @@
-   "string": [
-     {
-       "name": "EntryAbility_label",
--      "value": "商品瀑布流"
-+      "value": "响应式布局-重复布局"
-     }
-   ]
- }
