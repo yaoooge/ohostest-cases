@@ -46,10 +46,6 @@
        "name": "module_ui_base",
        "srcPath": "./XXX/module_ui_base"
      },
-        {
-       "name": "image_preview",
-       "srcPath": "./XXX/image_preview"
-     },
      {
        "name": "module_product_review",
        "srcPath": "./XXX/module_product_review"
