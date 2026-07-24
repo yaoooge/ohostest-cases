@@ -39,7 +39,7 @@ struct EmptyPage {
       }, false);
     } else {
       this.stack.pushPath({
-        name: RouterMap.SAFE_PAGE,
+        name: RouterMap.MAIN_ENTRY,
       }, false)
     }
   }

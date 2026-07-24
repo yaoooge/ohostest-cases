@@ -6,16 +6,6 @@
       "buildFunction": "MainEntryBuilder"
     },
     {
-      "name": "SafePage",
-      "pageSourceFile": "src/main/ets/views/SafePage.ets",
-      "buildFunction": "SafePageBuilder"
-    },
-    {
-      "name": "SplashPage",
-      "pageSourceFile": "src/main/ets/views/SplashPage.ets",
-      "buildFunction": "buildSplashPage"
-    },
-    {
       "name": "CategoryPage",
       "pageSourceFile": "src/main/ets/tabviews/CategoryPage.ets",
       "buildFunction": "buildCategoryPage"

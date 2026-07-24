@@ -1,10 +1,6 @@
 export enum RouterMap {
-  // 首开申请用户许可
-  SAFE_PAGE = 'SafePage',
   // 主入口
   MAIN_ENTRY = 'MainEntry',
-  // 广告页
-  SPLASH_PAGE = 'SplashPage',
 
   SETTING_AGREEMENT = 'AgreementPage',
 
