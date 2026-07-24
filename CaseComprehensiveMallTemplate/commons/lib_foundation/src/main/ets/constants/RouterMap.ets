@@ -41,7 +41,6 @@ export enum RouterMap {
   ORDER_INFO = 'OrderInfoPage',
   ORDER_EXPRESS_INFO = 'OrderExpressInfoPage',
   POINTS_EXPRESS_INFO = 'OrderExpressInfoPage',
-  ORDER_UPDATE_ADDRESS = 'UpdateAddressSheet',
   ORDER_REVIEW_CREATE = 'OrderReviewCreatePage',
   ORDER_REVIEW_INFO = 'OrderReviewInfoPage',
 }

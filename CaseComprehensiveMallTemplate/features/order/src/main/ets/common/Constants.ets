@@ -37,12 +37,6 @@ export const ORDER_STATUS_PENDING_PAYMENT: OrderStatusInfo = {
       label: '取消订单',
     },
     {
-      style: OrderButtonStyleMap.SECONDARY,
-      actionType: OrderActionMap.UPDATE_ADDRESS,
-      label: '修改地址',
-      enableHide: true,
-    },
-    {
       style: OrderButtonStyleMap.PRIMARY,
       actionType: OrderActionMap.IMMEDIATE_PAYMENT,
       label: '立即支付',
@@ -60,12 +54,6 @@ export const ORDER_STATUS_PENDING_SHIPMENT: OrderStatusInfo = {
       style: OrderButtonStyleMap.OTHERS,
       actionType: OrderActionMap.REQUEST_REFUND,
       label: '退款',
-    },
-    {
-      style: OrderButtonStyleMap.SECONDARY,
-      actionType: OrderActionMap.UPDATE_ADDRESS,
-      label: '修改地址',
-      enableHide: true,
     },
     {
       style: OrderButtonStyleMap.PRIMARY,

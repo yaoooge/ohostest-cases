@@ -26,11 +26,6 @@
       "buildFunction": "buildOrderListPage"
     },
     {
-      "name": "UpdateAddressSheet",
-      "pageSourceFile": "src/main/ets/views/UpdateAddressSheet.ets",
-      "buildFunction": "buildUpdateAddressSheet"
-    },
-    {
       "name": "OrderReviewCreatePage",
       "pageSourceFile": "src/main/ets/views/OrderReviewCreatePage.ets",
       "buildFunction": "orderReviewCreatePageBuilder"

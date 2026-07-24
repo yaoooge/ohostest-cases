@@ -1,10 +1,5 @@
-import { AddressManageUtil } from 'address_management';
-import { aggregatedPaymentService } from 'aggregated_payment';
-import { iData, routerStack } from 'lib_foundation';
 import { DiscountItem, OrderSkuItem, PreOrderInfoReq, ShippingOption } from 'lib_network';
 import { NavTitleBar } from 'lib_widget';
-import { CouponsController } from 'coupons';
-import { CouponApis } from 'lib_network';
 import { PopupSheet } from 'module_shopping_cart';
 import { OrderSubmitVM } from '../viewmodels/OrderSubmitVM';
 import { ShippingInfoButton } from '../components/ShippingInfoButton';
@@ -24,10 +19,6 @@ export struct OrderSubmitPage {
   popupMaskHeight: Length = '';
   @Local
   showRemarkSheet: boolean = false;
-
-  aboutToDisappear(): void {
-    aggregatedPaymentService.unregisterAllPaymentCallbacks();
-  }
 
   build() {
     NavDestination() {
@@ -104,26 +95,10 @@ export struct OrderSubmitPage {
             .layoutWeight(1)
             .margin({ right: 16 })
             .alignItems(HorizontalAlign.Start);
-
-            SymbolGlyph($r('sys.symbol.chevron_right'))
-              .fontColor([$r('app.color.font_color_level3')])
           }
           .layoutWeight(1)
           .justifyContent(FlexAlign.SpaceBetween);
         }
-        .onClick(() => {
-          AddressManageUtil.goToAddressListPage(routerStack.getActiveStack(), (data) => {
-            this.vm.customerAddress = data.province + data.city + data.district + data.street + data.detail;
-            this.vm.customerName = data.name;
-            this.vm.customerPhone = data.phone;
-            this.vm.city = data.city;
-            this.vm.getPosition = {
-              latitude: data.latitude,
-              longitude: data.longitude,
-            }
-            routerStack.pop()
-          });
-        })
       } else if (this.vm.shippingIndex === ShippingOption.SELF_PICK_UP) {
         Row() {
           Image($r('app.media.shop'))
@@ -169,23 +144,6 @@ export struct OrderSubmitPage {
             label: discount.label,
             content: '-¥' + discount.discountPrice,
             contentColor: $r('app.color.theme_color'),
-            callback: () => {
-              const controller = new CouponsController()
-              controller.themeColor = $r('app.color.theme_color')
-              controller.totalMoney = this.vm.cartPrice.originalPrice
-              controller.selectedId = this.vm.discountId
-              controller.reduce = this.vm.discountAmount
-              controller.onLoadCoupons = async () => {
-                const res = await CouponApis.getCoupons({ userId: iData.global.userInfo.phone })
-                return res.code === 0 ? res.couponsList : []
-              }
-              controller.onConfirm = (data) => {
-                this.vm.addCouponDiscount(data.reduce)
-                this.vm.discountId = data.selectId;
-                this.vm.discountAmount = data.reduce;
-              }
-              controller.select(this.getUIContext());
-            },
           });
         } else {
           this.infoItemBuilder({

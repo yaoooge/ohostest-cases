@@ -1,4 +1,3 @@
-import { AddressManageUtil } from 'address_management';
 import { iData, WindowUtil } from 'lib_foundation';
 import {
   AddressInfo,
@@ -23,18 +22,18 @@ export class OrderSubmitVM {
   @Trace
   shippingIndex: ShippingOption = ShippingOption.EXPRESS;
   @Trace
-  customerAddress: string = '请填写收件人地址';
+  customerAddress: string = '广东省深圳市南山区科技园';
   @Trace
-  customerName: string = '请填写收件人信息';
+  customerName: string = '华为用户';
   @Trace
-  customerPhone: string = '';
+  customerPhone: string = '12300000000';
   @Trace
   getPosition: OrderPosition = {
-    latitude: 0,
-    longitude: 0,
+    latitude: 22.5405,
+    longitude: 113.9345,
   };
   @Trace
-  city: string = '';
+  city: string = '深圳市';
   @Trace
   skuList: OrderSkuItem[] = [];
   @Trace
@@ -85,19 +84,6 @@ export class OrderSubmitVM {
   async initData(preOrderRequest: PreOrderInfoReq) {
     this.isLoading = true;
     this.preOrderRequest = preOrderRequest;
-    AddressManageUtil.getDefaultAddress().then((res) => {
-      if (res) {
-        this.customerName = res.name;
-        this.customerPhone = res.phone;
-        this.customerAddress =
-          res.province + res.city + res.district + res.street + res.detail;
-        this.city = res.city;
-        this.getPosition = {
-          latitude: res.latitude,
-          longitude: res.longitude,
-        };
-      }
-    });
     OrderApis.getDefaultPickupStore().then((res) => {
       if (res.code === 0) {
         this.defaultPickupStore = res.data;

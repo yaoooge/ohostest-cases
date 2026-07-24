@@ -5,7 +5,6 @@ import {
 } from '../common/Enums';
 import { formatTime } from '../utils';
 import { OrderUtil } from '../utils/OrderUtil';
-import { buildOrderAddressSheetOptions } from '../views/UpdateAddressSheet';
 import { petalMaps } from '@kit.MapKit';
 import { UtilLog } from '@hw-agconnect/util-log';
 
@@ -21,26 +20,6 @@ export class OrderInfoPageVM {
   isLoading: boolean = false;
   @Trace
   countdown: string | undefined = undefined;
-
-  @Computed
-  get enableEditAddress() {
-    if (this.orderItem) {
-      const status = this.orderItem.orderInfo.status;
-      if (
-        this.orderItem.orderInfo.receivingMethod ===
-        OrderShipmentMap.SELF_PICK_UP
-      ) {
-        return false;
-      }
-      if (
-        status === OrderStatusMap.PENDING_PAYMENT ||
-          status === OrderStatusMap.PENDING_SHIPMENT
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   @Computed
   get enableExpressPage() {
@@ -119,22 +98,7 @@ export class OrderInfoPageVM {
     if (!this.orderItem) {
       return;
     }
-    if (action === OrderActionMap.UPDATE_ADDRESS) {
-      routerStack.pushPath(
-        {
-          name: RouterMap.ORDER_UPDATE_ADDRESS,
-          param: buildOrderAddressSheetOptions({
-            originalAddress: this.orderItem.orderInfo.addressInfo,
-            orderNo: this.orderNo,
-            handleSubmitSuccess: () => {
-              routerStack.pop();
-              this.getOrderItem(this.orderNo);
-            },
-          }),
-        },
-        false,
-      );
-    } else if (action === OrderActionMap.REVIEW) {
+    if (action === OrderActionMap.REVIEW) {
       routerStack.pushPath({
         name: RouterMap.ORDER_REVIEW_CREATE,
         param: this.orderItem,
@@ -162,23 +126,6 @@ export class OrderInfoPageVM {
         },
       });
     }
-  }
-
-  openEditSheet() {
-    routerStack.pushPath(
-      {
-        name: RouterMap.ORDER_UPDATE_ADDRESS,
-        param: buildOrderAddressSheetOptions({
-          originalAddress: this.orderItem?.orderInfo.addressInfo,
-          orderNo: this.orderNo,
-          handleSubmitSuccess: () => {
-            routerStack.pop();
-            this.getOrderItem(this.orderNo);
-          },
-        }),
-      },
-      false,
-    );
   }
 
   jumpToExpressPage() {

@@ -143,9 +143,7 @@ export struct OrderInfoPage {
 
           Divider().margin({ top: 12, bottom: 12 })
         }
-        buildAddressInfo(this.vm.orderItem!.orderInfo.addressInfo, this.vm.enableEditAddress, () => {
-          this.vm.handleOrderItem(OrderActionMap.UPDATE_ADDRESS)
-        })
+        buildAddressInfo(this.vm.orderItem!.orderInfo.addressInfo, false)
       }
     }
   }

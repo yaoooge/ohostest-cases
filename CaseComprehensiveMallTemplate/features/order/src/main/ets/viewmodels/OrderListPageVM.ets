@@ -3,7 +3,6 @@ import { OrderApis, OrderItem } from 'lib_network';
 import { ORDER_TAB_LIST } from '../common/Constants';
 import { OrderActionMap, OrderStatusMap, OrderTabsMap } from '../common/Enums';
 import { OrderUtil } from '../utils/OrderUtil';
-import { buildOrderAddressSheetOptions } from '../views/UpdateAddressSheet';
 
 @ObservedV2
 export class OrderListPageVM {
@@ -89,22 +88,7 @@ export class OrderListPageVM {
   }
 
   public handleOrderItem(orderItem: OrderItem, action: OrderActionMap) {
-    if (action === OrderActionMap.UPDATE_ADDRESS) {
-      routerStack.pushPath(
-        {
-          name: RouterMap.ORDER_UPDATE_ADDRESS,
-          param: buildOrderAddressSheetOptions({
-            originalAddress: orderItem.orderInfo.addressInfo,
-            orderNo: orderItem.orderInfo.orderNo,
-            handleSubmitSuccess: () => {
-              routerStack.pop();
-              this.refreshOrderList();
-            },
-          }),
-        },
-        false,
-      );
-    } else if (action === OrderActionMap.REVIEW) {
+    if (action === OrderActionMap.REVIEW) {
       routerStack.pushPath({
         name: RouterMap.ORDER_REVIEW_CREATE,
         param: orderItem,

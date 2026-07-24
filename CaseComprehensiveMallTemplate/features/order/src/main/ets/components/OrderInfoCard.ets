@@ -1,6 +1,6 @@
 import { RouterMap, routerStack } from 'lib_foundation';
 import { OrderInfo, OrderItem, OrderSkuItem } from 'lib_network';
-import { OrderActionMap, OrderShipmentMap, OrderStatusMap } from '../common/Enums';
+import { OrderActionMap, OrderStatusMap } from '../common/Enums';
 import { MyButtonModifier, OrderAction } from '../common/Types';
 import { formatFullDate } from '../utils';
 import { OrderUtil } from '../utils/OrderUtil';
@@ -58,14 +58,11 @@ export function buildButtonList(orderInfo: OrderInfo, buttonSize: ControlSize = 
   Row({ space: buttonSize === ControlSize.NORMAL ? 12 : 8 }) {
     ForEach(OrderUtil.getButtonList(orderInfo.status), (action: OrderAction) => {
       if (buttonSize === ControlSize.SMALL || (buttonSize === ControlSize.NORMAL && !action.enableHide)) {
-        if (!(orderInfo.receivingMethod === OrderShipmentMap.SELF_PICK_UP &&
-          action.actionType === OrderActionMap.UPDATE_ADDRESS)) {
-          Button(action.label)
-            .attributeModifier(new MyButtonModifier(action.style, buttonSize))
-            .onClick(() => {
-              callback?.(action.actionType)
-            })
-        }
+        Button(action.label)
+          .attributeModifier(new MyButtonModifier(action.style, buttonSize))
+          .onClick(() => {
+            callback?.(action.actionType)
+          })
       }
     }, (action: OrderAction, index: number) => index + action.label)
   }
@@ -158,5 +155,4 @@ export function buildOrderInfoCard(order: OrderItem) {
     })
   }
 }
-
 
