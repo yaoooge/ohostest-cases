@@ -1,0 +1,11 @@
+{
+  "module": {
+    "name": "product",
+    "type": "har",
+    "routerMap": "$profile:route_map",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

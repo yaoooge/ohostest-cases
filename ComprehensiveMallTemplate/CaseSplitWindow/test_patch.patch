@@ -1,0 +1,542 @@
+diff --git a/commons/lib_widget/src/main/ets/components/CommonSymbol.ets b/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
+index f160837..a1b400e 100644
+--- a/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
++++ b/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
+@@ -15,2 +15,3 @@ export struct CommonSymbol{
+     }
++    .id('common-symbol')
+     .width(40)
+@@ -26,2 +27,2 @@ export struct CommonSymbol{
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/features/product/src/main/ets/components/ProductInfoCards.ets b/features/product/src/main/ets/components/ProductInfoCards.ets
+index 8220f97..fd5210b 100644
+--- a/features/product/src/main/ets/components/ProductInfoCards.ets
++++ b/features/product/src/main/ets/components/ProductInfoCards.ets
+@@ -54,2 +54,3 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
+   }
++  .id('product-swiper')
+   .width('100%')
+@@ -145,2 +146,3 @@ export function buildProductInfoCard(productInfo: ProductDetailInfo, seckillInfo
+   }
++  .id('product-info-card')
+   .width('100%')
+diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
+index cc22cf4..214cef8 100644
+--- a/features/product/src/main/ets/views/ProductInfoPage.ets
++++ b/features/product/src/main/ets/views/ProductInfoPage.ets
+@@ -41,2 +41,3 @@ export struct ProductInfoPage {
+     }
++    .id('product-info-page')
+     .hideTitleBar(true)
+@@ -75,2 +76,3 @@ export struct ProductInfoPage {
+       }
++      .id('product-info-header-actions')
+       .justifyContent(FlexAlign.End)
+@@ -92,2 +94,3 @@ export struct ProductInfoPage {
+     }
++    .id('product-info-scroll')
+     .edgeEffect(EdgeEffect.Spring)
+@@ -166,2 +169,3 @@ export struct ProductInfoPage {
+         }
++        .id('product-cart-action')
+         .onClick(() => {
+@@ -177,2 +181,3 @@ export struct ProductInfoPage {
+     }
++    .id('product-purchase-actions')
+     .width('100%')
+diff --git a/products/entry/src/main/ets/tabviews/CartPage.ets b/products/entry/src/main/ets/tabviews/CartPage.ets
+index e857a3d..023f870 100644
+--- a/products/entry/src/main/ets/tabviews/CartPage.ets
++++ b/products/entry/src/main/ets/tabviews/CartPage.ets
+@@ -130,2 +130,3 @@ struct CartPage {
+     }
++    .id('cart-page')
+     .transition(TransitionEffect.OPACITY.animation({ duration: 600 }))
+diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
+index 713597f..a82d827 100644
+--- a/products/entry/src/main/ets/views/MainEntry.ets
++++ b/products/entry/src/main/ets/views/MainEntry.ets
+@@ -57,2 +57,3 @@ struct MainEntry {
+     }
++    .id('mall-root')
+     .height($r('app.string.size_percent_full'))
+diff --git a/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
+new file mode 100644
+index 0000000..4ee4efd
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
+@@ -0,0 +1,62 @@
++import { describe, it, expect, Level } from '@ohos/hypium';
++import { Driver, WindowMode } from '@kit.TestKit';
++import {
++  assertProductDetailIsSingleColumn,
++  closeSecondaryWindowIfPresent,
++  componentExistsByText,
++  ENTRY_WINDOW_TITLE,
++  getDriver,
++  openProductDetail,
++  PRODUCT_TITLE,
++  SECOND_WINDOW_TITLE,
++  startMall,
++  waitForComponentById,
++  waitForComponentByText,
++  waitForWindow,
++  waitForWindowMode,
++  windowExists,
++} from './TestHelper';
++
++export default function commonPassToPassTest() {
++  describe('CommonPassToPassTest', () => {
++    const driver: Driver = getDriver();
++
++    it('should_start_mall_successfully', Level.LEVEL2, async (done: Function) => {
++      await startMall();
++      await waitForComponentById(driver, 'mall-root');
++      done();
++    });
++
++    it('should_open_product_detail_from_applink', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail();
++      await waitForComponentById(driver, 'product-info-page');
++      await waitForComponentByText(driver, PRODUCT_TITLE);
++      done();
++    });
++
++    it('should_keep_purchase_actions_available', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail();
++      await waitForComponentById(driver, 'product-purchase-actions');
++      expect(await componentExistsByText(driver, '客服')).assertTrue();
++      expect(await componentExistsByText(driver, '购物车')).assertTrue();
++      expect(await componentExistsByText(driver, '加入购物车')).assertTrue();
++      expect(await componentExistsByText(driver, '立即购买')).assertTrue();
++      done();
++    });
++
++    it('should_have_one_fullscreen_window_before_split', Level.LEVEL2, async (done: Function) => {
++      await closeSecondaryWindowIfPresent();
++      await openProductDetail();
++      const main = await waitForWindow(ENTRY_WINDOW_TITLE);
++      await waitForWindowMode(main, WindowMode.FULLSCREEN);
++      expect(await windowExists(SECOND_WINDOW_TITLE)).assertFalse();
++      done();
++    });
++
++    it('should_keep_product_detail_single_column_on_wide_window', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail();
++      await assertProductDetailIsSingleColumn(driver);
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/List.test.ets b/products/entry/src/ohosTest/ets/test/List.test.ets
+new file mode 100644
+index 0000000..b5e533c
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/List.test.ets
+@@ -0,0 +1,9 @@
++import commonPassToPassTest from './CommonPassToPass.test';
++import smPassToPassTest from './SmPassToPass.test';
++import splitFailToPassTest from './SplitFailToPass.test';
++
++export default function testsuite() {
++  commonPassToPassTest();
++  smPassToPassTest();
++  splitFailToPassTest();
++}
+diff --git a/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
+new file mode 100644
+index 0000000..a5fa444
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
+@@ -0,0 +1,15 @@
++import { describe, it, expect, Level } from '@ohos/hypium';
++import { Driver } from '@kit.TestKit';
++import { getDriver, getHeaderActionCount, openProductDetail } from './TestHelper';
++
++export default function smPassToPassTest() {
++  describe('SmPassToPassTest', () => {
++    const driver: Driver = getDriver();
++
++    it('should_hide_split_action_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail();
++      expect(await getHeaderActionCount(driver)).assertEqual(1);
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets
+new file mode 100644
+index 0000000..9167467
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets
+@@ -0,0 +1,89 @@
++import { describe, it, expect, Level } from '@ohos/hypium';
++import { Driver, WindowMode } from '@kit.TestKit';
++import {
++  clickComponentById,
++  clickSplitOrMergeAction,
++  ENTRY_WINDOW_TITLE,
++  getDriver,
++  getHeaderActionCount,
++  openProductDetail,
++  PRODUCT_TITLE,
++  SECOND_WINDOW_TITLE,
++  startSplitSession,
++  waitForComponentById,
++  waitForComponentByText,
++  waitForWindowAbsent,
++  waitForWindowMode,
++  windowExists,
++} from './TestHelper';
++
++export default function splitFailToPassTest() {
++  describe('SplitFailToPassTest', () => {
++    const driver: Driver = getDriver();
++
++    it('should_show_split_action_on_supported_window', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail();
++      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      done();
++    });
++
++    it('should_start_secondary_window_in_split_mode', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      expect(await windows.main.getWindowMode()).assertEqual(WindowMode.PRIMARY);
++      expect(await windows.secondary.getWindowMode()).assertEqual(WindowMode.SECONDARY);
++      done();
++    });
++
++    it('should_show_same_product_in_secondary_window', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      await windows.secondary.focus();
++      await waitForComponentByText(driver, PRODUCT_TITLE, 16);
++      done();
++    });
++
++    it('should_show_merge_action_in_both_windows', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      await windows.main.focus();
++      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      await windows.secondary.focus();
++      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      done();
++    });
++
++    it('should_restore_main_window_when_secondary_is_closed', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      await windows.secondary.close();
++      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++      await waitForWindowMode(windows.main, WindowMode.FULLSCREEN);
++      expect(await windowExists(SECOND_WINDOW_TITLE)).assertFalse();
++      done();
++    });
++
++    it('should_merge_when_action_is_clicked_in_secondary', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      await windows.secondary.focus();
++      await clickSplitOrMergeAction(driver);
++      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++      await waitForWindowMode(windows.main, WindowMode.FULLSCREEN);
++      await windows.main.focus();
++      await waitForComponentByText(driver, PRODUCT_TITLE, 16);
++      done();
++    });
++
++    it('should_migrate_secondary_navigation_when_merged_from_primary', Level.LEVEL2, async (done: Function) => {
++      const windows = await startSplitSession();
++      await windows.secondary.focus();
++      await clickComponentById(driver, 'product-cart-action');
++      await waitForComponentById(driver, 'cart-page', 16);
++
++      await windows.main.focus();
++      await clickSplitOrMergeAction(driver);
++      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++      await waitForWindowMode(windows.main, WindowMode.FULLSCREEN);
++      await windows.main.focus();
++      await waitForComponentById(driver, 'cart-page', 16);
++      expect(await windowExists(ENTRY_WINDOW_TITLE)).assertTrue();
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/TestHelper.ets b/products/entry/src/ohosTest/ets/test/TestHelper.ets
+new file mode 100644
+index 0000000..0842786
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
+@@ -0,0 +1,254 @@
++import { Want } from '@kit.AbilityKit';
++import {
++  abilityDelegatorRegistry,
++  Component,
++  Driver,
++  ON,
++  UiWindow,
++  WindowMode,
++} from '@kit.TestKit';
++import { expect } from '@ohos/hypium';
++
++export const ENTRY_WINDOW_TITLE: string = '综合商城模板';
++export const SECOND_WINDOW_TITLE: string = '分屏-商品详情';
++export const PRODUCT_TITLE: string = '时尚轻商务系列针织打底纯羊毛内搭';
++
++const PRODUCT_URI: string =
++  'https://linking.xiaobingtang.cn/comprehensive-mall?productId=product_10001';
++const delegator: abilityDelegatorRegistry.AbilityDelegator =
++  abilityDelegatorRegistry.getAbilityDelegator();
++
++let sharedDriver: Driver | undefined = undefined;
++let sharedBundleName: string = '';
++
++export interface SplitSession {
++  main: UiWindow;
++  secondary: UiWindow;
++}
++
++export function getDriver(): Driver {
++  if (sharedDriver === undefined) {
++    try {
++      sharedDriver = Driver.create();
++    } catch (error) {
++      console.error('Driver.create failed: ' + JSON.stringify(error));
++      expect(false).assertTrue();
++      throw new Error('Driver.create failed');
++    }
++  }
++  return sharedDriver;
++}
++
++export function getBundleName(): string {
++  if (sharedBundleName.length === 0) {
++    sharedBundleName = abilityDelegatorRegistry.getArguments().bundleName;
++  }
++  return sharedBundleName;
++}
++
++async function waitForUiChange(driver: Driver): Promise<void> {
++  try {
++    await driver.waitForIdle(200, 800);
++  } catch (error) {
++    console.info('waitForIdle ignored: ' + JSON.stringify(error));
++  }
++}
++
++export async function startMall(): Promise<string> {
++  const driver = getDriver();
++  const bundleName = getBundleName();
++  const want: Want = {
++    bundleName: bundleName,
++    abilityName: 'EntryAbility',
++  };
++  await delegator.startAbility(want);
++  await waitForComponentById(driver, 'mall-root', 12);
++  return bundleName;
++}
++
++export async function openProductDetail(): Promise<string> {
++  const driver = getDriver();
++  const bundleName = getBundleName();
++  await closeSecondaryWindowIfPresent();
++  const want: Want = {
++    bundleName: bundleName,
++    abilityName: 'EntryAbility',
++    uri: PRODUCT_URI,
++  };
++  await delegator.startAbility(want);
++  await waitForComponentById(driver, 'product-info-page', 16);
++  await waitForComponentByText(driver, PRODUCT_TITLE, 16);
++  return bundleName;
++}
++
++export async function componentExistsById(driver: Driver, id: string): Promise<boolean> {
++  try {
++    const component = await driver.findComponent(ON.id(id));
++    return component !== null && component !== undefined;
++  } catch (error) {
++    return false;
++  }
++}
++
++export async function componentExistsByText(driver: Driver, text: string): Promise<boolean> {
++  try {
++    const component = await driver.findComponent(ON.text(text));
++    return component !== null && component !== undefined;
++  } catch (error) {
++    return false;
++  }
++}
++
++export async function waitForComponentById(driver: Driver, id: string, retries: number = 10): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    if (await componentExistsById(driver, id)) {
++      return;
++    }
++    await waitForUiChange(driver);
++  }
++  console.error('component id not found: ' + id);
++  expect(false).assertTrue();
++}
++
++export async function waitForComponentByText(driver: Driver, text: string, retries: number = 10): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    if (await componentExistsByText(driver, text)) {
++      return;
++    }
++    await waitForUiChange(driver);
++  }
++  console.error('component text not found: ' + text);
++  expect(false).assertTrue();
++}
++
++export async function clickComponentById(driver: Driver, id: string): Promise<void> {
++  await waitForComponentById(driver, id);
++  const component = await driver.findComponent(ON.id(id));
++  await component.click();
++  await waitForUiChange(driver);
++}
++
++export async function windowExists(title: string): Promise<boolean> {
++  try {
++    const uiWindow = await getDriver().findWindow({
++      bundleName: getBundleName(),
++      title: title,
++    });
++    return uiWindow !== null && uiWindow !== undefined;
++  } catch (error) {
++    return false;
++  }
++}
++
++export async function waitForWindow(title: string, retries: number = 12): Promise<UiWindow> {
++  for (let index = 0; index < retries; index++) {
++    try {
++      return await getDriver().findWindow({
++        bundleName: getBundleName(),
++        title: title,
++      });
++    } catch (error) {
++      await waitForUiChange(getDriver());
++    }
++  }
++  console.error('window not found: ' + title);
++  expect(false).assertTrue();
++  throw new Error('window not found: ' + title);
++}
++
++export async function waitForWindowAbsent(title: string, retries: number = 12): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    if (!await windowExists(title)) {
++      return;
++    }
++    await waitForUiChange(getDriver());
++  }
++  console.error('window still exists: ' + title);
++  expect(false).assertTrue();
++}
++
++export async function waitForWindowMode(
++  uiWindow: UiWindow,
++  expectedMode: WindowMode,
++  retries: number = 12,
++): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    if (await uiWindow.getWindowMode() === expectedMode) {
++      return;
++    }
++    await waitForUiChange(getDriver());
++  }
++  expect(await uiWindow.getWindowMode()).assertEqual(expectedMode);
++}
++
++export async function closeSecondaryWindowIfPresent(): Promise<void> {
++  try {
++    const secondWindow = await getDriver().findWindow({
++      bundleName: getBundleName(),
++      title: SECOND_WINDOW_TITLE,
++    });
++    await secondWindow.close();
++    await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++  } catch (error) {
++  }
++}
++
++async function getHeaderActions(driver: Driver): Promise<Component[]> {
++  await waitForComponentById(driver, 'product-info-header-actions');
++  const header = await driver.findComponent(ON.id('product-info-header-actions'));
++  const headerBounds = await header.getBounds();
++  const symbols = await driver.findComponents(ON.id('common-symbol'));
++  const actions: Component[] = [];
++  for (let index = 0; index < symbols.length; index++) {
++    const bounds = await symbols[index].getBounds();
++    const centerX = (bounds.left + bounds.right) / 2;
++    const centerY = (bounds.top + bounds.bottom) / 2;
++    if (centerX >= headerBounds.left && centerX <= headerBounds.right &&
++      centerY >= headerBounds.top && centerY <= headerBounds.bottom) {
++      actions.push(symbols[index]);
++    }
++  }
++  return actions;
++}
++
++export async function getHeaderActionCount(driver: Driver): Promise<number> {
++  return (await getHeaderActions(driver)).length;
++}
++
++export async function clickSplitOrMergeAction(driver: Driver): Promise<void> {
++  const actions = await getHeaderActions(driver);
++  expect(actions.length >= 2).assertTrue();
++  let rightmost = actions[0];
++  let rightmostBounds = await rightmost.getBounds();
++  for (let index = 1; index < actions.length; index++) {
++    const bounds = await actions[index].getBounds();
++    if (bounds.right > rightmostBounds.right) {
++      rightmost = actions[index];
++      rightmostBounds = bounds;
++    }
++  }
++  await rightmost.click();
++  await waitForUiChange(driver);
++}
++
++export async function startSplitSession(): Promise<SplitSession> {
++  const driver = getDriver();
++  await openProductDetail();
++  expect(await getHeaderActionCount(driver)).assertEqual(2);
++  await clickSplitOrMergeAction(driver);
++  const main = await waitForWindow(ENTRY_WINDOW_TITLE);
++  const secondary = await waitForWindow(SECOND_WINDOW_TITLE);
++  await waitForWindowMode(main, WindowMode.PRIMARY);
++  await waitForWindowMode(secondary, WindowMode.SECONDARY);
++  return { main, secondary };
++}
++
++export async function assertProductDetailIsSingleColumn(driver: Driver): Promise<void> {
++  await waitForComponentById(driver, 'product-swiper', 16);
++  await waitForComponentById(driver, 'product-info-card', 16);
++  const swiper = await driver.findComponent(ON.id('product-swiper'));
++  const infoCard = await driver.findComponent(ON.id('product-info-card'));
++  const swiperBounds = await swiper.getBounds();
++  const infoBounds = await infoCard.getBounds();
++  expect(infoBounds.top >= swiperBounds.bottom - vp2px(2)).assertTrue();
++}
+diff --git a/products/entry/src/ohosTest/module.json5 b/products/entry/src/ohosTest/module.json5
+new file mode 100644
+index 0000000..6902687
+--- /dev/null
++++ b/products/entry/src/ohosTest/module.json5
+@@ -0,0 +1,12 @@
++{
++  "module": {
++    "name": "entry_test",
++    "type": "feature",
++    "deviceTypes": [
++      "default",
++      "tablet"
++    ],
++    "deliveryWithInstall": true,
++    "installationFree": false
++  }
++}

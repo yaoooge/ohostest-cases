@@ -1,0 +1,15 @@
+{
+  "name": "order",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "lib_foundation": "file:../../commons/lib_foundation",
+    "lib_widget": "file:../../commons/lib_widget",
+    "lib_network": "file:../../commons/lib_network",
+    "module_product_review": "file:../../components/module_product_review",
+    "module_shopping_cart": "file:../../components/module_shopping_cart"
+  }
+}

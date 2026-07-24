@@ -1,0 +1,1511 @@
+diff --git a/commons/lib_foundation/Index.ets b/commons/lib_foundation/Index.ets
+index 8ecaa09..ab2b054 100644
+--- a/commons/lib_foundation/Index.ets
++++ b/commons/lib_foundation/Index.ets
+@@ -2,6 +2,14 @@ export { ensureDefaultUserState, iData, GlobalStateMgr } from './src/main/ets/ut
+ 
+ export { routerUtil as routerStack } from './src/main/ets/utils/RouterUtil';
+ 
++export {
++  BreakpointTypeEnum,
++  BreakpointSystem,
++  BreakpointType,
++  BreakpointModel,
++  BreakpointStorage,
++} from './src/main/ets/utils/BreakpointSystem';
++
+ export * from './src/main/ets/models/Index';
+ 
+ export * from './src/main/ets/constants/Index';
+diff --git a/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets b/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
+index a26f663..0a896dc 100644
+--- a/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
++++ b/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
+@@ -4,8 +4,6 @@
+ export interface ProductInfoPageParam {
+   productId: string
+   slotId?: string
+-  /** 标记该页面实例是否为应用内分屏比较窗口 */
+-  isSplitPage?: boolean
+ }
+ 
+ /** 商品搜索页 */
+@@ -23,4 +21,4 @@ export interface ProductSearchResultsPageParam {
+   searchImg?: PixelMap
+   /** 秒杀场次ID */
+   slotId?: string
+-}
+\ No newline at end of file
++}
+diff --git a/answer/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets b/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets
+new file mode 100644
+index 0000000..f500171
+--- /dev/null
++++ b/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets
+@@ -0,0 +1,113 @@
++import { AppStorageV2, window } from '@kit.ArkUI';
++import { BusinessError } from '@kit.BasicServicesKit';
++import { UtilLog } from '@hw-agconnect/util-log';
++
++export enum BreakpointTypeEnum {
++  SM = 'sm',
++  MD = 'md',
++  LG = 'lg',
++}
++
++export interface BreakpointType<T> {
++  sm: T;
++  md: T;
++  lg: T;
++}
++
++export class BreakpointModel<T> {
++  sm: T;
++  md: T;
++  lg: T;
++
++  constructor(param: BreakpointType<T>) {
++    this.sm = param.sm;
++    this.md = param.md;
++    this.lg = param.lg;
++  }
++
++  getValue(currentBreakpoint: string): T {
++    if (currentBreakpoint === BreakpointTypeEnum.SM) {
++      return this.sm;
++    }
++    if (currentBreakpoint === BreakpointTypeEnum.MD) {
++      return this.md;
++    }
++    return this.lg;
++  }
++}
++
++const TAG = '[BreakpointSystem]';
++
++@ObservedV2
++export class BreakpointStorage {
++  @Trace
++  value: BreakpointTypeEnum = BreakpointTypeEnum.SM;
++}
++
++@ObservedV2
++class BreakpointSystem {
++  @Trace
++  public currentBreakpoint: BreakpointStorage = AppStorageV2.connect(
++    BreakpointStorage,
++    () => new BreakpointStorage(),
++  )!;
++  private _uiContext: UIContext | undefined;
++  private _windowClass: window.Window | undefined;
++
++  @Computed
++  get isTablet() {
++    return this.currentBreakpoint.value === BreakpointTypeEnum.LG;
++  }
++
++  public register(uiContext: UIContext) {
++    this._uiContext = uiContext;
++    if (this._uiContext) {
++      this.updateBreakpoint();
++      window.getLastWindow(this._uiContext.getHostContext())
++        .then((win) => {
++          this._windowClass = win;
++          try {
++            this._windowClass.on('windowSizeChange', () => {
++              this.updateBreakpoint();
++            });
++          } catch (err) {
++            UtilLog.error(TAG, 'fail to listen window size change. error:' + JSON.stringify(err));
++          }
++        })
++        .catch((err: BusinessError) => {
++          UtilLog.error(TAG, 'get last window failed. error: ' + JSON.stringify(err));
++        });
++    }
++  }
++
++  public unregister() {
++    if (this._windowClass) {
++      try {
++        this._windowClass.off('windowSizeChange');
++      } catch (err) {
++        UtilLog.error(TAG, 'unregister failed. error: ' + JSON.stringify(err));
++      }
++    }
++  }
++
++  public updateBreakpoint() {
++    let temp: BreakpointTypeEnum = BreakpointTypeEnum.MD;
++    const curBreakPoint = this._uiContext!.getWindowWidthBreakpoint();
++    if (
++      curBreakPoint === WidthBreakpoint.WIDTH_XS ||
++        curBreakPoint === WidthBreakpoint.WIDTH_SM
++    ) {
++      temp = BreakpointTypeEnum.SM;
++    } else if (curBreakPoint === WidthBreakpoint.WIDTH_MD) {
++      temp = BreakpointTypeEnum.MD;
++    } else {
++      temp = BreakpointTypeEnum.LG;
++    }
++    this.currentBreakpoint.value = temp;
++    UtilLog.info(TAG, 'set breakpoint success, result:' + temp);
++  }
++}
++
++const breakpointSystem = new BreakpointSystem();
++
++export { breakpointSystem as BreakpointSystem };
+diff --git a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
+index 1238243..303c850 100644
+--- a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
++++ b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
+@@ -5,18 +5,24 @@ const TAG: string = '[RouterUtil]';
+ /**
+  * 单窗口路由管理工具。
+  */
+-@ObservedV2
+ class RouterUtil {
+   private stack?: NavPathStack;
+ 
++  /**
++   * 注册应用的唯一根路由栈。
++   */
+   public registerStack(stack: NavPathStack): void {
+     this.stack = stack;
+     UtilLog.info(TAG, 'registerStack');
+   }
+ 
++  /**
++   * 获取应用根路由栈。
++   * @returns NavPathStack 实例，找不到时返回 undefined
++   */
+   public getStack(): NavPathStack | undefined {
+     if (this.stack === undefined) {
+-      UtilLog.warn(TAG, 'getStack: stack not registered');
++      UtilLog.warn(TAG, 'getStack: root stack is not registered');
+     }
+     return this.stack;
+   }
+@@ -25,49 +31,44 @@ class RouterUtil {
+    * 入栈新页面。
+    * @param pathInfo 页面路由信息（name + param）
+    * @param animated 是否启用转场动画，默认 true
+-   * @param abilityName 可选，指定目标 Ability；不传则路由到当前激活窗口
+    */
+   public push(pathInfo: NavPathInfo, animated: boolean = true): void {
+-    this.getStack()?.pushPath(pathInfo, animated);
++    this.stack?.pushPath(pathInfo, animated);
+   }
+ 
+   /**
+    * 出栈当前页面。
+    * @param result 可选，传递给上一个页面的返回值
+    * @param animated 是否启用转场动画，默认 true
+-   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
+    */
+   public pop(result?: Object, animated: boolean = true): void {
+-    this.getStack()?.pop(result, animated);
++    this.stack?.pop(result, animated);
+   }
+ 
+   /**
+    * 替换栈顶页面（出栈当前页，入栈新页，无回退记录）。
+    * @param pathInfo 新页面路由信息
+    * @param animated 是否启用转场动画，默认 true
+-   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
+    */
+   public replace(pathInfo: NavPathInfo, animated: boolean = true): void {
+-    this.getStack()?.replacePath(pathInfo, animated);
++    this.stack?.replacePath(pathInfo, animated);
+   }
+ 
+   /**
+    * 退栈至指定页面名（保留该页面，弹出其上所有页面）。
+    * @param name 目标页面的路由名称
+    * @param animated 是否启用转场动画，默认 true
+-   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
+    */
+   public popToName(name: string, animated: boolean = true): void {
+-    this.getStack()?.popToName(name, animated);
++    this.stack?.popToName(name, animated);
+   }
+ 
+   /**
+    * 清空指定 Ability 的路由栈（退回根页面）。
+    * @param animated 是否启用转场动画，默认 true
+-   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
+    */
+   public clear(animated: boolean = true): void {
+-    this.getStack()?.clear(animated);
++    this.stack?.clear(animated);
+   }
+ 
+   /**
+@@ -75,17 +76,16 @@ class RouterUtil {
+    * 供需要显式传入 NavPathStack 参数的组件使用。
+    */
+   public getActiveStack(): NavPathStack {
+-    const stack: NavPathStack | undefined = this.getStack();
+-    if (stack === undefined) {
+-      UtilLog.warn(TAG, 'getActiveStack: no active stack registered, returning empty stack');
++    if (this.stack === undefined) {
++      UtilLog.warn(TAG, 'getActiveStack: root stack is not registered, returning empty stack');
+       return new NavPathStack();
+     }
+-    return stack;
++    return this.stack;
+   }
+ 
+-  /** 返回当前激活路由栈的深度（NavPathStack 同名代理） */
++  /** 返回根路由栈深度（NavPathStack 同名代理） */
+   public size(): number {
+-    return this.getStack()?.size() ?? 0;
++    return this.stack?.size() ?? 0;
+   }
+ 
+   // ── NavPathStack 同名代理方法 ──────────────────────────────────────────────
+@@ -93,32 +93,32 @@ class RouterUtil {
+ 
+   /** 入栈新页面（NavPathStack 同名代理） */
+   public pushPath(info: NavPathInfo, animated?: boolean): void {
+-    this.getStack()?.pushPath(info, animated);
++    this.stack?.pushPath(info, animated);
+   }
+ 
+   /** 按名称入栈（NavPathStack 同名代理） */
+   public pushPathByName(name: string, param?: Object, animated?: boolean): void {
+-    this.getStack()?.pushPathByName(name, param, animated);
++    this.stack?.pushPathByName(name, param, animated);
+   }
+ 
+   /** 替换栈顶页面（NavPathStack 同名代理） */
+   public replacePath(info: NavPathInfo, animated?: boolean): void {
+-    this.getStack()?.replacePath(info, animated);
++    this.stack?.replacePath(info, animated);
+   }
+ 
+   /** 按名称替换栈顶（NavPathStack 同名代理） */
+   public replacePathByName(name: string, param?: Object, animated?: boolean): void {
+-    this.getStack()?.replacePathByName(name, param, animated);
++    this.stack?.replacePathByName(name, param, animated);
+   }
+ 
+   /** 按名称入栈（pushPathByName 别名，供统一风格调用） */
+   public pushByName(name: string, param?: Object, animated?: boolean): void {
+-    this.getStack()?.pushPathByName(name, param, animated);
++    this.stack?.pushPathByName(name, param, animated);
+   }
+ 
+   /** 按名称替换栈顶（replacePathByName 别名，供统一风格调用） */
+   public replaceByName(name: string, param?: Object, animated?: boolean): void {
+-    this.getStack()?.replacePathByName(name, param, animated);
++    this.stack?.replacePathByName(name, param, animated);
+   }
+ }
+ 
+diff --git a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
+index cd46718..a976643 100644
+--- a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
++++ b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
+@@ -16,7 +16,7 @@ class WindowUtil {
+    */
+   public setUIContext(uiContext: UIContext) {
+     this._uiContext = uiContext;
+-    this._context = this._uiContext?.getHostContext();
++    this._context = uiContext.getHostContext();
+   }
+ 
+   /**
+diff --git a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets b/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
+index 6cfdee2..12807d3 100644
+--- a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
++++ b/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
+@@ -1,4 +1,5 @@
+ import { SkeletonTheme, UISkeleton, SkeletonType } from '@hw-agconnect/ui-skeleton';
++import { BreakpointSystem, BreakpointTypeEnum } from 'lib_foundation';
+ 
+ @ComponentV2
+ export struct ProductListSkeleton {
+@@ -11,12 +12,17 @@ export struct ProductListSkeleton {
+ 
+   @Computed
+   get horizontalCardNum() {
++    if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG) {
++      return 4
++    } else if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.MD) {
++      return 3
++    }
+     return 2
+   }
+ 
+   @Computed
+   get verticalCardNum() {
+-    return 1
++    return BreakpointSystem.isTablet ? 2 : 1
+   }
+ 
+   getCardList(): boolean[] {
+@@ -93,4 +99,4 @@ struct HorizontalCard {
+     }
+     .height(200)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/components/module_product_category/src/main/ets/views/ProductCategory.ets b/components/module_product_category/src/main/ets/views/ProductCategory.ets
+index 9b017fe..c418484 100644
+--- a/components/module_product_category/src/main/ets/views/ProductCategory.ets
++++ b/components/module_product_category/src/main/ets/views/ProductCategory.ets
+@@ -167,10 +167,19 @@ export struct ProductCategory {
+   @Builder
+   productListBuilder() {
+     Scroll() {
+-      Grid() {
++      GridRow({
++        columns: {
++          xs: 2,
++          md: 4,
++        },
++        gutter: { x: 12, y: 12 },
++      }) {
+         if (this.isLoading) {
+           ForEach([1, 2, 3, 4, 5, 6, 7, 8], () => {
+-            GridItem() {
++            GridCol({
++              offset: 0,
++              order: 0,
++            }) {
+               UISkeleton({
+                 theme: SkeletonTheme.IMAGE, animate: AnimateType.GRADIENT,
+               }).height(96)
+@@ -178,7 +187,10 @@ export struct ProductCategory {
+           }, (item: number) => item.toString())
+         } else {
+           ForEach(this.productList, (item: ProductSummaryItem, index: number) => {
+-            GridItem() {
++            GridCol({
++              offset: 0,
++              order: 0,
++            }) {
+               Column() {
+                 Image(item.banner)
+                   .width($r('app.string.size_percent_full'))
+@@ -200,9 +212,6 @@ export struct ProductCategory {
+           }, (item: ProductSummaryItem, index: number) => index + '__' + item.id)
+         }
+       }
+-      .columnsTemplate('1fr 1fr')
+-      .columnsGap(12)
+-      .rowsGap(12)
+       .width($r('app.string.size_percent_full'))
+       .margin({
+         top: $r('app.float.space_m'),
+@@ -214,4 +223,4 @@ export struct ProductCategory {
+     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+     .edgeEffect(EdgeEffect.Spring)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/components/module_product_filter/src/ohosTest/module.json5 b/components/module_product_filter/src/ohosTest/module.json5
+index 2da48fa..e49dee6 100644
+--- a/components/module_product_filter/src/ohosTest/module.json5
++++ b/components/module_product_filter/src/ohosTest/module.json5
+@@ -3,7 +3,8 @@
+     "name": "module_product_filter_test",
+     "type": "feature",
+     "deviceTypes": [
+-      "default"
++      "default",
++      "tablet"
+     ],
+     "deliveryWithInstall": true,
+     "installationFree": false
+diff --git a/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets b/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
+index 813c211..b342dc1 100644
+--- a/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
++++ b/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
+@@ -193,9 +193,15 @@ export struct ProductReviewCreation {
+ 
+   @Builder
+   buildMediaPicker(model: SkuReviewModel) {
+-    Grid() {
++    GridRow({
++      columns: {
++        xs: 3,
++        md: 5,
++      },
++      gutter: { x: 8, y: 8 },
++    }) {
+       if (model.mediaList.length < Constants.MAX_MEDIA_LENGTH) {
+-        GridItem() {
++        GridCol() {
+           Row() {
+             Image($r('app.media.ic_add'))
+               .width(24)
+@@ -213,7 +219,10 @@ export struct ProductReviewCreation {
+         }
+       }
+       ForEach(model.mediaList, (item: ReviewMediaItem, index: number) => {
+-        GridItem() {
++        GridCol({
++          offset: 0,
++          order: 0,
++        }) {
+           Stack() {
+             Image(item.uri)
+               .width($r('app.string.size_percent_full'))
+@@ -235,9 +244,6 @@ export struct ProductReviewCreation {
+         }
+       }, (item: ReviewMediaItem, index: number) => index + '__' + item.uri)
+     }
+-    .columnsTemplate('1fr 1fr 1fr')
+-    .columnsGap(8)
+-    .rowsGap(8)
+     .width($r('app.string.size_percent_full'))
+     .margin({
+       top: $r('app.float.space_m'),
+diff --git a/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets b/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
+index 1a6cc17..9a547c5 100644
+--- a/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
++++ b/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
+@@ -1,3 +1,4 @@
++import { BreakpointSystem } from 'lib_foundation';
+ import { CartPrice, DiscountItem } from 'lib_network';
+ import { CommonConfirmDialog } from 'lib_widget';
+ import { PopupSheet } from './PopupSheet';
+@@ -72,7 +73,7 @@ export struct CartControlPanel {
+       .borderWidth(this.isChildRoute ? { top: 0.1 } : {})
+       .borderColor('#30000000')
+       .backgroundColor($r('app.color.background_color_primary'))
+-      .margin({ bottom: this.isChildRoute ? 0 : 56 })
++      .margin({ bottom: (this.isChildRoute || BreakpointSystem.isTablet) ? 0 : 56 })
+       .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+       .justifyContent(FlexAlign.SpaceBetween)
+       .padding({ left: 16, right: 16 })
+@@ -234,4 +235,4 @@ export struct CartControlPanel {
+     .width('100%')
+     .justifyContent(FlexAlign.SpaceBetween)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/components/module_shopping_cart/src/main/ets/components/CartListView.ets b/components/module_shopping_cart/src/main/ets/components/CartListView.ets
+index 039201b..669571b 100644
+--- a/components/module_shopping_cart/src/main/ets/components/CartListView.ets
++++ b/components/module_shopping_cart/src/main/ets/components/CartListView.ets
+@@ -1,3 +1,4 @@
++import { BreakpointStorage, BreakpointSystem, BreakpointTypeEnum } from 'lib_foundation';
+ import { PriceType } from 'lib_network';
+ import { ProductModel } from '../commons/Model';
+ import { CartCard } from './CartCard';
+@@ -21,6 +22,8 @@ export struct CartListView {
+   @Event onSpecClick: (productId: string, skuCode: string, count: number, priceType: PriceType,
+     slotId?: string) => void = () => {
+   };
++  @Local curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
++
+   build() {
+     List({ space: 12 }) {
+       ForEach(this.listData, (card: ProductModel, index: number) => {
+@@ -54,7 +57,7 @@ export struct CartListView {
+     }
+     .width('100%')
+     .height('auto')
+-    .lanes(1)
++    .lanes(this.curBreakpoint.value === BreakpointTypeEnum.LG ? 2 : 1)
+     .edgeEffect(EdgeEffect.None)
+     .margin({ top: 10 })
+     .padding({ left: 8, right: 8 })
+@@ -78,4 +81,4 @@ export struct CartListView {
+     }
+     .justifyContent(FlexAlign.SpaceEvenly)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets b/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets
+index 938329f..d08b447 100644
+--- a/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets
++++ b/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets
+@@ -1,4 +1,5 @@
+ import { UtilLog as Logger } from '@hw-agconnect/util-log';
++import { BreakpointSystem } from 'lib_foundation';
+ import { CommonSymbol } from 'lib_widget';
+ import { LOG_TAG } from '../commons/Constants';
+ import { PopupSheetController } from '../commons/Model';
+@@ -47,10 +48,10 @@ export struct PopupSheet {
+         builder: () => {
+           this.ContentBuilder();
+         },
+-        width: '100%',
++        width: BreakpointSystem.isTablet ? '40%' : '100%',
+         backgroundBlurStyle: BlurStyle.NONE,
+-        cornerRadius: 0,
+-        alignment: DialogAlignment.Bottom,
++        cornerRadius: BreakpointSystem.isTablet ? 32 : 0,
++        alignment: BreakpointSystem.isTablet ? DialogAlignment.Center : DialogAlignment.Bottom,
+         isModal: true,
+         maskColor: 0x66000000,
+         maskRect: {
+@@ -169,4 +170,4 @@ export struct PopupSheetContent {
+       bottom: $r('app.float.space_s'),
+     })
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/components/module_shopping_cart/src/ohosTest/module.json5 b/components/module_shopping_cart/src/ohosTest/module.json5
+index 923a9ef..1c8873c 100644
+--- a/components/module_shopping_cart/src/ohosTest/module.json5
++++ b/components/module_shopping_cart/src/ohosTest/module.json5
+@@ -3,7 +3,8 @@
+     "name": "module_shopping_cart_test",
+     "type": "feature",
+     "deviceTypes": [
+-      "phone"
++      "phone",
++      "tablet"
+     ],
+     "deliveryWithInstall": true,
+     "installationFree": true
+diff --git a/components/module_transition/src/main/module.json5 b/components/module_transition/src/main/module.json5
+index dacbaa6..92be86c 100644
+--- a/components/module_transition/src/main/module.json5
++++ b/components/module_transition/src/main/module.json5
+@@ -3,7 +3,8 @@
+     "name": "module_transition",
+     "type": "har",
+     "deviceTypes": [
+-      "phone"
++      "phone",
++      "tablet"
+     ],
+     "requestPermissions": [{
+       "name": "ohos.permission.INTERNET"
+diff --git a/components/module_transition/src/ohosTest/module.json5 b/components/module_transition/src/ohosTest/module.json5
+index 814cb37..f4a140f 100644
+--- a/components/module_transition/src/ohosTest/module.json5
++++ b/components/module_transition/src/ohosTest/module.json5
+@@ -3,7 +3,8 @@
+     "name": "module_transition_test",
+     "type": "feature",
+     "deviceTypes": [
+-      "phone"
++      "phone",
++      "tablet"
+     ],
+     "deliveryWithInstall": true,
+     "installationFree": false
+diff --git a/features/order/src/main/ets/views/OrderListPage.ets b/features/order/src/main/ets/views/OrderListPage.ets
+index 76255a5..5c8473a 100644
+--- a/features/order/src/main/ets/views/OrderListPage.ets
++++ b/features/order/src/main/ets/views/OrderListPage.ets
+@@ -1,4 +1,4 @@
+-import { RouterMap, routerStack } from 'lib_foundation'
++import { BreakpointStorage, BreakpointSystem, BreakpointTypeEnum, RouterMap, routerStack } from 'lib_foundation'
+ import { ContainerColumn, NavTitleBar } from 'lib_widget';
+ import { OrderItem } from 'lib_network';
+ import { ORDER_TAB_LIST } from '../common/Constants';
+@@ -15,6 +15,8 @@ export function buildOrderListPage() {
+ 
+ @ComponentV2
+ export struct OrderListPage {
++  @Local
++  curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
+   tabScroller: Scroller = new Scroller()
+   vm: OrderListPageVM = new OrderListPageVM();
+ 
+@@ -159,7 +161,7 @@ export struct OrderListPage {
+                 }
+               })
+           }
+-          .lanes(1, 12)
++          .lanes(this.curBreakpoint.value === BreakpointTypeEnum.LG ? 2 : 1, 12)
+           .layoutWeight(1)
+           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+           .scrollBar(BarState.Off)
+@@ -223,4 +225,4 @@ function reviewTabStyle(isSelected: boolean) {
+   .fontWeight(FontWeight.Medium)
+   .margin({ left: $r('app.float.space_m') })
+   .fontColor(isSelected ? $r('app.color.theme_color') : $r('app.color.font_color_level1'))
+-}
++}
+\ No newline at end of file
+diff --git a/features/points/src/main/ets/viewmodels/PointsMallVM.ets b/features/points/src/main/ets/viewmodels/PointsMallVM.ets
+index 23c962e..9e74be5 100644
+--- a/features/points/src/main/ets/viewmodels/PointsMallVM.ets
++++ b/features/points/src/main/ets/viewmodels/PointsMallVM.ets
+@@ -1,4 +1,4 @@
+-import { WindowUtil } from 'lib_foundation'
++import { BreakpointSystem, BreakpointTypeEnum, WindowUtil } from 'lib_foundation'
+ import { PointsApis, UpdateUserPointsReq, UserPointRedemptionSku, UserPoints } from 'lib_network'
+ import { UserPointsUsedType } from '../commons/Enums'
+ 
+@@ -19,7 +19,12 @@ export class PointsMallVM {
+ 
+   @Computed
+   get columnTemplate() {
+-    return '1fr 1fr'
++    const map: Map<BreakpointTypeEnum, string> = new Map([
++      [BreakpointTypeEnum.SM, '1fr 1fr'],
++      [BreakpointTypeEnum.MD, '1fr 1fr 1fr'],
++      [BreakpointTypeEnum.LG, '1fr 1fr 1fr 1fr'],
++    ])
++    return map.get(BreakpointSystem.currentBreakpoint.value)
+   }
+ 
+   public async getUserPoints() {
+diff --git a/features/points/src/main/module.json5 b/features/points/src/main/module.json5
+index 6dba40b..fe57b66 100644
+--- a/features/points/src/main/module.json5
++++ b/features/points/src/main/module.json5
+@@ -3,7 +3,8 @@
+     "name": "points",
+     "type": "har",
+     "deviceTypes": [
+-      "default"
++      "default",
++      "tablet"
+     ],
+     "routerMap": "$profile:route_map"
+   }
+diff --git a/features/product/src/main/ets/commons/StyleConfig.ets b/features/product/src/main/ets/commons/StyleConfig.ets
+index a37e770..e48611f 100644
+--- a/features/product/src/main/ets/commons/StyleConfig.ets
++++ b/features/product/src/main/ets/commons/StyleConfig.ets
+@@ -1,30 +1,41 @@
++import { BreakpointSystem, BreakpointTypeEnum } from 'lib_foundation';
++
+ @ObservedV2
+ export class ProductSwiperStyleConfig {
+   @Computed
+   public static get imageMaxHeight() {
+-    return 360;
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG ? '100%' : 360;
+   }
+ 
+   @Computed
+   public static get imageAspectRatio() {
+-    return 1.0;
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG ? undefined : 1.0;
+   }
+ 
+   @Computed
+   public static get outImageDisplayWidth() {
+-    return 0;
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.MD ? 120 : 0;
+   }
+ 
+   @Computed
+   public static get swiperPadding() {
+-    return $r('app.float.space_l');
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.MD ? 0 : $r('app.float.space_l');
+   }
+ 
+   @Computed
+   public static get imagePadding() {
+-    return {
+-      left: 6,
+-      right: 6,
+-    } as Padding
++    if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM) {
++      return {
++        left: 6,
++        right: 6,
++      } as Padding
++    }
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.MD ?
++      {
++        left: 6,
++        right: 6,
++        top: 8,
++        bottom: 8,
++      } as Padding : 0;
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/features/product/src/main/ets/components/ProductOperationButton.ets b/features/product/src/main/ets/components/ProductOperationButton.ets
+index d5c2f0d..57edcd7 100644
+--- a/features/product/src/main/ets/components/ProductOperationButton.ets
++++ b/features/product/src/main/ets/components/ProductOperationButton.ets
+@@ -1,4 +1,4 @@
+-import { iData, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
++import { BreakpointSystem, iData, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
+ import {
+   PreOrderInfoReq,
+   PreOrderItem,
+@@ -30,7 +30,7 @@ export struct ProductOperationButton {
+   build() {
+     Row() {
+       Button('加入购物车')
+-        .bottomButtonStyle()
++        .bottomButtonStyle(BreakpointSystem.isTablet)
+         .borderColor($r('app.color.background_color_button_grey'))
+         .fontColor($r('app.color.theme_color'))
+         .backgroundColor($r('app.color.background_color_button_grey'))
+@@ -45,7 +45,7 @@ export struct ProductOperationButton {
+         });
+ 
+       Button(this.isSeckillOngoing ? '立即秒杀' : '立即购买')
+-        .bottomButtonStyle()
++        .bottomButtonStyle(BreakpointSystem.isTablet)
+         .borderColor($r('app.color.theme_color'))
+         .backgroundColor($r('app.color.theme_color'))
+         .borderRadius({
+@@ -137,10 +137,10 @@ export struct ProductOperationButton {
+ 
+ 
+ @Extend(Button)
+-function bottomButtonStyle() {
++function bottomButtonStyle(isTablet: boolean = false) {
+   .fontSize($r('sys.float.Body_M'))
+   .borderWidth(1)
+-  .width('auto')
++  .width(isTablet ? 200 : 'auto')
+   .height(40)
+   .type(ButtonType.Normal);
+ }
+diff --git a/features/product/src/main/ets/components/ProductReviewCard.ets b/features/product/src/main/ets/components/ProductReviewCard.ets
+index a199e44..22984c1 100644
+--- a/features/product/src/main/ets/components/ProductReviewCard.ets
++++ b/features/product/src/main/ets/components/ProductReviewCard.ets
+@@ -49,9 +49,18 @@ export struct ProductReviewCard {
+             .fontSize($r('app.float.font_size_14'))
+             .fontColor($r('app.color.font_color_level1'))
+           if (this.reviewItem.mediaList.length) {
+-            Grid() {
++            GridRow({
++              columns: {
++                xs: 3,
++                md: 5,
++              },
++              gutter: { x: 8, y: 8 },
++            }) {
+               ForEach(this.reviewItem.mediaList, (item: ReviewMediaItem, index: number) => {
+-                GridItem() {
++                GridCol({
++                  offset: 0,
++                  order: 0,
++                }) {
+                   Stack() {
+                     Image(item.uri)
+                       .width($r('app.string.size_percent_full'))
+@@ -65,9 +74,6 @@ export struct ProductReviewCard {
+                 }
+               }, (item: ReviewMediaItem, index: number) => index + JSON.stringify(item))
+             }
+-            .columnsTemplate('1fr 1fr 1fr')
+-            .columnsGap(8)
+-            .rowsGap(8)
+             .width($r('app.string.size_percent_full'))
+             .margin({
+               top: $r('app.float.space_m'),
+diff --git a/features/product/src/main/ets/components/ProductWaterFlow.ets b/features/product/src/main/ets/components/ProductWaterFlow.ets
+index 73e82b8..aa862a0 100644
+--- a/features/product/src/main/ets/components/ProductWaterFlow.ets
++++ b/features/product/src/main/ets/components/ProductWaterFlow.ets
+@@ -3,6 +3,7 @@ import { buildCommonEmptyStatus, ProductListSkeleton } from 'lib_widget';
+ import { GridProductCardView, ListProductCardView } from './ProductFlowCards';
+ import { ProductWaterFlowVM } from '../viewmodels/ProductWaterFlowVM';
+ import { SortTypeMap } from '../commons/Enums';
++import { WaterFlowScaleUtil } from '../utils/WaterFlowScaleUtil';
+ 
+ @ComponentV2
+ export struct ProductWaterFlow {
+@@ -103,6 +104,12 @@ export struct ProductWaterFlow {
+           })
+           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+           .animation({ duration: 300, curve: Curve.Smooth })
++          .gesture(
++            PinchGesture({ fingers: 2 })
++              .onActionUpdate((event: GestureEvent) => {
++                WaterFlowScaleUtil.handlePinchUpdate(event.scale);
++              }),
++          )
+ 
+           if (this.vm.showButton) {
+             this.buildBackTopButton();
+diff --git a/answer/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets b/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets
+new file mode 100644
+index 0000000..138b9a8
+--- /dev/null
++++ b/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets
+@@ -0,0 +1,59 @@
++import { BreakpointSystem, BreakpointTypeEnum } from 'lib_foundation';
++
++@ObservedV2
++export class WaterFlowScaleUtil {
++  @Trace
++  private static _currentColumns: number = 0;
++  /** 上次初始化列数时对应的断点，用于检测断点变化后重置列数 */
++  private static _cachedBreakpoint: BreakpointTypeEnum | undefined;
++  private static readonly MAX_TABLET_COLUMNS = 6;
++  private static readonly MIN_TABLET_COLUMNS = 4;
++  private static readonly MAX_FOLDABLE_COLUMNS = 4;
++  private static readonly MIN_FOLDABLE_COLUMNS = 2;
++
++  @Computed
++  public static get columnsTemplate() {
++    // 始终读取断点，使 @Computed 追踪断点变化；断点切换时重置列数
++    const bp = BreakpointSystem.currentBreakpoint.value;
++    if (!WaterFlowScaleUtil._currentColumns || bp !== WaterFlowScaleUtil._cachedBreakpoint) {
++      WaterFlowScaleUtil._cachedBreakpoint = bp;
++      WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.getInitColumns();
++    }
++    return '1fr '.repeat(WaterFlowScaleUtil._currentColumns).trim();
++  }
++
++  private static getInitColumns() {
++    const map: Map<BreakpointTypeEnum, number> = new Map([
++      [BreakpointTypeEnum.SM, 2],
++      [BreakpointTypeEnum.MD, 3],
++      [BreakpointTypeEnum.LG, 5],
++    ]);
++    return map.get(BreakpointSystem.currentBreakpoint.value) as number;
++  }
++
++  public static handlePinchUpdate(scale: number) {
++    // 直板机不支持缩放
++    if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM) {
++      return;
++    }
++    if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.MD) {
++      if (scale > 1.5 && WaterFlowScaleUtil._currentColumns > WaterFlowScaleUtil.MIN_FOLDABLE_COLUMNS) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.MIN_FOLDABLE_COLUMNS;
++      } else if (scale < 0.7 && WaterFlowScaleUtil._currentColumns < WaterFlowScaleUtil.MAX_FOLDABLE_COLUMNS) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.MAX_FOLDABLE_COLUMNS;
++      } else if (scale > 0.9 && scale < 1.1) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.getInitColumns();
++      }
++      return;
++    }
++    if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG) {
++      if (scale > 1.5 && WaterFlowScaleUtil._currentColumns > WaterFlowScaleUtil.MIN_TABLET_COLUMNS) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.MIN_TABLET_COLUMNS;
++      } else if (scale < 0.7 && WaterFlowScaleUtil._currentColumns < WaterFlowScaleUtil.MAX_TABLET_COLUMNS) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.MAX_TABLET_COLUMNS;
++      } else if (scale > 0.9 && scale < 1.1) {
++        WaterFlowScaleUtil._currentColumns = WaterFlowScaleUtil.getInitColumns();
++      }
++    }
++  }
++}
+diff --git a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
+index 9a2f632..49e456a 100644
+--- a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
++++ b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
+@@ -20,6 +20,8 @@ import {
+ import { CommonConfirmDialog, CustomServiceSheet } from 'lib_widget';
+ import { UtilLog } from '@hw-agconnect/util-log';
+ 
++const TAG: string = '[ProductInfoVM]'
++
+ @ObservedV2
+ export class ProductInfoVM {
+   @Trace
+@@ -42,6 +44,7 @@ export class ProductInfoVM {
+   countdown?: CountdownModel;
+   @Trace
+   currentEventId?: number;
++
+   @Computed
+   get isLogin() {
+     return iData.global.isLogin;
+diff --git a/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets b/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets
+index 985edc1..08c6234 100644
+--- a/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets
++++ b/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets
+@@ -1,9 +1,10 @@
+ import { util } from '@kit.ArkTS';
+ import { motion } from '@kit.MultimodalAwarenessKit';
+-import { MotionUtil, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
++import { BreakpointSystem, BreakpointTypeEnum, MotionUtil, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
+ import { FilterSelectionItem, ProductApis, ProductCardItem } from 'lib_network';
+ import { LoneTakeAnimationsTransition, LongTakeTransitionParam } from 'module_transition';
+ import { SortTypeMap } from '../commons/Enums';
++import { WaterFlowScaleUtil } from '../utils/WaterFlowScaleUtil';
+ 
+ @ObservedV2
+ export class ProductWaterFlowVM {
+@@ -69,9 +70,10 @@ export class ProductWaterFlowVM {
+   @Computed
+   get columnTemplate() {
+     if (this.isGrid) {
+-      return '1fr';
++      return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG ? '1fr 1fr' : '1fr';
+     }
+-    return '1fr 1fr';
++    const newTemplate = WaterFlowScaleUtil.columnsTemplate;
++    return newTemplate;
+   }
+ 
+   async refreshList() {
+@@ -137,4 +139,4 @@ export class ProductWaterFlowVM {
+       },
+     });
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
+index cc22cf4..fcb0f0e 100644
+--- a/features/product/src/main/ets/views/ProductInfoPage.ets
++++ b/features/product/src/main/ets/views/ProductInfoPage.ets
+@@ -1,4 +1,4 @@
+-import { ProductInfoPageParam } from 'lib_foundation';
++import { BreakpointSystem, ProductInfoPageParam } from 'lib_foundation';
+ import { CommonSymbol, NavTitleBar } from 'lib_widget';
+ import { ProductInfoVM } from '../viewmodels/ProductInfoVM';
+ import {
+@@ -31,7 +31,11 @@ export struct ProductInfoPage {
+         } else if (!this.vm.productInfo) {
+           buildEmptySearch()
+         } else {
+-          this.buildPhoneDisplay()
++          if (BreakpointSystem.isTablet) {
++            this.buildTabletDisplay()
++          } else {
++            this.buildPhoneDisplay()
++          }
+         }
+       }
+       .layoutWeight(1)
+@@ -40,7 +44,9 @@ export struct ProductInfoPage {
+       this.buildBottomOperation();
+     }
+     .hideTitleBar(true)
+-    .backgroundColor($r('app.color.background_color_primary'))
++    .backgroundColor(BreakpointSystem.isTablet ?
++      $r('app.color.background_color_grey') :
++      $r('app.color.background_color_primary'))
+     .onReady((context) => {
+       const params = context.pathInfo.param as ProductInfoPageParam | undefined;
+       if (params) {
+@@ -78,6 +84,38 @@ export struct ProductInfoPage {
+     };
+   }
+ 
++  @Builder
++  buildTabletDisplay() {
++    GridRow({
++      columns: { lg: 2 },
++      gutter: 12,
++    }) {
++      GridCol({ span: 1 }) {
++        Column() {
++          buildProductSwiper(this.vm.productInfo?.productDetail?.banners ?? [])
++        }
++        .layoutWeight(1)
++      }
++
++      GridCol({ span: 1 }) {
++        Scroll() {
++          Column() {
++            buildProductInfoCard(this.vm.productInfo?.productDetail!, this.vm.productInfo?.seckillInfo)
++            buildDivider()
++            buildReviewOverview(this.vm)
++            buildDivider()
++            buildProductDesc(this.vm.productInfo?.productDetail!)
++          };
++        }
++        .edgeEffect(EdgeEffect.Spring)
++        .scrollBar(BarState.Off)
++        .layoutWeight(1);
++      }
++    }
++    .backgroundColor($r('app.color.background_color_grey'))
++    .layoutWeight(1);
++  }
++
+   @Builder
+   buildPhoneDisplay() {
+     Scroll() {
+@@ -141,7 +179,7 @@ export struct ProductInfoPage {
+         .onClick(() => {
+           this.vm.handleClickCustomService()
+         })
+-        .margin({ right: $r('app.float.space_l') })
++        .margin({ right: BreakpointSystem.isTablet ? $r('app.float.space_xl') : $r('app.float.space_l') })
+ 
+         Badge({
+           count: this.vm.isLogin ? this.vm.cartNum : 0,
+diff --git a/features/product/src/main/ets/views/ProductSwiperPage.ets b/features/product/src/main/ets/views/ProductSwiperPage.ets
+index 1f47a05..acd5d10 100644
+--- a/features/product/src/main/ets/views/ProductSwiperPage.ets
++++ b/features/product/src/main/ets/views/ProductSwiperPage.ets
+@@ -1,4 +1,11 @@
+-import { iData, ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation'
++import {
++  BreakpointStorage,
++  BreakpointSystem,
++  iData,
++  ProductInfoPageParam,
++  RouterMap,
++  routerStack,
++} from 'lib_foundation'
+ import { ProductApis, ProductCardItem, ProductInfo } from 'lib_network'
+ import { CommonSymbol, NavTitleBar } from 'lib_widget'
+ import { CardLongTakeDelegate, LongTakeAnimationProperties, LongTakeTransitionParam } from 'module_transition'
+@@ -20,6 +27,8 @@ export struct ProductSwiperPage {
+   @Local
+   isLogin: boolean = iData.global.isLogin;
+   @Local
++  curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
++  @Local
+   productInfo?: ProductInfo
+   @Local
+   longTakeSession: LongTakeAnimationProperties = new LongTakeAnimationProperties();
+diff --git a/features/product/src/main/module.json5 b/features/product/src/main/module.json5
+index 5787dc0..4ea870f 100644
+--- a/features/product/src/main/module.json5
++++ b/features/product/src/main/module.json5
+@@ -4,7 +4,8 @@
+     "type": "har",
+     "routerMap": "$profile:route_map",
+     "deviceTypes": [
+-      "default"
++      "default",
++      "tablet"
+     ]
+   }
+ }
+diff --git a/features/product/src/ohosTest/module.json5 b/features/product/src/ohosTest/module.json5
+index e52243f..acda3c9 100644
+--- a/features/product/src/ohosTest/module.json5
++++ b/features/product/src/ohosTest/module.json5
+@@ -3,7 +3,8 @@
+     "name": "product_test",
+     "type": "feature",
+     "deviceTypes": [
+-      "default"
++      "default",
++      "tablet"
+     ],
+     "deliveryWithInstall": true,
+     "installationFree": false
+diff --git a/features/setting/src/main/ets/components/ProductList.ets b/features/setting/src/main/ets/components/ProductList.ets
+index 2366692..b70e246 100644
+--- a/features/setting/src/main/ets/components/ProductList.ets
++++ b/features/setting/src/main/ets/components/ProductList.ets
+@@ -1,4 +1,4 @@
+-import { ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation'
++import { BreakpointSystem, BreakpointTypeEnum, ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation'
+ import { ProductCardLabel, ProductCardItem } from 'lib_network'
+ import { CommonLoading } from 'lib_widget'
+ 
+@@ -46,7 +46,7 @@ export struct ProductList {
+           }
+         }
+         .layoutWeight(1)
+-        .lanes(1, 12)
++        .lanes(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG ? 2 : 1, 12)
+         .scrollBar(BarState.Off)
+         .onReachEnd(() => {
+           this.onReachEnd()
+@@ -197,4 +197,4 @@ export struct ProductList {
+     .height('100%')
+     .justifyContent(FlexAlign.Center)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/features/shopping/src/main/ets/views/SeckillListPage.ets b/features/shopping/src/main/ets/views/SeckillListPage.ets
+index be64874..ec4c688 100644
+--- a/features/shopping/src/main/ets/views/SeckillListPage.ets
++++ b/features/shopping/src/main/ets/views/SeckillListPage.ets
+@@ -1,3 +1,4 @@
++import { BreakpointSystem } from 'lib_foundation';
+ import { SeckillProductInfo, SeckillSession, SeckillStatus, SeckillTimeSlot } from 'lib_network';
+ import { NavTitleBar, ProductListSkeleton } from 'lib_widget';
+ import { SeckillProductStyle, SeckillUtil } from '../utils/SeckillUtil';
+@@ -156,7 +157,7 @@ struct SeckillListPage {
+             }
+           })
+       }
+-      .lanes(1, 12)
++      .lanes(BreakpointSystem.isTablet ? 2 : 1, 12)
+       .layoutWeight(1)
+       .expandSafeArea()
+       .scrollBar(BarState.Off)
+@@ -344,4 +345,4 @@ function labelContainerStyle(bgColor: ResourceColor) {
+   .padding(8)
+   .height(40)
+   .justifyContent(FlexAlign.Center)
+-}
++}
+\ No newline at end of file
+diff --git a/products/entry/src/main/ets/components/HomePageContent.ets b/products/entry/src/main/ets/components/HomePageContent.ets
+index 1583eb6..143296b 100644
+--- a/products/entry/src/main/ets/components/HomePageContent.ets
++++ b/products/entry/src/main/ets/components/HomePageContent.ets
+@@ -1,4 +1,10 @@
+-import { RouterMap, routerStack } from 'lib_foundation';
++import {
++  BreakpointStorage,
++  BreakpointSystem,
++  BreakpointTypeEnum,
++  RouterMap,
++  routerStack,
++} from 'lib_foundation';
+ import { CategoryItem } from 'lib_network';
+ import { ProductWaterFlow } from 'product';
+ import { LengthMetrics } from '@kit.ArkUI';
+@@ -18,6 +24,19 @@ export struct HomePageContent {
+   scroller: Scroller = new Scroller();
+   @Event
+   handleClickCategory: (id: string) => void;
++  @Local curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
++
++  @Computed
++  get bannerAspectRatio() {
++    if (this.curBreakpoint.value === BreakpointTypeEnum.SM) {
++      return 4 / 3
++    }
++    if (this.curBreakpoint.value === BreakpointTypeEnum.MD) {
++      return 2.5
++    }
++    return 5
++  }
++
+   build() {
+     Column({ space: 12 }) {
+       Blank().height(0)
+@@ -57,7 +76,7 @@ export struct HomePageContent {
+     .width('100%')
+     .indicator(false)
+     .autoPlay(true)
+-    .aspectRatio(4 / 3)
++    .aspectRatio(this.bannerAspectRatio)
+     .clip(true)
+     .borderRadius($r('app.float.border_radius_l'));
+   }
+@@ -85,7 +104,7 @@ export struct HomePageContent {
+         }
+         .constraintSize({ minWidth: '100%' })
+         .padding($r('app.float.space_l'))
+-        .justifyContent(FlexAlign.Start)
++        .justifyContent(BreakpointSystem.isTablet ? FlexAlign.SpaceBetween : FlexAlign.Start)
+       }
+       .scrollable(ScrollDirection.Horizontal)
+       .scrollBar(BarState.Off)
+diff --git a/products/entry/src/main/ets/tabviews/HomePage.ets b/products/entry/src/main/ets/tabviews/HomePage.ets
+index 924c1a1..9cfb16f 100644
+--- a/products/entry/src/main/ets/tabviews/HomePage.ets
++++ b/products/entry/src/main/ets/tabviews/HomePage.ets
+@@ -1,4 +1,4 @@
+-import { LoadingStatus } from 'lib_foundation';
++import { LoadingStatus, WindowUtil } from 'lib_foundation';
+ import { CommonLoading, CommonSymbol, NavTitleBar } from 'lib_widget';
+ import { HomePageContent } from '../components/HomePageContent';
+ import { HomePageVM } from '../viewmodels/HomePageVM';
+@@ -110,7 +110,9 @@ export struct HomePage {
+           .fontColor($r('app.color.font_color_level1'))
+           .fontWeight(FontWeight.Bold)
+         Blank()
+-        if (this.searchAreaHeight === 0) {
++        if (this.vm.isTablet) {
++          this.buildSearchBar()
++        } else if (this.searchAreaHeight === 0) {
+           CommonSymbol({
+             src: $r('sys.symbol.magnifyingglass'),
+           })
+@@ -125,23 +127,26 @@ export struct HomePage {
+       .height($r('app.float.nav_header_height'))
+       .width('100%')
+     }
+-    .backgroundColor($r('app.color.background_color_primary'))
++    .backgroundColor(this.vm.isTablet ? $r('app.color.background_color_transparent') : $r('app.color.background_color_primary'))
+     .padding({
+       left: $r('app.float.space_l'),
+       right: $r('app.float.space_l'),
+     })
+     .width('100%')
+ 
+-    Column() {
+-      this.buildSearchBar()
++    if (!this.vm.isTablet) {
++      Column() {
++        this.buildSearchBar()
++      }
++      .width('100%')
++      .height(this.searchAreaHeight)
++      .justifyContent(FlexAlign.Center)
++      // 容器整体透明度
++      .opacity(this.searchAreaHeight / this.MAX_SEARCH_HEIGHT)
++      .visibility(this.searchAreaHeight <= 0 ? Visibility.None : Visibility.Visible)
++      .backgroundColor($r('app.color.background_color_primary'))
++      .clip(true)
+     }
+-    .width('100%')
+-    .height(this.searchAreaHeight)
+-    .justifyContent(FlexAlign.Center)
+-    .opacity(this.searchAreaHeight / this.MAX_SEARCH_HEIGHT)
+-    .visibility(this.searchAreaHeight <= 0 ? Visibility.None : Visibility.Visible)
+-    .backgroundColor($r('app.color.background_color_primary'))
+-    .clip(true)
+   }
+ 
+   @Builder
+@@ -185,9 +190,10 @@ export struct HomePage {
+         this.vm.jumpToSearchPage(this.getUIContext(), 'search')
+       })
+     }
+-    .width($r('app.string.size_percent_full'))
++    .width(this.vm.isTablet ? 400 : $r('app.string.size_percent_full'))
+     .height(56)
+-    .backgroundColor($r('app.color.background_color_primary'))
++    .backgroundColor(this.vm.isTablet ? $r('app.color.background_color_grey') :
++      $r('app.color.background_color_primary'))
+     .alignItems(VerticalAlign.Center)
+     .padding({
+       left: $r('app.float.space_l'),
+diff --git a/products/entry/src/main/ets/tabviews/ProfilePage.ets b/products/entry/src/main/ets/tabviews/ProfilePage.ets
+index 8b930db..626f716 100644
+--- a/products/entry/src/main/ets/tabviews/ProfilePage.ets
++++ b/products/entry/src/main/ets/tabviews/ProfilePage.ets
+@@ -1,4 +1,7 @@
+-import { iData, routerStack, RouterMap } from 'lib_foundation';
++import { LengthMetrics } from '@kit.ArkUI';
++import {
++  iData, routerStack, RouterMap, BreakpointSystem, BreakpointTypeEnum,
++} from 'lib_foundation';
+ import { ContainerColumn, NavTitleBar } from 'lib_widget';
+ import { MainMenuItem, SubMenuItem } from '../commons/Types';
+ import { ProfileUtil } from '../utils/ProfileUtil';
+@@ -18,9 +21,25 @@ export struct ProfilePage {
+ 
+       Scroll() {
+         Column({ space: 12 }) {
+-          buildUserInfoArea()
+-          buildCheckInArea()
+-          buildMainMenuArea()
++          if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG) {
++            Flex({ space: { main: LengthMetrics.vp(16) } }) {
++              Column() {
++                buildUserInfoArea()
++              }
++              .tabletContainerStyle()
++
++              Column() {
++                buildCheckInArea()
++                buildMainMenuArea()
++              }
++              .height(128)
++              .justifyContent(FlexAlign.SpaceBetween)
++            }
++          } else {
++            buildUserInfoArea()
++            buildCheckInArea()
++            buildMainMenuArea()
++          }
+ 
+           buildOrderInfoArea()
+           buildSubMenuArea()
+@@ -124,7 +143,9 @@ function buildMainMenuArea() {
+     }, (item: MainMenuItem) => item.label)
+   }
+   .containerStyle()
+-  .justifyContent(FlexAlign.SpaceBetween)
++  .justifyContent(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM ?
++    FlexAlign.SpaceBetween :
++    FlexAlign.SpaceAround)
+ }
+ 
+ @Builder
+@@ -154,7 +175,9 @@ function buildOrderInfoArea() {
+     }
+     .width('100%')
+     .alignItems(VerticalAlign.Center)
+-    .justifyContent(FlexAlign.SpaceBetween);
++    .justifyContent(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM ?
++      FlexAlign.SpaceBetween :
++      FlexAlign.SpaceAround);
+   }
+   .containerStyle();
+ }
+@@ -188,7 +211,7 @@ function buildSubMenuArea() {
+     strokeWidth: 1,
+     startMargin: 32,
+   })
+-  .lanes(1, 16)
++  .lanes(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG ? 2 : 1, 16)
+ }
+ 
+ @Builder
+@@ -238,3 +261,11 @@ function commonIconStyle() {
+   .width(16)
+   .fillColor($r('app.color.font_color_level2'));
+ }
++
++@Extend(Column)
++function tabletContainerStyle() {
++  .backgroundColor($r('app.color.background_color_primary'))
++  .borderRadius(16)
++  .height(78)
++  .justifyContent(FlexAlign.Center)
++}
+diff --git a/products/entry/src/main/ets/viewmodels/HomePageVM.ets b/products/entry/src/main/ets/viewmodels/HomePageVM.ets
+index 2059c53..35d7b71 100644
+--- a/products/entry/src/main/ets/viewmodels/HomePageVM.ets
++++ b/products/entry/src/main/ets/viewmodels/HomePageVM.ets
+@@ -4,6 +4,8 @@ import {
+   RouterMap,
+   GlobalStateMgr,
+   iData,
++  BreakpointSystem,
++  BreakpointTypeEnum,
+ } from 'lib_foundation';
+ import { CategoryItem } from 'lib_network';
+ import { LoneTakeAnimationsTransition, LongTakeTransitionParam } from 'module_transition';
+@@ -27,6 +29,11 @@ export class HomePageVM {
+   @Trace
+   currentSearchStr: string = '';
+ 
++  @Computed
++  get isTablet() {
++    return BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG;
++  }
++
+   public onRefreshStateChange(state: RefreshStatus): void {
+     this.refreshStatus = state;
+     if (state === RefreshStatus.Refresh) {
+diff --git a/products/entry/src/main/ets/views/Index.ets b/products/entry/src/main/ets/views/Index.ets
+index bb0a10d..31bc407 100644
+--- a/products/entry/src/main/ets/views/Index.ets
++++ b/products/entry/src/main/ets/views/Index.ets
+@@ -1,4 +1,4 @@
+-import { RouterMap, routerStack, WindowUtil } from 'lib_foundation';
++import { BreakpointSystem, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
+ import { LoneTakeAnimationsTransition } from 'module_transition';
+ import { SetupUtil } from '../utils/SetupUtil';
+ 
+@@ -12,6 +12,7 @@ struct EmptyPage {
+ 
+   aboutToAppear(): void {
+     const uiContext = this.getUIContext()
++    BreakpointSystem.register(uiContext)
+     WindowUtil.setUIContext(uiContext)
+     routerStack.registerStack(this.stack)
+     this.stack.pushPath({
+diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
+index 713597f..2e4408b 100644
+--- a/products/entry/src/main/ets/views/MainEntry.ets
++++ b/products/entry/src/main/ets/views/MainEntry.ets
+@@ -1,7 +1,7 @@
+ import { hdsMaterial } from '@kit.UIDesignKit';
+ import { HdsTabs, HdsTabsController } from '@hms.hds.hdsBaseComponent';
+ import { UtilLog } from '@hw-agconnect/util-log';
+-import { MotionUtil } from 'lib_foundation';
++import { BreakpointSystem, MotionUtil } from 'lib_foundation';
+ import { TAB_LIST } from '../commons/Constants';
+ import { TabListItem } from '../commons/Types';
+ import { MainEntryVM } from '../viewmodels/MainEntryVM';
+@@ -58,7 +58,8 @@ struct MainEntry {
+     .height($r('app.string.size_percent_full'))
+     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+     .hideTitleBar(true)
+-    .backgroundColor($r('app.color.background_color_transparent'))
++    .backgroundColor(
++      BreakpointSystem.isTablet ? $r('app.color.background_color_grey') : $r('app.color.background_color_transparent'))
+     .onBackPressed(() => {
+       let nowTime = Date.now();
+       if (nowTime - this.vm.firstBackTime < 1500) {
+@@ -98,4 +99,4 @@ struct MainEntry {
+     .width($r('app.string.size_percent_full'))
+     .padding(4)
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/products/entry/src/main/module.json5 b/products/entry/src/main/module.json5
+index c0105c2..a0f6781 100644
+--- a/products/entry/src/main/module.json5
++++ b/products/entry/src/main/module.json5
+@@ -4,7 +4,8 @@
+     "type": "entry",
+     "mainElement": "EntryAbility",
+     "deviceTypes": [
+-      "phone"
++      "phone",
++      "tablet"
+     ],
+     "routerMap": "$profile:route_map",
+     "deliveryWithInstall": true,
+diff --git a/tests/capability-removal.test.mjs b/swe/tests/capability-removal.test.mjs
+deleted file mode 100644
+index 3d8b66a..0000000
+--- a/tests/capability-removal.test.mjs
++++ /dev/null
+@@ -1,69 +0,0 @@
+-import assert from 'node:assert/strict';
+-import { existsSync, readFileSync } from 'node:fs';
+-import { dirname, join } from 'node:path';
+-import test from 'node:test';
+-import { fileURLToPath } from 'node:url';
+-
+-const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+-const read = (path) => readFileSync(join(projectRoot, path), 'utf8');
+-
+-test('privacy, scan, advertisement, and Push implementations are removed', () => {
+-  for (const path of [
+-    'components/module_privacy_agreement',
+-    'components/module_product_scan',
+-    'components/module_advertisement',
+-    'commons/lib_foundation/src/main/ets/push',
+-    'products/entry/src/main/ets/views/SafePage.ets',
+-    'products/entry/src/main/ets/views/SplashPage.ets',
+-  ]) {
+-    assert.equal(existsSync(join(projectRoot, path)), false, path);
+-  }
+-});
+-
+-test('normal startup enters MainEntry while split behavior is absent and deep links remain', () => {
+-  const index = read('products/entry/src/main/ets/views/Index.ets');
+-  const setup = read('products/entry/src/main/ets/utils/SetupUtil.ets');
+-  assert.match(index, /name:\s*RouterMap\.MAIN_ENTRY/);
+-  assert.doesNotMatch(index, /SAFE_PAGE|SPLASH_PAGE/);
+-  assert.doesNotMatch(index, /SecondAbility|splitNavStore|multiContext|doubleStack/);
+-  assert.match(setup, /RouterMap\.PRODUCT_INFO/);
+-  assert.match(setup, /productId/);
+-  assert.match(setup, /OrderPage/);
+-});
+-
+-test('Push and notification permission behavior are detached', () => {
+-  const ability = read('products/entry/src/main/ets/entryability/EntryAbility.ets');
+-  const home = read('products/entry/src/main/ets/viewmodels/HomePageVM.ets');
+-  const permission = read('commons/lib_foundation/src/main/ets/utils/PermissionUtil.ets');
+-  const foundation = read('commons/lib_foundation/Index.ets');
+-  for (const source of [ability, home, permission, foundation]) {
+-    assert.doesNotMatch(source, /PushUtil|requestNotificationPermission|NotificationKit/);
+-  }
+-  assert.match(permission, /requestPermissions\(/);
+-});
+-
+-test('scan entry is removed while order shortcut remains', () => {
+-  const homePage = read('products/entry/src/main/ets/tabviews/HomePage.ets');
+-  const homeVm = read('products/entry/src/main/ets/viewmodels/HomePageVM.ets');
+-  const setup = read('products/entry/src/main/ets/utils/SetupUtil.ets');
+-  const shortcuts = read('products/entry/src/main/resources/base/profile/shortcuts_config.json');
+-  assert.doesNotMatch(homePage, /jumpToScanPage|line_viewfinder/);
+-  assert.doesNotMatch(homeVm, /module_product_scan|subjectSegmentation|CoreVisionKit/);
+-  assert.doesNotMatch(setup, /ScanPage|ScanRouterMap/);
+-  assert.doesNotMatch(shortcuts, /shortcuts_scan|ScanPage/);
+-  assert.match(shortcuts, /shortcuts_orders|OrderPage/);
+-});
+-
+-test('build and package configuration no longer reference deleted modules', () => {
+-  const sources = [
+-    read('build-profile.json5'),
+-    read('products/entry/oh-package.json5'),
+-    read('products/entry/src/main/resources/base/profile/route_map.json'),
+-  ];
+-  for (const source of sources) {
+-    assert.doesNotMatch(
+-      source,
+-      /module_privacy_agreement|module_product_scan|module_advertisement|SafePage|SplashPage/,
+-    );
+-  }
+-});

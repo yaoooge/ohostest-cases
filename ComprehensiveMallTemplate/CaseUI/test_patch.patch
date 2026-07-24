@@ -1,0 +1,626 @@
+diff --git a/components/module_product_category/src/main/ets/views/ProductCategory.ets b/components/module_product_category/src/main/ets/views/ProductCategory.ets
+index 9b017fe..c2a7d7d 100644
+--- a/components/module_product_category/src/main/ets/views/ProductCategory.ets
++++ b/components/module_product_category/src/main/ets/views/ProductCategory.ets
+@@ -191,6 +191,7 @@ export struct ProductCategory {
+                   .maxLines(1)
+                   .textOverflow({ overflow: TextOverflow.Ellipsis })
+               }
++              .id('mall-category-item')
+               .padding({ bottom: index === this.productList.length - 1 ? 72 : 0 })
+               .alignItems(HorizontalAlign.Start)
+               .onClick(() => {
+@@ -208,6 +209,7 @@ export struct ProductCategory {
+         top: $r('app.float.space_m'),
+       })
+     }
++    .id('mall-category-products')
+     .layoutWeight(1)
+     .align(Alignment.Top)
+     .scrollBar(BarState.Off)
+diff --git a/features/product/src/main/ets/components/ProductInfoCards.ets b/features/product/src/main/ets/components/ProductInfoCards.ets
+index 8220f97..2ec49b3 100644
+--- a/features/product/src/main/ets/components/ProductInfoCards.ets
++++ b/features/product/src/main/ets/components/ProductInfoCards.ets
+@@ -52,6 +52,7 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
+         .padding(ProductSwiperStyleConfig.imagePadding)
+     }, (item: ResourceStr) => JSON.stringify(item));
+   }
++  .id('mall-product-swiper')
+   .width('100%')
+   .padding({ left: ProductSwiperStyleConfig.swiperPadding, right: ProductSwiperStyleConfig.swiperPadding })
+   .prevMargin(ProductSwiperStyleConfig.outImageDisplayWidth, true)
+@@ -143,6 +144,7 @@ export function buildProductInfoCard(productInfo: ProductDetailInfo, seckillInfo
+     buildServiceInfo(productInfo.service);
+ 
+   }
++  .id('mall-product-info-card')
+   .width('100%')
+   .padding({
+     left: 16,
+diff --git a/features/product/src/main/ets/components/ProductWaterFlow.ets b/features/product/src/main/ets/components/ProductWaterFlow.ets
+index 73e82b8..829b873 100644
+--- a/features/product/src/main/ets/components/ProductWaterFlow.ets
++++ b/features/product/src/main/ets/components/ProductWaterFlow.ets
+@@ -65,9 +65,11 @@ export struct ProductWaterFlow {
+               .each((ri: RepeatItem<ProductCardItem>) => {
+                 FlowItem() {
+                   if (!this.isGrid) {
+-                    GridProductCardView({ product: ri.item });
++                    GridProductCardView({ product: ri.item })
++                      .id('mall-product-item');
+                   } else {
+-                    ListProductCardView({ product: ri.item });
++                    ListProductCardView({ product: ri.item })
++                      .id('mall-list-product-item');
+                   }
+                 }
+                 .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+@@ -81,6 +83,7 @@ export struct ProductWaterFlow {
+                 });
+               })
+           }
++          .id('mall-product-waterflow')
+           .cachedCount(4)
+           .columnsTemplate(this.vm.columnTemplate)
+           .columnsGap(12)
+diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
+index cc22cf4..39e1945 100644
+--- a/features/product/src/main/ets/views/ProductInfoPage.ets
++++ b/features/product/src/main/ets/views/ProductInfoPage.ets
+@@ -54,6 +54,7 @@ export struct ProductInfoPage {
+     .onHidden(() => {
+       this.vm.countdown?.stopCountdownTimer()
+     })
++    .id('mall-product-info-page')
+   }
+ 
+   @Builder
+@@ -138,6 +139,7 @@ export struct ProductInfoPage {
+             .fontSize(12)
+             .fontColor($r('app.color.font_color_level1'));
+         }
++        .id('mall-customer-service')
+         .onClick(() => {
+           this.vm.handleClickCustomService()
+         })
+@@ -164,6 +166,7 @@ export struct ProductInfoPage {
+           }
+           .padding(4);
+         }
++        .id('mall-shopping-cart')
+         .onClick(() => {
+           this.vm.handleClickCart()
+         });
+diff --git a/products/entry/src/main/ets/components/HomePageContent.ets b/products/entry/src/main/ets/components/HomePageContent.ets
+index 1583eb6..5b5d5ff 100644
+--- a/products/entry/src/main/ets/components/HomePageContent.ets
++++ b/products/entry/src/main/ets/components/HomePageContent.ets
+@@ -37,6 +37,7 @@ export struct HomePageContent {
+       })
+         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
+     }
++    .id('mall-home-content')
+     .padding({
+       left: $r('app.float.space_l'),
+       right: $r('app.float.space_l'),
+@@ -54,6 +55,7 @@ export struct HomePageContent {
+           .draggable(false);
+       }, (item: ResourceStr, index: number) => index + JSON.stringify(item));
+     }
++    .id('mall-home-banner')
+     .width('100%')
+     .indicator(false)
+     .autoPlay(true)
+diff --git a/products/entry/src/main/ets/tabviews/HomePage.ets b/products/entry/src/main/ets/tabviews/HomePage.ets
+index 924c1a1..00fc129 100644
+--- a/products/entry/src/main/ets/tabviews/HomePage.ets
++++ b/products/entry/src/main/ets/tabviews/HomePage.ets
+@@ -92,6 +92,7 @@ export struct HomePage {
+       .backgroundColor($r('app.color.background_color_grey'))
+       .expandSafeArea([SafeAreaType.SYSTEM, SafeAreaType.CUTOUT], [SafeAreaEdge.BOTTOM]);
+     }
++    .id('mall-home-page')
+     .width($r('app.string.size_percent_full'))
+     .height($r('app.string.size_percent_full'))
+     .backgroundColor($r('app.color.background_color_grey'))
+@@ -122,6 +123,7 @@ export struct HomePage {
+             ))
+         }
+       }
++      .id('mall-home-title-row')
+       .height($r('app.float.nav_header_height'))
+       .width('100%')
+     }
+@@ -193,6 +195,7 @@ export struct HomePage {
+       left: $r('app.float.space_l'),
+       right: $r('app.float.space_l'),
+     })
++    .id('mall-home-search')
+   }
+ 
+   @Builder
+diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
+index 713597f..e7c97cb 100644
+--- a/products/entry/src/main/ets/views/MainEntry.ets
++++ b/products/entry/src/main/ets/views/MainEntry.ets
+@@ -37,6 +37,7 @@ struct MainEntry {
+           .clip(false)
+         }, (item: TabListItem, index: number) => index + '__' + item.label);
+       }
++      .id('mall-main-entry')
+       .scrollable(false)
+       .barOverlap(true)
+       .height($r('app.string.size_percent_full'))
+@@ -94,6 +95,7 @@ struct MainEntry {
+         .fontWeight(FontWeight.Medium)
+         .margin({ top: $r('app.float.space_xxs') });
+     }
++    .id('mall-tab-' + index)
+     .justifyContent(FlexAlign.Center)
+     .width($r('app.string.size_percent_full'))
+     .padding(4)
+diff --git a/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
+new file mode 100644
+index 0000000..0ef9699
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
+@@ -0,0 +1,56 @@
++import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
++import { Driver } from '@kit.TestKit';
++import {
++  componentExistsById,
++  getDriver,
++  openProductDetail,
++  prepareHome,
++  waitForComponentById,
++  waitForComponentByText,
++} from './TestHelper';
++
++export default function commonPassToPassTest() {
++  describe('CommonPassToPassTest', () => {
++    let driver: Driver;
++
++    beforeAll(async () => {
++      driver = getDriver();
++      await prepareHome();
++    });
++
++    it('should_start_mall_successfully', Level.LEVEL2, async (done: Function) => {
++      await waitForComponentById(driver, 'mall-main-entry');
++      await waitForComponentById(driver, 'mall-home-page');
++      done();
++    });
++
++    it('should_show_four_main_tabs', Level.LEVEL2, async (done: Function) => {
++      for (let index = 0; index < 4; index++) {
++        await waitForComponentById(driver, 'mall-tab-' + index);
++      }
++      done();
++    });
++
++    it('should_keep_home_content_available', Level.LEVEL2, async (done: Function) => {
++      await waitForComponentById(driver, 'mall-home-search');
++      await waitForComponentById(driver, 'mall-home-banner');
++      await waitForComponentById(driver, 'mall-product-waterflow');
++      await waitForComponentById(driver, 'mall-product-item');
++      done();
++    });
++
++    it('should_keep_product_purchase_actions_available', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail(driver);
++      await waitForComponentByText(driver, '客服');
++      await waitForComponentByText(driver, '购物车');
++      await waitForComponentByText(driver, '加入购物车');
++      await waitForComponentByText(driver, '立即购买');
++      done();
++    });
++
++    it('should_keep_split_action_absent_in_ui_case', Level.LEVEL2, async (done: Function) => {
++      expect(await componentExistsById(driver, 'mall-split-action')).assertFalse();
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets
+new file mode 100644
+index 0000000..3ed4b39
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets
+@@ -0,0 +1,53 @@
++import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
++import { Driver } from '@kit.TestKit';
++import {
++  assertCurrentBreakpoint,
++  countItemsInFirstRow,
++  getAspectRatioById,
++  getComponentVpWidthById,
++  getDriver,
++  isComponentVerticallyInside,
++  isProductDetailTwoPane,
++  openProductDetail,
++  prepareHome,
++} from './TestHelper';
++
++export default function lgFailToPassTest() {
++  describe('LgFailToPassTest', () => {
++    let driver: Driver;
++    let bundleName: string;
++
++    beforeAll(async () => {
++      driver = getDriver();
++      bundleName = await prepareHome();
++      await assertCurrentBreakpoint(driver, bundleName, 'lg');
++    });
++
++    it('should_place_400vp_search_in_home_title_on_lg', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      const width = await getComponentVpWidthById(driver, 'mall-home-search');
++      expect(Math.abs(width - 400) <= 12).assertTrue();
++      expect(await isComponentVerticallyInside(driver, 'mall-home-search', 'mall-home-title-row')).assertTrue();
++      done();
++    });
++
++    it('should_use_lg_home_banner_ratio_5', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      const ratio = await getAspectRatioById(driver, 'mall-home-banner');
++      expect(Math.abs(ratio - 5) <= 0.2).assertTrue();
++      done();
++    });
++
++    it('should_show_five_product_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(5);
++      done();
++    });
++
++    it('should_show_product_detail_as_two_panes_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail(driver);
++      expect(await isProductDetailTwoPane(driver)).assertTrue();
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/List.test.ets b/products/entry/src/ohosTest/ets/test/List.test.ets
+new file mode 100644
+index 0000000..c664d46
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/List.test.ets
+@@ -0,0 +1,11 @@
++import commonPassToPassTest from './CommonPassToPass.test';
++import smPassToPassTest from './SmPassToPass.test';
++import mdFailToPassTest from './MdFailToPass.test';
++import lgFailToPassTest from './LgFailToPass.test';
++
++export default function testsuite() {
++  commonPassToPassTest();
++  smPassToPassTest();
++  mdFailToPassTest();
++  lgFailToPassTest();
++}
+diff --git a/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets
+new file mode 100644
+index 0000000..4a079ff
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets
+@@ -0,0 +1,42 @@
++import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
++import { Driver } from '@kit.TestKit';
++import {
++  assertCurrentBreakpoint,
++  countItemsInFirstRow,
++  getAspectRatioById,
++  getDriver,
++  openCategory,
++  prepareHome,
++} from './TestHelper';
++
++export default function mdFailToPassTest() {
++  describe('MdFailToPassTest', () => {
++    let driver: Driver;
++    let bundleName: string;
++
++    beforeAll(async () => {
++      driver = getDriver();
++      bundleName = await prepareHome();
++      await assertCurrentBreakpoint(driver, bundleName, 'md');
++    });
++
++    it('should_use_md_home_banner_ratio_2_5', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      const ratio = await getAspectRatioById(driver, 'mall-home-banner');
++      expect(Math.abs(ratio - 2.5) <= 0.15).assertTrue();
++      done();
++    });
++
++    it('should_show_three_product_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(3);
++      done();
++    });
++
++    it('should_show_four_category_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      await openCategory(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
+new file mode 100644
+index 0000000..ba65609
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
+@@ -0,0 +1,42 @@
++import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
++import { Driver } from '@kit.TestKit';
++import {
++  assertCurrentBreakpoint,
++  countItemsInFirstRow,
++  getAspectRatioById,
++  getDriver,
++  openCategory,
++  prepareHome,
++} from './TestHelper';
++
++export default function smPassToPassTest() {
++  describe('SmPassToPassTest', () => {
++    let driver: Driver;
++    let bundleName: string;
++
++    beforeAll(async () => {
++      driver = getDriver();
++      bundleName = await prepareHome();
++      await assertCurrentBreakpoint(driver, bundleName, 'sm');
++    });
++
++    it('should_keep_sm_home_banner_ratio_4_3', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      const ratio = await getAspectRatioById(driver, 'mall-home-banner');
++      expect(Math.abs(ratio - 4 / 3) <= 0.12).assertTrue();
++      done();
++    });
++
++    it('should_keep_sm_product_waterflow_two_columns', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_keep_sm_category_grid_two_columns', Level.LEVEL2, async (done: Function) => {
++      await openCategory(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(2);
++      done();
++    });
++  });
++}
+diff --git a/products/entry/src/ohosTest/ets/test/TestHelper.ets b/products/entry/src/ohosTest/ets/test/TestHelper.ets
+new file mode 100644
+index 0000000..63b3981
+--- /dev/null
++++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
+@@ -0,0 +1,206 @@
++import { Want } from '@kit.AbilityKit';
++import { abilityDelegatorRegistry, Driver, ON, UiWindow } from '@kit.TestKit';
++import { expect } from '@ohos/hypium';
++
++export const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
++
++const BREAKPOINT_SM_MAX = 600;
++const BREAKPOINT_MD_MAX = 840;
++const HOME_ID = 'mall-home-page';
++const PRODUCT_DETAIL_URI =
++  'https://linking.xiaobingtang.cn/comprehensive-mall?productId=product_10001';
++
++export type TestBreakpoint = 'sm' | 'md' | 'lg';
++
++let sharedDriver: Driver | undefined = undefined;
++let sharedBundleName: string = '';
++let hasStartedEntryAbility: boolean = false;
++
++export function getDriver(): Driver {
++  if (sharedDriver === undefined) {
++    sharedDriver = Driver.create();
++  }
++  return sharedDriver;
++}
++
++export async function prepareHome(): Promise<string> {
++  const driver = getDriver();
++  if (!hasStartedEntryAbility) {
++    sharedBundleName = abilityDelegatorRegistry.getArguments().bundleName;
++    const want: Want = {
++      bundleName: sharedBundleName,
++      abilityName: 'EntryAbility',
++    };
++    await delegator.startAbility(want);
++    hasStartedEntryAbility = true;
++  }
++  await returnToHome(driver);
++  return sharedBundleName;
++}
++
++export async function returnToHome(driver: Driver): Promise<void> {
++  for (let index = 0; index < 4; index++) {
++    if (await componentExistsById(driver, HOME_ID)) {
++      break;
++    }
++    try {
++      await driver.pressBack();
++      await driver.waitForIdle(300, 1000);
++    } catch (e) {
++      console.error('returnToHome pressBack failed: ' + JSON.stringify(e));
++    }
++  }
++  await waitForComponentById(driver, HOME_ID, 12);
++  if (await componentExistsById(driver, 'mall-tab-0')) {
++    const homeTab = await driver.findComponent(ON.id('mall-tab-0'));
++    await homeTab.click();
++    await driver.waitForIdle(300, 1000);
++  }
++  await waitForComponentById(driver, 'mall-home-content', 12);
++}
++
++export async function openCategory(driver: Driver): Promise<void> {
++  await prepareHome();
++  const categoryTab = await driver.findComponent(ON.id('mall-tab-1'));
++  await categoryTab.click();
++  await waitForComponentById(driver, 'mall-category-products', 12);
++  await waitForComponentById(driver, 'mall-category-item', 12);
++}
++
++export async function openProductDetail(driver: Driver): Promise<void> {
++  await prepareHome();
++  const want: Want = {
++    bundleName: sharedBundleName,
++    abilityName: 'EntryAbility',
++    uri: PRODUCT_DETAIL_URI,
++  };
++  await delegator.startAbility(want);
++  await waitForComponentById(driver, 'mall-product-info-page', 12);
++  await waitForComponentById(driver, 'mall-product-info-card', 12);
++}
++
++export async function getWindowVpWidth(driver: Driver, bundleName: string): Promise<number> {
++  const uiWindow: UiWindow = await driver.findWindow({ bundleName: bundleName, active: true });
++  const bounds = await uiWindow.getBounds();
++  return px2vp(bounds.right - bounds.left);
++}
++
++export function getBreakpointName(vpWidth: number): TestBreakpoint {
++  if (vpWidth < BREAKPOINT_SM_MAX) {
++    return 'sm';
++  }
++  if (vpWidth < BREAKPOINT_MD_MAX) {
++    return 'md';
++  }
++  return 'lg';
++}
++
++export async function assertCurrentBreakpoint(
++  driver: Driver,
++  bundleName: string,
++  expected: TestBreakpoint,
++): Promise<void> {
++  const actual = getBreakpointName(await getWindowVpWidth(driver, bundleName));
++  expect(actual).assertEqual(expected);
++}
++
++export async function componentExistsById(driver: Driver, id: string): Promise<boolean> {
++  try {
++    const component = await driver.findComponent(ON.id(id));
++    return component !== null && component !== undefined;
++  } catch (e) {
++    return false;
++  }
++}
++
++export async function waitForComponentById(driver: Driver, id: string, retries: number = 8): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    if (await componentExistsById(driver, id)) {
++      expect(true).assertTrue();
++      return;
++    }
++    try {
++      await driver.waitForIdle(300, 1000);
++    } catch (e) {
++      console.error('waitForComponentById waitForIdle failed: ' + JSON.stringify(e));
++    }
++  }
++  console.error('component not found: ' + id);
++  expect(false).assertTrue();
++}
++
++export async function waitForComponentByText(driver: Driver, text: string, retries: number = 8): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    try {
++      const component = await driver.findComponent(ON.text(text));
++      if (component !== null && component !== undefined) {
++        expect(true).assertTrue();
++        return;
++      }
++    } catch (e) {
++    }
++    await driver.waitForIdle(300, 1000);
++  }
++  console.error('component text not found: ' + text);
++  expect(false).assertTrue();
++}
++
++export async function getAspectRatioById(driver: Driver, id: string): Promise<number> {
++  const component = await driver.findComponent(ON.id(id));
++  const bounds = await component.getBounds();
++  const width = bounds.right - bounds.left;
++  const height = bounds.bottom - bounds.top;
++  if (height <= 0) {
++    return -1;
++  }
++  return width / height;
++}
++
++export async function getComponentVpWidthById(driver: Driver, id: string): Promise<number> {
++  const component = await driver.findComponent(ON.id(id));
++  const bounds = await component.getBounds();
++  return px2vp(bounds.right - bounds.left);
++}
++
++export async function countItemsInFirstRow(driver: Driver, itemId: string): Promise<number> {
++  const items = await driver.findComponents(ON.id(itemId));
++  if (items === null || items === undefined || items.length === 0) {
++    return 0;
++  }
++  let firstTop = Number.MAX_VALUE;
++  for (let index = 0; index < items.length; index++) {
++    const bounds = await items[index].getBounds();
++    firstTop = Math.min(firstTop, bounds.top);
++  }
++  let count = 0;
++  for (let index = 0; index < items.length; index++) {
++    const bounds = await items[index].getBounds();
++    if (Math.abs(bounds.top - firstTop) <= 3) {
++      count++;
++    }
++  }
++  return count;
++}
++
++export async function isComponentVerticallyInside(
++  driver: Driver,
++  childId: string,
++  containerId: string,
++): Promise<boolean> {
++  const child = await driver.findComponent(ON.id(childId));
++  const container = await driver.findComponent(ON.id(containerId));
++  const childBounds = await child.getBounds();
++  const containerBounds = await container.getBounds();
++  const childCenterY = (childBounds.top + childBounds.bottom) / 2;
++  return childCenterY >= containerBounds.top - 3 && childCenterY <= containerBounds.bottom + 3;
++}
++
++export async function isProductDetailTwoPane(driver: Driver): Promise<boolean> {
++  const swiper = await driver.findComponent(ON.id('mall-product-swiper'));
++  const info = await driver.findComponent(ON.id('mall-product-info-card'));
++  const swiperBounds = await swiper.getBounds();
++  const infoBounds = await info.getBounds();
++  const verticalOverlap =
++    Math.min(swiperBounds.bottom, infoBounds.bottom) - Math.max(swiperBounds.top, infoBounds.top);
++  return swiperBounds.right <= infoBounds.left + 12 && verticalOverlap > 20;
++}
+diff --git a/products/entry/src/ohosTest/module.json5 b/products/entry/src/ohosTest/module.json5
+new file mode 100644
+index 0000000..6902687
+--- /dev/null
++++ b/products/entry/src/ohosTest/module.json5
+@@ -0,0 +1,12 @@
++{
++  "module": {
++    "name": "entry_test",
++    "type": "feature",
++    "deviceTypes": [
++      "default",
++      "tablet"
++    ],
++    "deliveryWithInstall": true,
++    "installationFree": false
++  }
++}

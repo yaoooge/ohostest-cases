@@ -1,0 +1,55 @@
+{
+  "case_id": "comprehensive-mall-split-shopping",
+  "golden_patch": "golden_patch.patch",
+  "test_patch": "test_patch.patch",
+  "base_project": "swe",
+  "fail_to_pass": [
+    "should_show_split_action_on_supported_window",
+    "should_start_secondary_window_in_split_mode",
+    "should_show_same_product_in_secondary_window",
+    "should_show_merge_action_in_both_windows",
+    "should_restore_main_window_when_secondary_is_closed",
+    "should_merge_when_action_is_clicked_in_secondary",
+    "should_migrate_secondary_navigation_when_merged_from_primary"
+  ],
+  "pass_to_pass": [
+    "should_start_mall_successfully",
+    "should_open_product_detail_from_applink",
+    "should_keep_purchase_actions_available",
+    "should_have_one_fullscreen_window_before_split",
+    "should_keep_product_detail_single_column_on_wide_window",
+    "should_hide_split_action_on_sm"
+  ],
+  "device_test_suites": {
+    "phone": [
+      {
+        "suite": "CommonPassToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets"
+      },
+      {
+        "suite": "SmPassToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets"
+      }
+    ],
+    "foldable": [
+      {
+        "suite": "CommonPassToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets"
+      },
+      {
+        "suite": "SplitFailToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets"
+      }
+    ],
+    "tablet": [
+      {
+        "suite": "CommonPassToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets"
+      },
+      {
+        "suite": "SplitFailToPassTest",
+        "file": "products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets"
+      }
+    ]
+  }
+}
