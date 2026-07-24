@@ -60,10 +60,6 @@
       "srcPath": "./components/module_product_search"
     },
     {
-      "name": "module_privacy_agreement",
-      "srcPath": "./components/module_privacy_agreement"
-    },
-    {
       "name": "module_ui_base",
       "srcPath": "./components/module_ui_base"
     },
@@ -88,10 +84,6 @@
       "srcPath": "./components/module_product_category"
     },
     {
-      "name": "module_product_scan",
-      "srcPath": "./components/module_product_scan"
-    },
-    {
       "name": "module_product_filter",
       "srcPath": "./components/module_product_filter"
     },
@@ -110,10 +102,6 @@
     {
       "name": "module_transition",
       "srcPath": "./components/module_transition"
-    },
-    {
-      "name": "module_advertisement",
-      "srcPath": "./components/module_advertisement"
     },
     {
       "name": "points",
