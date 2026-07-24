@@ -189,13 +189,6 @@ export struct HomePage {
       .onClick(() => {
         this.vm.jumpToSearchPage(this.getUIContext(), 'search')
       })
-
-      CommonSymbol({
-        src: $r('sys.symbol.line_viewfinder'),
-      })
-        .onClick(() => {
-          this.vm.jumpToScanPage()
-        })
     }
     .width(this.vm.isTablet ? 400 : $r('app.string.size_percent_full'))
     .height(56)

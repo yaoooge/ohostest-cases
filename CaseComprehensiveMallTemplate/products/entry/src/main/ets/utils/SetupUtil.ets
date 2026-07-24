@@ -1,6 +1,5 @@
 import { Want } from '@kit.AbilityKit';
 import { ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation';
-import { ScanRouterMap } from 'module_product_scan';
 
 export class SetupUtil {
   public static navInfo?: NavPathInfo;
@@ -22,11 +21,6 @@ export class SetupUtil {
     let params = want?.parameters;
     if (params?.shortCutKey) {
       switch (params.shortCutKey) {
-        case 'ScanPage':
-          SetupUtil.navInfo = {
-            name: ScanRouterMap.CUSTOM_SCAN_PAGE,
-          };
-          break;
         case 'OrderPage':
           SetupUtil.navInfo = {
             name: RouterMap.ORDER_LIST, param: 3,
