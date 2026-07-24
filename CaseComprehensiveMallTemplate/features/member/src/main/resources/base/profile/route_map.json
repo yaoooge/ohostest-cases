@@ -1,9 +1,0 @@
-{
-  "routerMap": [
-    {
-      "name": "MemberSubscriptionPage",
-      "pageSourceFile": "src/main/ets/views/MemberSubscriptionPage.ets",
-      "buildFunction": "buildMemberSubscriptionPage"
-    }
-  ]
-}

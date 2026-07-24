@@ -26,13 +26,13 @@ export struct ProfilePage {
               Column() {
                 buildUserInfoArea()
               }
-              .tabletContainerStyle(iData.global.isLogin)
+              .tabletContainerStyle()
 
               Column() {
                 buildCheckInArea()
                 buildMainMenuArea()
               }
-              .height(iData.global.isLogin ? 128 : 78)
+              .height(128)
               .justifyContent(FlexAlign.SpaceBetween)
             }
           } else {
@@ -78,10 +78,7 @@ function buildUserInfoArea() {
         .margin({ right: 16 });
       Column() {
         Row() {
-          Text(iData.global.isLogin ?
-            iData.global.userInfo.nickname ? iData.global.userInfo.nickname : '华为用户' :
-            '未登录',
-          )
+          Text(iData.global.userInfo.nickname ? iData.global.userInfo.nickname : '华为用户')
             .fontWeight(FontWeight.Medium)
             .fontSize(18)
             .maxLines(1)
@@ -89,31 +86,13 @@ function buildUserInfoArea() {
             .textAlign(TextAlign.Start)
             .fontColor($r('app.color.font_color_level1'))
             .margin({ right: 8 })
-          if (iData.global.isLogin) {
-            Row() {
-              SymbolGlyph($r('sys.symbol.v_diamond_fill'))
-                .fontColor([iData.global.userInfo.isMember ? $r('app.color.theme_color') :
-                  $r('app.color.font_color_level3')])
-                .margin({ right: 2 })
-              if (iData.global.userInfo.isMember) {
-                Text('VIP会员').fontColor($r('app.color.font_color_level1')).fontSize(12)
-              }
-            }
-            .alignItems(VerticalAlign.Center)
-          }
         }.alignItems(VerticalAlign.Top)
 
         Row() {
-          if (iData.global.isLogin) {
-            Image($r('app.media.ic_mobile_phone'))
-              .commonIconStyle()
-              .margin({ right: 8 });
-            Text(iData.global.userInfo.anonymousPhone).commonLabelStyle();
-          } else {
-            Text('登录后享受更多服务')
-              .commonLabelStyle()
-              .fontColor($r('app.color.font_color_level1'));
-          }
+          Image($r('app.media.ic_mobile_phone'))
+            .commonIconStyle()
+            .margin({ right: 8 });
+          Text(iData.global.userInfo.anonymousPhone).commonLabelStyle();
         }
         .justifyContent(FlexAlign.Start)
         .alignItems(VerticalAlign.Center);
@@ -122,57 +101,29 @@ function buildUserInfoArea() {
       .height(48)
       .alignItems(HorizontalAlign.Start)
       .justifyContent(FlexAlign.SpaceAround);
-
-      if (!iData.global.isLogin) {
-        Image($r('app.media.ic_arrow_right')).commonIconStyle();
-      }
-    }
-    .onClick(() => {
-      if (!iData.global.isLogin) {
-        ProfileUtil.login()
-      } else {
-        routerStack.pushPath({ name: RouterMap.USER_PROFILE_EDIT });
-      }
-    })
-
-    if (iData.global.isLogin) {
-      Divider().margin({ top: $r('app.float.space_m'), bottom: $r('app.float.space_m') })
-      Row() {
-        Text('多项会员福利等你来领').fontSize(14).fontColor($r('app.color.font_color_level1'))
-        Button('会员中心')
-          .controlSize(ControlSize.SMALL)
-          .backgroundColor($r('app.color.theme_color'))
-          .onClick(() => {
-            routerStack.pushPath({ name: RouterMap.USER_MEMBER_SUBSCRIPTION })
-          })
-      }
-      .width($r('app.string.size_percent_full'))
-      .justifyContent(FlexAlign.SpaceBetween)
     }
   }
 }
 
 @Builder
 function buildCheckInArea() {
-  if (iData.global.isLogin) {
-    ContainerColumn({ bottomGap: false }) {
-      Row() {
-        Image($r('app.media.ic_checkmark_calendar_fill'))
-          .margin({ right: $r('app.float.space_xs') })
-          .width(16)
-          .height(16)
-          .fillColor($r('app.color.font_color_level2'))
-        Text('签到可领取积分兑换好物')
-          .fontSize($r('app.float.font_size_14'))
-          .fontColor($r('app.color.font_color_level1'))
-          .layoutWeight(1)
-        Image($r('app.media.ic_arrow_right')).commonIconStyle()
-      }
-      .width($r('app.string.size_percent_full'))
-      .onClick(() => {
-        routerStack.pushPath({ name: RouterMap.POINTS_MALL })
-      })
+  ContainerColumn({ bottomGap: false }) {
+    Row() {
+      Image($r('app.media.ic_checkmark_calendar_fill'))
+        .margin({ right: $r('app.float.space_xs') })
+        .width(16)
+        .height(16)
+        .fillColor($r('app.color.font_color_level2'))
+      Text('签到可领取积分兑换好物')
+        .fontSize($r('app.float.font_size_14'))
+        .fontColor($r('app.color.font_color_level1'))
+        .layoutWeight(1)
+      Image($r('app.media.ic_arrow_right')).commonIconStyle()
     }
+    .width($r('app.string.size_percent_full'))
+    .onClick(() => {
+      routerStack.pushPath({ name: RouterMap.POINTS_MALL })
+    })
   }
 }
 
@@ -210,10 +161,6 @@ function buildOrderInfoArea() {
       Image($r('app.media.ic_arrow_right')).commonIconStyle();
     }
     .onClick(() => {
-      if (!iData.global.isLogin) {
-        ProfileUtil.login()
-        return;
-      }
       routerStack.pushPathByName(RouterMap.ORDER_LIST, 0);
     })
     .width('100%')
@@ -280,11 +227,7 @@ function buildOrderTab(icon: ResourceStr, label: string, type: number) {
   .alignItems(HorizontalAlign.Center)
   .justifyContent(FlexAlign.Start)
   .onClick(() => {
-    if (!iData.global.isLogin) {
-      ProfileUtil.login()
-    } else {
-      routerStack.pushPathByName(RouterMap.ORDER_LIST, type);
-    }
+    routerStack.pushPathByName(RouterMap.ORDER_LIST, type);
   });
 }
 
@@ -320,9 +263,9 @@ function commonIconStyle() {
 }
 
 @Extend(Column)
-function tabletContainerStyle(isLogin: boolean) {
+function tabletContainerStyle() {
   .backgroundColor($r('app.color.background_color_primary'))
   .borderRadius(16)
-  .height(isLogin ? 128 : 78)
+  .height(78)
   .justifyContent(FlexAlign.Center)
 }

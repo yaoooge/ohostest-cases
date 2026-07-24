@@ -6,7 +6,6 @@ import {
   buildDivider,
   buildEmptySearch,
   buildLoadingPlaceholder,
-  buildMemberCard,
   buildProductDesc,
   buildProductInfoCard,
   buildProductSwiper,
@@ -132,7 +131,6 @@ export struct ProductInfoPage {
         Scroll() {
           Column() {
             buildProductInfoCard(this.vm.productInfo?.productDetail!, this.vm.productInfo?.seckillInfo)
-            buildMemberCard(this.vm)
             buildDivider()
             buildReviewOverview(this.vm)
             buildDivider()
@@ -154,7 +152,6 @@ export struct ProductInfoPage {
       Column() {
         buildProductSwiper(this.vm.productInfo?.productDetail?.banners ?? [])
         buildProductInfoCard(this.vm.productInfo?.productDetail!, this.vm.productInfo?.seckillInfo)
-        buildMemberCard(this.vm)
         buildDivider()
         buildReviewOverview(this.vm)
         buildDivider()

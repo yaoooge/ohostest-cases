@@ -6,25 +6,16 @@ export enum RouterMap {
   // 广告页
   SPLASH_PAGE = 'SplashPage',
 
-  SETTING = 'SettingPage',
-  SETTING_PRIVACY = 'SettingPrivacyPage',
   SETTING_AGREEMENT = 'AgreementPage',
 
-  USER_LOGIN = 'LoginPage',
-  USER_OTHER_LOGIN = 'OtherLoginPage',
-  USER_PROFILE_EDIT = 'EditProfilePage',
-  USER_COUPON_PAGE = 'CouponPage',
   USER_CUSTOM_SERVICE = 'CustomServicePage',
   USER_COLLECTION = 'MyCollectionPage',
   USER_VIEW_HISTORY = 'ViewHistoryPage',
-  USER_MEMBER_SUBSCRIPTION = 'MemberSubscriptionPage',
   USER_POINTS_RECORD = 'PointsRecordPage',
   USER_REDEMPTION_SUBMIT = 'RedemptionSubmitPage',
   POINTS_MALL = 'PointsMallPage',
   USER_REDEMPTION_LIST = 'RedemptionListPage',
   USER_REDEMPTION_INFO = 'RedemptionInfoPage',
-  UPDATE_ADDRESS = 'UpdateAddressPage',
-
   PRODUCT_SWIPER = 'ProductSwiperPage',
   PRODUCT_REVIEW = 'ProductReviewPage',
   PRODUCT_SEARCH = 'ProductSearchPage',

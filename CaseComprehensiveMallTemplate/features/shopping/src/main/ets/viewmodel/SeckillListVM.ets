@@ -2,7 +2,6 @@ import { calendarManager } from '@kit.CalendarKit';
 import {
   CalendarUtil,
   CountdownModel,
-  iData,
   ProductInfoPageParam,
   ProductSearchPageParam,
   RouterMap,
@@ -90,10 +89,6 @@ export class SeckillListVM {
    * @param timeslot
    */
   public handleClickButton(product: SeckillProductInfo, timeslot: SeckillTimeSlot) {
-    if (!iData.global.isLogin) {
-      routerStack.pushPath({ name: RouterMap.USER_LOGIN });
-      return;
-    }
     if (timeslot.status === SeckillStatus.ONGOING) {
       this._jumpToDetail(product.productId, product.slotId);
       return;

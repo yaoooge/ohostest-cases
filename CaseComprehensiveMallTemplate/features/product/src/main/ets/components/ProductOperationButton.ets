@@ -1,4 +1,4 @@
-import { BreakpointSystem, iData, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
+import { BreakpointSystem, RouterMap, routerStack, WindowUtil } from 'lib_foundation';
 import {
   PreOrderInfoReq,
   PreOrderItem,
@@ -87,10 +87,6 @@ export struct ProductOperationButton {
   }
 
   handleButtonClick(operationType: ProductOperationType) {
-    if (!iData.global.isLogin) {
-      routerStack.pushPath({ name: RouterMap.USER_LOGIN });
-      return;
-    }
     if (!this.productInfo) {
       return;
     }

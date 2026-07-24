@@ -1,5 +1,4 @@
 import { UISkeleton, SkeletonType, SkeletonTheme } from '@hw-agconnect/ui-skeleton'
-import { iData } from 'lib_foundation';
 import { ProductDetailLabel, ProductDetailInfo, ProductReviewItem, SeckillProductInfo } from 'lib_network';
 import { ProductSwiperStyleConfig } from '../commons/StyleConfig';
 import { ProductInfoVM } from '../viewmodels/ProductInfoVM';
@@ -175,38 +174,6 @@ function getSoldLabel(productInfo: ProductDetailInfo, seckillInfo?: SeckillProdu
     return ''
   }
   return '已售' + soldLabel + '+'
-}
-
-/** 开通会员卡片 */
-@Builder
-export function buildMemberCard(vm: ProductInfoVM) {
-  if (!iData.global.userInfo.isMember) {
-    Column() {
-      Row() {
-        SymbolGlyph($r('sys.symbol.bell_fill'))
-          .fontSize(24)
-          .fontColor([$r('app.color.font_color_level1_invert')])
-          .margin({ right: $r('app.float.space_xs') })
-        Text('开通会员，享9折优惠！')
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('app.color.font_color_level1_invert'))
-
-        Blank()
-        Button('立即查看')
-          .backgroundColor(Color.White)
-          .fontColor($r('app.color.theme_color'))
-          .controlSize(ControlSize.SMALL)
-      }
-      .width('100%')
-      .padding($r('app.float.space_m'))
-      .borderRadius($r('app.float.border_radius_s'))
-      .backgroundColor($r('app.color.theme_color'))
-      .onClick(() => {
-        vm.handleClickMemberLink()
-      })
-    }
-    .padding($r('app.float.space_m'))
-  }
 }
 
 /** 用户评价卡片 */

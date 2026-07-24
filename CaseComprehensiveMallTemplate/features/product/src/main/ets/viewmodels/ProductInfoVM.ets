@@ -73,11 +73,6 @@ export class ProductInfoVM {
   }
 
   @Computed
-  get isMember() {
-    return iData.global.userInfo.isMember;
-  }
-
-  @Computed
   get reserveButtonLabel() {
     if (this.isReserved) {
       return '已预约';
@@ -113,23 +108,11 @@ export class ProductInfoVM {
     }
   }
 
-  public handleClickMemberLink() {
-    if (!this.isLogin) {
-      this.handleNotLogin();
-      return;
-    }
-    routerStack.pushPath({ name: RouterMap.USER_MEMBER_SUBSCRIPTION });
-  }
-
   public handleClickCustomService() {
     CustomServiceSheet.show();
   }
 
   public handleClickCart() {
-    if (!this.isLogin) {
-      this.handleNotLogin();
-      return;
-    }
     routerStack.pushPath({ name: RouterMap.PRODUCT_CART });
   }
 
@@ -138,10 +121,6 @@ export class ProductInfoVM {
   }
 
   public async changeCollectStatus() {
-    if (!this.isLogin) {
-      this.handleNotLogin();
-      return;
-    }
     if (!this.collectedStatus) {
       const res = await ProductApis.collectProduct({
         productId: this.productId,
@@ -215,10 +194,6 @@ export class ProductInfoVM {
         UtilLog.error(TAG, 'terminate self failed. error: ' + SafeJson.jsonStringify(err));
       }
     }
-  }
-
-  public handleNotLogin() {
-    routerStack.pushPath({ name: RouterMap.USER_LOGIN });
   }
 
   public handleClickReserveButton() {
@@ -320,9 +295,6 @@ export class ProductInfoVM {
   }
 
   private async _getCollectedStatus() {
-    if (!this.isLogin) {
-      return;
-    }
     const res = await ProductApis.getProductCollectStatus(this.productId);
     if (res.code === 0 && res.status) {
       this.collectedStatus = true;

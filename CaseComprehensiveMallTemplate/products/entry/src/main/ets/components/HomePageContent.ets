@@ -2,7 +2,6 @@ import {
   BreakpointStorage,
   BreakpointSystem,
   BreakpointTypeEnum,
-  iData,
   RouterMap,
   routerStack,
 } from 'lib_foundation';
@@ -136,7 +135,7 @@ export struct HomePageContent {
     .borderRadius($r('app.float.border_radius_l'))
     .onClick(() => {
       if (type === ActivityType.CHECKIN) {
-        routerStack.pushPath({ name: iData.global.isLogin ? RouterMap.POINTS_MALL : RouterMap.USER_LOGIN })
+        routerStack.pushPath({ name: RouterMap.POINTS_MALL })
       } else {
         routerStack.pushPath({ name: RouterMap.PRODUCT_SECKILL })
       }

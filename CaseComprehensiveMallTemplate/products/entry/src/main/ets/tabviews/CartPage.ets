@@ -1,6 +1,4 @@
-import {
-  iData, routerStack, RouterMap, ProductInfoPageParam, WindowUtil,
-} from 'lib_foundation';
+import { routerStack, RouterMap, ProductInfoPageParam, WindowUtil } from 'lib_foundation';
 import { CartProductInfo, PreOrderInfoReq, PreOrderItem, PriceType, ShoppingCartApis } from 'lib_network';
 import { ShoppingCart } from 'module_shopping_cart';
 import { ProductSelector, ProductOperationType, ProductWaterFlow } from 'product';
@@ -102,10 +100,7 @@ struct CartPage {
           this.recommendedProductSection();
         },
         onLogin: () => {
-          // 登录逻辑
-          routerStack.pushPathByName(RouterMap.USER_LOGIN, () => {
-            this.vm.global.isLogin = iData.global.isLogin;
-          });
+          this.vm.global.isLogin = true;
         },
         onCardClick: (id: string, slotId?: string) => {
           // 点击购物车卡片
