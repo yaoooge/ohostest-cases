@@ -1,0 +1,22 @@
+{
+  "module": {
+    "name": "module_product_scan",
+    "type": "har",
+    "routerMap": "$profile:route_map",
+    "deviceTypes": [
+      "default"
+    ],
+    "requestPermissions": [
+      {
+        "name" : "ohos.permission.CAMERA",
+        "reason": "$string:request_camera",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when":"inuse"
+        }
+      }
+    ]
+  }
+}

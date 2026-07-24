@@ -1,0 +1,167 @@
+{
+  "app": {
+/**todo: 配置手动签名 */
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "6.1.0(23)",
+        "targetSdkVersion": "6.1.1(24)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./products/entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shopping",
+      "srcPath": "./features/shopping"
+    },
+    {
+      "name": "order",
+      "srcPath": "./features/order"
+    },
+    {
+      "name": "lib_foundation",
+      "srcPath": "./commons/lib_foundation"
+    },
+    {
+      "name": "module_shopping_cart",
+      "srcPath": "./components/module_shopping_cart"
+    },
+    {
+      "name": "coupons",
+      "srcPath": "./components/coupons"
+    },
+    {
+      "name": "module_product_search",
+      "srcPath": "./components/module_product_search"
+    },
+    {
+      "name": "module_privacy_agreement",
+      "srcPath": "./components/module_privacy_agreement"
+    },
+    {
+      "name": "module_ui_base",
+      "srcPath": "./components/module_ui_base"
+    },
+    {
+      "name": "setting",
+      "srcPath": "./features/setting"
+    },
+    {
+      "name": "lib_network",
+      "srcPath": "./commons/lib_network"
+    },
+    {
+      "name": "lib_widget",
+      "srcPath": "./commons/lib_widget"
+    },
+    {
+      "name": "module_product_review",
+      "srcPath": "./components/module_product_review"
+    },
+    {
+      "name": "module_product_category",
+      "srcPath": "./components/module_product_category"
+    },
+    {
+      "name": "module_product_scan",
+      "srcPath": "./components/module_product_scan"
+    },
+    {
+      "name": "module_product_filter",
+      "srcPath": "./components/module_product_filter"
+    },
+    {
+      "name": "module_custom_service_chat",
+      "srcPath": "./components/module_custom_service_chat"
+    },
+    {
+      "name": "feedback",
+      "srcPath": "./components/feedback"
+    },
+    {
+      "name": "product",
+      "srcPath": "./features/product"
+    },
+    {
+      "name": "module_notice_center",
+      "srcPath": "./components/module_notice_center"
+    },
+    {
+      "name": "app_setting",
+      "srcPath": "./components/app_setting"
+    },
+    {
+      "name": "module_transition",
+      "srcPath": "./components/module_transition"
+    },
+    {
+      "name": "module_advertisement",
+      "srcPath": "./components/module_advertisement"
+    },
+    {
+      "name": "member",
+      "srcPath": "./features/member"
+    },
+    {
+      "name": "points",
+      "srcPath": "./features/points"
+    },
+    {
+      "name": "aggregated_login",
+      "srcPath": "./components/aggregated_login"
+    },
+    {
+      "name": "address_management",
+      "srcPath": "./components/address_management"
+    },
+    {
+      "name": "aggregated_share",
+      "srcPath": "./components/aggregated_share"
+    },
+    {
+      "name": "collect_personal_info",
+      "srcPath": "./components/collect_personal_info"
+    },
+    {
+      "name": "membership",
+      "srcPath": "./components/membership"
+    },
+    {
+      "name": "aggregated_payment",
+      "srcPath": "./components/aggregated_payment"
+    },
+    {
+      "name": "image_preview",
+      "srcPath": "./components/image_preview"
+    }
+  ]
+}

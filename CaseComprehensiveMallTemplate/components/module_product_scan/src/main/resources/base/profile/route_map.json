@@ -1,0 +1,9 @@
+{
+  "routerMap": [
+    {
+      "name": "CustomScanPage",
+      "pageSourceFile": "src/main/ets/views/CustomScanView.ets",
+      "buildFunction": "buildCustomScanView"
+    }
+  ]
+}

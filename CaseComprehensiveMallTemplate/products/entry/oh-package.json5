@@ -1,0 +1,33 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "lib_foundation": "file:../../commons/lib_foundation",
+    "lib_widget": "file:../../commons/lib_widget",
+    "lib_network": "file:../../commons/lib_network",
+    "module_privacy_agreement": "file:../../components/module_privacy_agreement",
+    "module_shopping_cart": "file:../../components/module_shopping_cart",
+    "module_product_category": "file:../../components/module_product_category",
+    "module_product_scan": "file:../../components/module_product_scan",
+    "feedback": "file:../../components/feedback",
+    "module_notice_center": "file:../../components/module_notice_center",
+    "module_transition": "file:../../components/module_transition",
+    "module_advertisement": "file:../../components/module_advertisement",
+    "aggregated_login": "file:../../components/aggregated_login",
+    "address_management": "file:../../components/address_management",
+    "aggregated_share": "file:../../components/aggregated_share",
+    "membership": "file:../../components/membership",
+    "setting": "file:../../features/setting",
+    "order": "file:../../features/order",
+    "shopping": "file:../../features/shopping",
+    "product": "file:../../features/product",
+    "member": "file:../../features/member",
+    "points": "file:../../features/points"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
+}

@@ -1,0 +1,34 @@
+{
+  "shortcuts": [
+    {
+      "shortcutId": "shortcuts_scan",
+      "label": "$string:shortcuts_scan",
+      "icon": "$media:ic_shortcuts_scan",
+      "wants": [
+        {
+          "bundleName": "zhsc.1.1",
+          "moduleName": "entry",
+          "abilityName": "EntryAbility",
+          "parameters": {
+            "shortCutKey": "ScanPage"
+          }
+        }
+      ]
+    },
+    {
+      "shortcutId": "shortcuts_orders",
+      "label": "$string:shortcuts_orders",
+      "icon": "$media:ic_shortcuts_orders",
+      "wants": [
+        {
+          "bundleName": "zhsc.1.1",
+          "moduleName": "entry",
+          "abilityName": "EntryAbility",
+          "parameters": {
+            "shortCutKey": "OrderPage"
+          }
+        }
+      ]
+    }
+  ]
+}
