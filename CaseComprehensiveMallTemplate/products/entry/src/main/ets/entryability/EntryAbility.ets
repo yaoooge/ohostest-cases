@@ -3,7 +3,7 @@ import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
 import UIAbility from '@ohos.app.ability.UIAbility';
 import { KeyboardAvoidMode } from '@ohos.arkui.UIContext';
 import window from '@ohos.window';
-import { ColorModeUtil, PushUtil, routerStack, WindowUtil } from 'lib_foundation';
+import { ColorModeUtil, routerStack, WindowUtil } from 'lib_foundation';
 import { LoneTakeAnimationsTransition } from 'module_transition';
 import { UtilLog } from '@hw-agconnect/util-log';
 import { SetupUtil } from '../utils/SetupUtil';
@@ -39,7 +39,6 @@ export default class EntryAbility extends UIAbility {
             .getMainWindowSync()
             .getUIContext()
             .setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET_WITH_CARET);
-          PushUtil.getTokenSyn();
           LoneTakeAnimationsTransition.init(windowStage);
         } catch (err) {
           UtilLog.error(TAG, JSON.stringify(err));

@@ -11,8 +11,6 @@ import {
   WindowUtil,
   BreakpointSystem,
   BreakpointTypeEnum,
-  PushUtil,
-  PermissionUtil,
   ProductInfoPageParam,
   ProductSearchResultsPageParam,
 } from 'lib_foundation';
@@ -69,10 +67,6 @@ export class HomePageVM {
       this.loadingStatus = LoadingStatus.FAIL;
     }
     this.isRefreshing = false;
-    PermissionUtil.requestNotificationPermission(() => {
-      // push能力测试
-      PushUtil.pushMessageMock();
-    });
   }
 
   public jumpToCategoryPage(id: string) {

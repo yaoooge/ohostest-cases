@@ -22,8 +22,6 @@ export { UserInfoModel } from './src/main/ets/models/UserInfoModel';
 
 export { Formatter } from './src/main/ets/utils/Formatter';
 
-export { PushUtil } from './src/main/ets/push/PushUtil';
-
 export { PermissionUtil } from './src/main/ets/utils/PermissionUtil';
 
 export { SafeJson } from './src/main/ets/utils/SafeJson';
