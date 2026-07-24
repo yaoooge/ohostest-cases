@@ -1,4 +1,4 @@
-export { iData, GlobalStateMgr } from './src/main/ets/utils/IData';
+export { ensureDefaultUserState, iData, GlobalStateMgr } from './src/main/ets/utils/IData';
 
 export { routerUtil as routerStack } from './src/main/ets/utils/RouterUtil';
 

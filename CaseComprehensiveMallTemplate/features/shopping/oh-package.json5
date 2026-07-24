@@ -14,8 +14,6 @@
     "module_product_filter": "file:../../components/module_product_filter",
     "module_custom_service_chat": "file:../../components/module_custom_service_chat",
     "module_transition": "file:../../components/module_transition",
-    "address_management": "file:../../components/address_management",
-    "aggregated_share": "file:../../components/aggregated_share",
     "product": "file:../product"
   }
 }

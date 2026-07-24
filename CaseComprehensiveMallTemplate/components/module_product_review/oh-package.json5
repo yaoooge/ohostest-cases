@@ -6,7 +6,6 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "module_ui_base": "file:../module_ui_base",
-    "image_preview": "file:../image_preview"
+    "module_ui_base": "file:../module_ui_base"
   }
 }

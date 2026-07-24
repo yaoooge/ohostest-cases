@@ -30,4 +30,15 @@ class IData {
 
 const iData = new IData();
 
+export function ensureDefaultUserState(): void {
+  iData.global.isLogin = true;
+  if (!iData.global.userInfo.phone) {
+    iData.global.userInfo.nickname = '华为用户';
+    iData.global.userInfo.phone = '12345678900';
+    iData.global.userInfo.anonymousPhone = '123****8900';
+    iData.global.userInfo.avatar = '';
+    iData.global.userInfo.isMember = false;
+  }
+}
+
 export { iData };

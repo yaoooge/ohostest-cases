@@ -8,8 +8,7 @@
   "dependencies": {
     "lib_foundation": "file:../../commons/lib_foundation",
     "lib_widget": "file:../../commons/lib_widget",
-    "lib_network": "file:../../commons/lib_network",
-    "membership": "file:../../components/membership"
+    "lib_network": "file:../../commons/lib_network"
   },
   "devDependencies": {},
   "dynamicDependencies": {}
