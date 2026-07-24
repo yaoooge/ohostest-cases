@@ -20,7 +20,6 @@
 | 商品评价组件（module_product_review）      | 提供商品评价功能，支持评定星级、填写评价、上传图片。         | [使用指导](./components/module_product_review/README.md)     |
 | 客服聊天组件（module_custom_service_chat） | 提供客服聊天组件，提供原生的聊天交互界面。                   | [使用指导](./components/module_custom_service_chat/README.md) |
 | 商品筛选组件（module_product_filter）      | 提供了根据筛选条件对商品进行筛选的功能。                     | [使用指导](./components/module_product_filter/README.md)     |
-| 商品识别组件（module_product_scan）        | 支持扫描商品条码/二维码，拍摄商品图片并获取返回结果。        | [使用指导](./components/module_product_scan/README.md)       |
 
 本模板为综合商城应用提供了常用功能的开发样例，模板主要分首页、分类、购物车、和我的四大模块：
 
@@ -42,9 +41,6 @@
  |    ├── 搜索
  |    |    ├── 搜索页
  |    |    └── 搜索结果展示
- |    ├── 扫码/识别
- |    |    ├── 扫描商品二维码/条形码
- |    |    └── 拍摄或选取照片识别商品
  |    ├── 图片轮播
  |    ├── 分类项展示
  |    |    ├── 签到
@@ -111,12 +107,10 @@
 │   ├── address_manage                            // 通用地址管理组件
 │   ├── module_custom_service                     // 客服聊天组件
 │   ├── module_notice_center                      // 消息中心组件
-│   ├── module_privacy_agreement                  // 协议授权组件
 │   ├── module_product_category                   // 商品分类组件
 │   ├── module_product_detail                     // 商品详情组件
 │   ├── module_product_filter                     // 商品筛选组件
 │   ├── module_product_review                     // 商品评价组件
-│   ├── module_product_scan                       // 商品识别组件
 │   ├── module_product_search                     // 商品搜索组件
 │   ├── module_product_cart                       // 购物车组件
 │   ├── module_transition                         // 一镜到底组件
@@ -166,12 +160,12 @@
     └── entry/src/main/ets
        ├── views
        │   ├── Index.ets                          // 应用启动根页面
-       │   ├── MainEntry.ets                      // 首页
-       │   ├── SafePage.ets                       // 首启用户授权页
-       │   └── SplashPage.ets                     // 启动广告页
+       │   └── MainEntry.ets                      // 首页
        └── widget                                 // 服务卡片
 
 ```
+
+普通启动不再经过首次隐私确认页或启动广告页，直接进入 `MainEntry`。商品深链、商品详情分屏和订单桌面快捷入口仍保留原有直达行为。
 
 ## 约束与限制
 
@@ -236,15 +230,7 @@
 
    当前模板的地址管理组件支持获取华为账号收货地址，使用此功能需满足一定条件。详细参考：[收货地址服务开发前提](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/account-choose-address-dev#section1061219267293)。
 
-6. 配置推送服务。
-
-   a. [开启推送服务](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/push-config-setting)。
-
-   b. 按照需要的权益[申请通知消息自分类权益](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/push-apply-right)。
-
-   c. [端云调试](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/push-server)。
-
-7. 配置App Linking服务。
+6. 配置App Linking服务。
 
    a. [开通App Linking服务](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/applinking-enable-applinking)
 
@@ -254,13 +240,7 @@
 
    d. 在products/entry/src/main路径下的module.json5中配置关联的网址域名，详细参考：[在module.json5中配置关联的网址域名](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/app-linking-startupapp#section13808113610362)
 
-8. 配置广告服务。
-
-   a. 如果仅调测广告，可使用测试广告位ID：开屏广告：testd7c5cewoj6。
-
-   b. 申请正式的广告位ID。 登录[鲸鸿动能媒体服务平台](https://developer.huawei.com/consumer/cn/service/ads/publisher/html/index.html?lang=zh) 进行申请，具体操作详情请参见[展示位创建](https://developer.huawei.com/consumer/cn/doc/distribution/monetize/zhanshiweichuangjian-0000001132700049)。
-
-9. 配置应用内支付服务
+7. 配置应用内支付服务
 
    a. 您需[开通商户服务](https://developer.huawei.com/consumer/cn/doc/start/merchant-service-0000001053025967)才能开启应用内购买服务。商户服务里配置的银行卡账号、币种，用于接收华为分成收益。
 
@@ -270,11 +250,11 @@
 
    d. 由于真实支付需依赖应用及其关联的会员商品上架，故建议在接入华为应用内支付调测过程中，您可以使用[沙盒测试](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/iap-sandbox)对订单进行虚拟支付。
 
-10. 开启智感握姿功能
+8. 开启智感握姿功能
 
    - 在调试设备-设置-搜索设置项中输入【智感握姿】，确保开关开启。
 
-11. 配置预加载服务（可选）。
+9. 配置预加载服务（可选）。
 
     a. [开通预加载](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/cloudfoundation-enable-prefetch)。
 
@@ -293,13 +273,13 @@
 
     安装预加载函数名称配置为上一步创建的云函数
 
-12. 接入微信SDK（可选）。 前往微信开放平台申请AppID并配置鸿蒙应用信息，详情参考：[鸿蒙接入指南](https://developers.weixin.qq.com/doc/oplatform/Mobile_App/Access_Guide/ohos.html)。
+10. 接入微信SDK（可选）。 前往微信开放平台申请AppID并配置鸿蒙应用信息，详情参考：[鸿蒙接入指南](https://developers.weixin.qq.com/doc/oplatform/Mobile_App/Access_Guide/ohos.html)。
 
-13. 接入QQ（可选）。 前往QQ开放平台申请AppID并配置鸿蒙应用信息，详情参考：[鸿蒙接入指南](https://wiki.connect.qq.com/sdk下载)。
+11. 接入QQ（可选）。 前往QQ开放平台申请AppID并配置鸿蒙应用信息，详情参考：[鸿蒙接入指南](https://wiki.connect.qq.com/sdk下载)。
 
-14. 对应用进行[手工签名](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-signing#section297715173233)。
+12. 对应用进行[手工签名](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-signing#section297715173233)。
 
-15. 添加手工签名所用证书对应的公钥指纹。详细参考：[配置应用签名证书指纹](https://developer.huawei.com/consumer/cn/doc/app/agc-help-cert-fingerprint-0000002278002933)
+13. 添加手工签名所用证书对应的公钥指纹。详细参考：[配置应用签名证书指纹](https://developer.huawei.com/consumer/cn/doc/app/agc-help-cert-fingerprint-0000002278002933)
 
 ### 运行调试工程
 

@@ -11,15 +11,15 @@
 - `GridRow` / `GridCol` 只计入显式使用者；当前工程没有直接调用 `onBreakpointChange`，响应更新依赖 `windowSizeChange`、`AppStorageV2` 和 `@Local` / `@Computed` 观察链。
 - 文档和截图只作为支持范围与视觉基线材料，不作为运行时能力证据。
 
-去重后共涉及 **97 个文件**：
+本轮隐私协议、Push、扫码和广告能力剥离后，去重共涉及 **88 个当前文件**：
 
 | 类型 | 文件数 | 说明 |
 | --- | ---: | --- |
-| ArkTS 运行时代码 | 39 | 断点基础设施与消费者、栅格、宽屏、分屏、多窗口、窗口/屏幕尺寸 |
-| 生产配置 | 22 | 21 个 `src/main/module.json5`，另含 SecondAbility 文案资源 |
-| 测试配置 | 17 | `src/ohosTest/module.json5` 的设备类型声明；没有多端行为专项测试 |
+| ArkTS 运行时代码 | 38 | 断点基础设施与消费者、栅格、宽屏、分屏、多窗口、窗口尺寸 |
+| 生产配置 | 19 | 18 个 `src/main/module.json5`，另含 SecondAbility 文案资源 |
+| 测试配置 | 14 | `src/ohosTest/module.json5` 的设备类型声明；没有多端行为专项测试 |
 | 平板限定资源 | 1 | `resources/tablet` 下首页横幅 |
-| 说明文档与截图 | 18 | 8 个 Markdown 文件、10 张截图 |
+| 说明文档与截图 | 16 | 7 个 Markdown 文件、9 张截图 |
 
 核心结论：
 
@@ -28,6 +28,15 @@
 3. 商品瀑布流、首页、个人中心、订单/秒杀/收藏列表、购物车和商品详情均有实际宽屏分支；不能只删除断点工具。
 4. `lib_foundation` 与 `module_ui_base` 各保留了一套近似重复的 `BreakpointSystem`，当前业务消费的是 `lib_foundation` 导出；后者属于组件侧遗留实现。
 5. 配置声明并不统一：生产/测试模块混用 `default`、`phone`、`tablet`，且部分主模块和测试模块的声明不一致。
+
+## 本轮剥离影响（2026-07-24）
+
+- 首次隐私确认页和启动广告页已删除，普通启动直接进入 `MainEntry`。这只缩短启动路由，不改变 `BreakpointSystem` 注册、宽屏布局或窗口监听。
+- 扫码组件及扫码桌面快捷入口已删除，因此原先只服务相机预览的默认显示尺寸读取不再计入当前多端文件；订单桌面快捷入口继续保留。
+- Push token、模拟推送和通知授权请求已删除，与断点、分屏及多 Ability 路由没有依赖关系。
+- 商品 App Linking 深链、商品详情 `SecondAbility` 分屏/合并、双路由栈，以及 `SM/MD/LG` 断点和 ArkUI Grid 响应式布局均保持不变。
+
+因此，本轮变化不是多端适配能力剥离。后续若执行多端能力剥离，仍需按本文其余章节处理断点、Grid、平板资源、分屏 Ability 和窗口尺寸链路。
 
 ## 全局断点系统
 
@@ -112,48 +121,47 @@
 | `CaseComprehensiveMallTemplate/components/module_transition/src/main/ets/utils/LoneTakeAnimationsTransition.ets` | 在两个 Ability 创建窗口内容后调用 `WindowUtils.init(windowStage)`。 | 若删除窗口监听但保留转场，需要替换其初始化依赖。 |
 | `CaseComprehensiveMallTemplate/components/module_transition/src/main/ets/customtransition/ImageLongTakeDelegate.ets` | 读取当前 `windowRect.width`，据此计算图片手势边界。 | 固定宽度会破坏宽屏/旋转后的拖拽与缩放范围。 |
 | `CaseComprehensiveMallTemplate/components/module_transition/src/main/ets/sessions/LongTakeAnimationProperties.ets` | 读取当前窗口沉浸模式，并依据页面新尺寸维护转场裁剪尺寸。 | 与 `ProductSwiperPage.onSizeChange` 配合；不是断点布局，但属于窗口变化兼容。 |
-| `CaseComprehensiveMallTemplate/components/module_product_scan/src/main/ets/viewmodels/CustomScanVM.ets` | `display.getDefaultDisplaySync()` 读取屏幕宽高并转换为 vp，设置相机预览与点击对焦坐标。 | 注释明确默认竖屏；没有显示/方向变化监听。旋转或窗口化时可能继续使用初始化尺寸，属于现状风险而非完整方向适配。 |
 | `CaseComprehensiveMallTemplate/features/product/src/main/ets/views/ProductSwiperPage.ets` | `NavDestination.onSizeChange` 把新尺寸传入转场会话。 | 应与转场模块一起保留或一起替换。 |
 | `CaseComprehensiveMallTemplate/features/product/src/main/ets/viewmodels/ProductInfoVM.ets` | 监听 `windowStatusChange`，主窗口恢复 `FULL_SCREEN` 时清除分屏状态。 | 这是窗口模式响应，不是宽度断点。 |
 
-工程没有直接读取方向枚举，也没有独立的横/竖屏资源限定目录；方向变化主要通过宽度断点和窗口尺寸事件间接生效。扫码模块只在初始化时读取默认显示尺寸，是需要补测的例外。
+工程没有直接读取方向枚举，也没有独立的横/竖屏资源限定目录；方向变化主要通过宽度断点和窗口尺寸事件间接生效。
 
 ## deviceTypes 配置声明
 
-共有 38 个 `module.json5` 含 `deviceTypes`：21 个生产模块配置、17 个 `ohosTest` 配置。按值组合统计为：
+共有 32 个当前 `module.json5` 含 `deviceTypes`：18 个生产模块配置、14 个 `ohosTest` 配置。按值组合统计为：
 
 | 声明组合 | 文件数 |
 | --- | ---: |
-| 仅 `default` | 18 |
+| 仅 `default` | 14 |
 | 仅 `phone` | 10 |
-| `phone` + `tablet` | 6 |
+| `phone` + `tablet` | 4 |
 | `default` + `tablet` | 4 |
 
-### 生产模块配置（21）
+### 生产模块配置（18）
 
 | 声明 | 文件 |
 | --- | --- |
-| `phone` + `tablet` | `CaseComprehensiveMallTemplate/components/module_advertisement/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_transition/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/products/entry/src/main/module.json5` |
+| `phone` + `tablet` | `CaseComprehensiveMallTemplate/components/module_transition/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/products/entry/src/main/module.json5` |
 | `default` + `tablet` | `CaseComprehensiveMallTemplate/features/points/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/features/product/src/main/module.json5` |
 | 仅 `phone` | `CaseComprehensiveMallTemplate/commons/lib_foundation/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_custom_service_chat/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_filter/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_search/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_shopping_cart/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/features/order/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/features/shopping/src/main/module.json5` |
-| 仅 `default` | `CaseComprehensiveMallTemplate/commons/lib_network/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/commons/lib_widget/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_notice_center/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_privacy_agreement/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_category/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_review/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_scan/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_ui_base/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/features/setting/src/main/module.json5` |
+| 仅 `default` | `CaseComprehensiveMallTemplate/commons/lib_network/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/commons/lib_widget/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_notice_center/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_category/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_review/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_ui_base/src/main/module.json5`<br>`CaseComprehensiveMallTemplate/features/setting/src/main/module.json5` |
 
 生产配置存在明显不一致：入口声明平板，但它依赖的 `lib_foundation`、订单、购物、购物车等模块仍仅声明 `phone`；部分使用响应式代码的模块用 `default`。后续若剥离平板能力，必须先确定 `default` 的目标语义，不能只删除显式 `"tablet"`。
 
-### 测试配置（17）
+### 测试配置（14）
 
 | 声明 | 文件 |
 | --- | --- |
-| `phone` + `tablet` | `CaseComprehensiveMallTemplate/components/module_advertisement/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_shopping_cart/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_transition/src/ohosTest/module.json5` |
+| `phone` + `tablet` | `CaseComprehensiveMallTemplate/components/module_shopping_cart/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_transition/src/ohosTest/module.json5` |
 | `default` + `tablet` | `CaseComprehensiveMallTemplate/components/module_product_filter/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/features/product/src/ohosTest/module.json5` |
 | 仅 `phone` | `CaseComprehensiveMallTemplate/commons/lib_foundation/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_custom_service_chat/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_search/src/ohosTest/module.json5` |
-| 仅 `default` | `CaseComprehensiveMallTemplate/commons/lib_network/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/commons/lib_widget/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_notice_center/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_privacy_agreement/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_category/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_review/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_scan/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_ui_base/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/features/setting/src/ohosTest/module.json5` |
+| 仅 `default` | `CaseComprehensiveMallTemplate/commons/lib_network/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/commons/lib_widget/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_notice_center/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_category/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_product_review/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/components/module_ui_base/src/ohosTest/module.json5`<br>`CaseComprehensiveMallTemplate/features/setting/src/ohosTest/module.json5` |
 
 现有 `ohosTest` 测试源码没有断点、Grid、平板布局、分屏或窗口模式专项断言；当前测试侧多端信息仅停留在上述模块部署声明。剥离前应先增加至少覆盖 `SM/MD/LG` 映射、分屏启动/合并、宽屏列数和窗口恢复全屏的测试。
 
 ## 截图与说明材料
 
-### 支持范围与变更说明（8 个 Markdown）
+### 支持范围与变更说明（7 个 Markdown）
 
 | 文件 | 多端相关内容 |
 | --- | --- |
@@ -162,18 +170,16 @@
 | `CaseComprehensiveMallTemplate/components/module_custom_service_chat/README.md` | 声明手机（含双折叠、阔折叠）支持范围。 |
 | `CaseComprehensiveMallTemplate/components/module_product_filter/README.md` | 声明手机（含双折叠、阔折叠）支持范围。 |
 | `CaseComprehensiveMallTemplate/components/module_product_review/README.md` | 声明手机（含双折叠、阔折叠）支持范围，并引用组件效果图。 |
-| `CaseComprehensiveMallTemplate/components/module_product_scan/README.md` | 声明手机（含双折叠、阔折叠）支持范围，并引用组件效果图。 |
 | `CaseComprehensiveMallTemplate/components/module_product_search/README.md` | 声明手机（含双折叠、阔折叠）支持范围，并引用组件效果图。 |
 | `CaseComprehensiveMallTemplate/components/module_shopping_cart/README.md` | 声明手机（含双折叠、阔折叠）支持范围，并引用普通与子路由购物车截图。 |
 
-### 视觉基线（10 张）
+### 视觉基线（9 张）
 
 | 范围 | 文件 | 现状 |
 | --- | --- | --- |
 | 商城主页面 | `CaseComprehensiveMallTemplate/screenshot/home.jpeg`<br>`CaseComprehensiveMallTemplate/screenshot/category.jpeg`<br>`CaseComprehensiveMallTemplate/screenshot/cart.jpeg`<br>`CaseComprehensiveMallTemplate/screenshot/profile.jpeg` | 可作为首页、分类、购物车、个人中心的现有视觉基线，但没有明确标注窗口尺寸或设备类型。 |
 | 商品筛选 | `CaseComprehensiveMallTemplate/components/module_product_filter/snapshots/display.jpg` | 组件效果图，没有平板/分屏对照。 |
 | 商品评价 | `CaseComprehensiveMallTemplate/components/module_product_review/snapshots/display.png` | 组件效果图，没有展示 `xs:3` 与 `md:5` 的对照。 |
-| 商品识别 | `CaseComprehensiveMallTemplate/components/module_product_scan/snapshots/display.jpg` | 扫码效果图，没有旋转/窗口尺寸变化对照。 |
 | 商品搜索 | `CaseComprehensiveMallTemplate/components/module_product_search/snapshots/display.png` | 组件效果图，没有折叠展开态对照。 |
 | 购物车 | `CaseComprehensiveMallTemplate/components/module_shopping_cart/screenshot/cartPage.png`<br>`CaseComprehensiveMallTemplate/components/module_shopping_cart/screenshot/childrenRoute.png` | 普通页与子路由场景截图，没有平板双列或居中弹窗对照。 |
 
@@ -187,13 +193,13 @@
 | 断点直接消费与宽屏分支 | 19 | entry、购物车、订单、积分、商品、设置、购物 |
 | 原生 Grid 响应式 | 4 | 分类、评价、商品详情（其中商品详情已计入断点消费者，去重时不重复） |
 | 分屏与多 Ability | 10 | entry、product、foundation（其中 2 个文件同时属于断点/宽屏类别） |
-| 窗口/显示尺寸与转场 | 8 | transition、scan、product（其中 2 个文件同时属于分屏或断点类别） |
-| ArkTS 运行时代码合计 | **39** | 上述类别并集 |
-| 生产配置 | **22** | 21 个生产 `module.json5` + 1 个 SecondAbility 文案资源 |
-| 测试配置 | **17** | `ohosTest/module.json5` |
+| 窗口/显示尺寸与转场 | 7 | transition、product（其中 2 个文件同时属于分屏或断点类别） |
+| ArkTS 运行时代码合计 | **38** | 上述类别并集 |
+| 生产配置 | **19** | 18 个生产 `module.json5` + 1 个 SecondAbility 文案资源 |
+| 测试配置 | **14** | `ohosTest/module.json5` |
 | 平板限定资源 | **1** | entry 首页横幅 |
-| 说明文档与截图 | **18** | 8 个 Markdown + 10 张图片 |
-| 全部文件合计 | **97** | 所有分类按路径去重 |
+| 说明文档与截图 | **16** | 7 个 Markdown + 9 张图片 |
+| 全部文件合计 | **88** | 所有分类按路径去重 |
 
 可复现扫描入口：
 
@@ -218,7 +224,7 @@ rg -l "BreakpointSystem|BreakpointTypeEnum|BreakpointStorage|onBreakpointChange|
 4. **处理局部 Grid 与资源限定。** 按产品决策把分类/评价/商品详情 Grid 改为固定手机布局或继续保留 ArkUI 原生响应式；随后处理 `resources/tablet` 横幅。Grid 与自定义断点互相独立。
 5. **逐页收敛宽屏分支。** 推荐顺序为低风险列表列数（订单、秒杀、收藏、购物车）→ 首页/个人中心 → 商品瀑布流捏合 → 商品详情左右分栏与轮播样式。每步明确固定后的手机列数、边距和弹窗形态。
 6. **最后移除 foundation 断点主干。** 仅当所有业务导入清零后，删除 `BreakpointSystem` 注册、存储、枚举与出口；同时确认 SecondAbility 销毁逻辑不再重注册它。
-7. **窗口尺寸能力单独决策。** 一镜到底转场和扫码尺寸计算不应因“删除平板布局”被一并删除。即使只支持手机，旋转、分屏系统行为、自由窗口和避让区变化仍可能需要这些监听；若确实剥离，应先用固定尺寸/生命周期刷新方案替代。
+7. **窗口尺寸能力单独决策。** 一镜到底转场不应因“删除平板布局”被一并删除。即使只支持手机，旋转、分屏系统行为、自由窗口和避让区变化仍可能需要这些监听；若确实剥离，应先用固定尺寸/生命周期刷新方案替代。
 8. **同步文档、截图和测试配置。** 更新产品支持范围、CHANGELOG/组件 README、`deviceTypes` 和视觉基线，避免代码已降级为手机单端但文档仍承诺折叠屏/平板。
 
 高风险影响点是商品详情（同时连接断点、Grid、分屏、双路由栈和窗口状态）、商品瀑布流（断点加捏合列数）与 transition（窗口几何影响手势/转场）。建议三个区域分别提交和验证，不做一次性全量删除。

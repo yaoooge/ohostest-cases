@@ -99,30 +99,40 @@ feature 层提供确定性兜底；分享、设置、个人资料编辑、优惠
 - 元数据：`CaseComprehensiveMallTemplate/AppScope/resources/base/element/string.json` 的 `agcitkid_huawei_comprehensive_mall`
   删除 10 个通用组件标识；`CaseComprehensiveMallTemplate/README.md` 删除对应组件目录与能力说明。
 
+## 后续显式剥离能力（2026-07-24）
+
+在完成非 `module_*` 组件删除后，按产品要求继续物理移除以下能力。该轮删除不改变商城核心浏览、购物车、下单和订单流程。
+
+| 剥离能力 | 删除范围 | 原入口/触发点 | 主流程兜底与保留行为 |
+| --- | --- | --- | --- |
+| 首次启动隐私协议确认 | 删除 `module_privacy_agreement`、`SafePage.ets` 及对应路由和依赖 | 普通首次启动先进入协议确认页 | 普通启动直接进入 `MainEntry`；设置 feature 中用于查看协议正文的 `AgreementPage.ets` 不属于首次确认能力，继续保留 |
+| Push | 删除 foundation Push 实现和导出，并移除 token 获取、模拟推送与通知授权请求 | `EntryAbility` 初始化 Push token；首页加载时申请通知权限并触发模拟推送 | 不再申请通知权限或注册 Push；商城页面加载和业务流程不依赖 Push 结果 |
+| 扫码/商品识别 | 删除 `module_product_scan`、首页扫码按钮、扫码路由、图像识别逻辑、扫码桌面快捷入口及资源 | 首页搜索区域扫码按钮；`ScanPage` 桌面快捷入口 | 不提供扫码替代入口；商品搜索、分类和商品详情入口继续可用，订单桌面快捷入口保留 |
+| 启动广告 | 删除 `module_advertisement`、`SplashPage.ets` 及对应路由和依赖 | 隐私确认后展示开屏广告，再进入主页 | 普通启动直接进入 `MainEntry`，不再等待广告加载或跳过回调 |
+
+商品 App Linking 深链、商品详情分屏与合并、订单桌面快捷入口均未随本轮能力删除而剥离。
+
 ## 明确保留的 module_ 组件
 
-当前 `CaseComprehensiveMallTemplate/components/` 下保留以下 12 个目录，均已通过实际目录扫描确认：
+本轮显式删除 3 个 `module_*` 组件后，`CaseComprehensiveMallTemplate/components/` 下保留以下 9 个目录：
 
-1. `module_advertisement`
-2. `module_custom_service_chat`
-3. `module_notice_center`
-4. `module_privacy_agreement`
-5. `module_product_category`
-6. `module_product_filter`
-7. `module_product_review`
-8. `module_product_scan`
-9. `module_product_search`
-10. `module_shopping_cart`
-11. `module_transition`
-12. `module_ui_base`
+1. `module_custom_service_chat`
+2. `module_notice_center`
+3. `module_product_category`
+4. `module_product_filter`
+5. `module_product_review`
+6. `module_product_search`
+7. `module_shopping_cart`
+8. `module_transition`
+9. `module_ui_base`
 
 ## 验证结果
 
 验证基于当前实现，结果如下：
 
 - `git diff 8c02f47 --name-status -- CaseComprehensiveMallTemplate`：确认 10 个目标组件树均为删除状态，消费、配置和路由文件均在改造差异中。
-- 目录完整性：10 个目标路径均不存在；`find CaseComprehensiveMallTemplate/components -mindepth 1 -maxdepth 1 -type d -name 'module_*'`
-  统计为 12。
+- 目录完整性：10 个非 `module_*` 目标路径均不存在；后续再显式删除隐私协议、扫码和广告组件后，
+  `find CaseComprehensiveMallTemplate/components -mindepth 1 -maxdepth 1 -type d -name 'module_*'` 统计为 9。
 - 静态删除契约：`node --test CaseComprehensiveMallTemplate/tests/non-module-components-removal.test.mjs` 通过，
   共 3 项测试、3 项通过、0 项失败。
 - 残留引用扫描：源码和 `oh-package.json5` 中没有指向 10 个删除包的 import 或 `file:` 依赖。
