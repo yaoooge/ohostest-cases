@@ -1,7 +1,6 @@
 import { RouterMap, routerStack, WindowUtil } from 'lib_foundation'
 import { OrderItem, PointsApis, RedemptionOrder } from 'lib_network'
 import { RedemptionOrderStatus } from '../commons/Enums'
-import { buildPointsAddressSheetOptions } from '../utils/PointsAddressUtil'
 
 @ObservedV2
 export class RedemptionListVM {
@@ -71,19 +70,5 @@ export class RedemptionListVM {
       skuInfo: [],
     }
     routerStack.pushPath({ name: RouterMap.POINTS_EXPRESS_INFO, param: orderItemParam })
-  }
-
-  public  openAddressSheet(order: RedemptionOrder): void {
-    const options = buildPointsAddressSheetOptions({
-      originalAddress: order.addressInfo,
-      orderId: order.orderId,
-      handleSubmitSuccess: () => {
-        this.loadList(this.currentTabIndex)
-      },
-    })
-    routerStack.pushPath({
-      name: RouterMap.UPDATE_ADDRESS,
-      param: options,
-    })
   }
 }

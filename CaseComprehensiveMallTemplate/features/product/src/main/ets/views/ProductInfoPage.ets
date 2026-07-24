@@ -12,7 +12,6 @@ import {
   buildReviewOverview,
 } from '../components/ProductInfoCards';
 import { ProductOperationButton } from '../components/ProductOperationButton';
-import { ShareUtil } from '../utils/ShareUtil';
 import { SeckillStatus } from 'lib_network';
 
 @Builder
@@ -60,12 +59,10 @@ export struct ProductInfoPage {
       this.vm.registerWindowActiveListener()
     })
     .onShown(async () => {
-      ShareUtil.registerGestureShare(this.getUIContext())
       this.vm.getProductInfo()
       this.vm.countdown?.startCountdownTimer()
     })
     .onHidden(() => {
-      ShareUtil.unregisterGestureShare()
       this.vm.countdown?.stopCountdownTimer()
     })
     .onDisAppear(() => {
@@ -79,18 +76,13 @@ export struct ProductInfoPage {
       title: '商品详情',
     }) {
       Row({ space: 16 }) {
-        if (this.vm.shareOptions.title) {
+        if (this.vm.productInfo) {
           CommonSymbol({
             src: this.vm.collectedStatus ? $r('sys.symbol.star_fill') : $r('sys.symbol.star'),
             color: this.vm.collectedStatus ? $r('app.color.theme_color') : $r('sys.color.font_primary'),
           })
             .onClick(() => {
               this.vm.changeCollectStatus()
-            })
-
-          CommonSymbol({ src: $r('sys.symbol.share') })
-            .onClick(() => {
-              this.vm.openShare()
             })
 
           if (BreakpointSystem.currentBreakpoint.value !== BreakpointTypeEnum.SM || this.vm.isSplitScreen) {

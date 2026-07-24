@@ -8,7 +8,6 @@ import { PointsUtil } from '../utils/PointsUtil'
 export struct RedemptionOrderCard {
   @Param @Require order: RedemptionOrder
   @Event onClickCard: () => void = () => {}
-  @Event onModifyAddress: () => void = () => {}
   @Event onUrge: () => void = () => {}
   @Event onConfirmReceipt: () => void = () => {}
   @Event onDelete: () => void = () => {}
@@ -111,14 +110,6 @@ export struct RedemptionOrderCard {
       Row({ space: 8 }) {
         Blank()
         if (this.order.status === RedemptionOrderStatus.PENDING_SHIPMENT) {
-          Button('修改地址')
-            .controlSize(ControlSize.SMALL)
-            .backgroundColor($r('app.color.background_color_button_grey'))
-            .fontColor($r('app.color.theme_color'))
-            .onClick(() => {
-              this.onModifyAddress()
-            })
-
           Button('催发货')
             .controlSize(ControlSize.SMALL)
             .backgroundColor($r('app.color.theme_color'))

@@ -1,15 +1,14 @@
-import { AddressManageUtil } from 'address_management'
 import { routerStack, WindowUtil } from 'lib_foundation'
 import { AddressInfo, PointsApis, UserPointRedemptionSku } from 'lib_network'
 
 @ObservedV2
 export class RedemptionSubmitVM {
   @Trace
-  customerAddress: string = ''
+  customerAddress: string = '广东省深圳市南山区科技园'
   @Trace
-  customerName: string = '请填写收件人信息'
+  customerName: string = '华为用户'
   @Trace
-  customerPhone: string = ''
+  customerPhone: string = '12300000000'
   @Trace
   product: UserPointRedemptionSku | undefined = undefined
 
@@ -24,16 +23,6 @@ export class RedemptionSubmitVM {
       return '请填写收件人信息'
     }
     return this.customerName + ' ' + this.customerPhone
-  }
-
-  init() {
-    AddressManageUtil.getDefaultAddress().then((res) => {
-      if (res) {
-        this.customerName = res.name
-        this.customerPhone = res.phone
-        this.customerAddress = res.province + res.city + res.district + res.street + res.detail
-      }
-    })
   }
 
   async onSubmit() {

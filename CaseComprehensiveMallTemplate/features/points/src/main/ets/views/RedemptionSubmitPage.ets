@@ -1,7 +1,5 @@
-import { routerStack } from 'lib_foundation'
 import { ContainerColumn, NavTitleBar } from 'lib_widget'
 import { UserPointRedemptionSku } from 'lib_network'
-import { AddressManageUtil } from 'address_management'
 import { RedemptionSubmitVM } from '../viewmodels/RedemptionSubmitVM'
 
 @Builder
@@ -41,7 +39,6 @@ struct RedemptionSubmitPage {
     })
     .onReady((context) => {
       this.vm.product = context.pathInfo.param as UserPointRedemptionSku | undefined
-      this.vm.init()
     })
   }
 
@@ -67,22 +64,11 @@ struct RedemptionSubmitPage {
               .textOverflow({ overflow: TextOverflow.Ellipsis })
           }
           .layoutWeight(1)
-          .margin({ right: 16 })
           .alignItems(HorizontalAlign.Start)
-
-          Image($r('sys.media.ohos_ic_public_arrow_right'))
-            .arrowStyle()
         }
         .layoutWeight(1)
         .justifyContent(FlexAlign.SpaceBetween)
       }
-      .onClick(() => {
-        AddressManageUtil.goToAddressListPage(routerStack.getActiveStack(), (data) => {
-          this.vm.customerAddress = data.province + data.city + data.district + data.street + data.detail
-          this.vm.customerName = data.name
-          this.vm.customerPhone = data.phone
-        })
-      })
     }
   }
 

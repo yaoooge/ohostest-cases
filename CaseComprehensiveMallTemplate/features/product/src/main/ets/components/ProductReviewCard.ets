@@ -1,28 +1,9 @@
-import { ImagePreview, ImagePreviewOptions, SourceImageModel } from 'image_preview'
 import { ProductReviewItem, ReviewMediaItem, ReviewMediaType } from 'lib_network'
 
 @ComponentV2
 export struct ProductReviewCard {
   @Param
   reviewItem: ProductReviewItem | undefined = undefined
-  @Local
-  options: ImagePreviewOptions = new ImagePreviewOptions()
-
-  aboutToAppear(): void {
-    if (this.reviewItem?.mediaList?.length) {
-      const mediaList: SourceImageModel[] = this.reviewItem.mediaList.map((item) => {
-        if (item.type === ReviewMediaType.MOVING_PHOTO && item.movingPhotoUri) {
-          return new SourceImageModel({
-            imageUrl: item.movingPhotoUri.imageUri,
-            videoUrl: item.movingPhotoUri.videoUri,
-          })
-        } else {
-          return new SourceImageModel({ imageUrl: item.uri })
-        }
-      })
-      this.options.setImageList(mediaList)
-    }
-  }
 
   build() {
     Column() {
@@ -85,10 +66,6 @@ export struct ProductReviewCard {
                       .width($r('app.string.size_percent_full'))
                       .aspectRatio(1)
                       .borderRadius($r('app.float.border_radius_s'))
-                      .onClick(() => {
-                        this.options.setInitIndex(index)
-                        ImagePreview.open(this.getUIContext(), this.options)
-                      })
                     if (item.type === ReviewMediaType.MOVING_PHOTO) {
                       SymbolGlyph($r('sys.symbol.livephoto'))
                         .position({ left: 8, bottom: 8 })

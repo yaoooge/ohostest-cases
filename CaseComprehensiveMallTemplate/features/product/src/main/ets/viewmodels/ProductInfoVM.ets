@@ -1,6 +1,5 @@
 import { calendarManager } from '@kit.CalendarKit';
-import { SharePicker, ShareRecordData } from 'aggregated_share';
-import { AbilityConstant, common, StartOptions, Want } from '@kit.AbilityKit';
+import { AbilityConstant, StartOptions, Want } from '@kit.AbilityKit';
 import {
   CalendarUtil,
   CountdownModel,
@@ -21,7 +20,6 @@ import {
   SeckillTimeSlot,
 } from 'lib_network';
 import { CommonConfirmDialog, CustomServiceSheet } from 'lib_widget';
-import { ShareUtil } from '../utils/ShareUtil';
 import { UtilLog } from '@hw-agconnect/util-log';
 import { window } from '@kit.ArkUI';
 
@@ -37,8 +35,6 @@ export class ProductInfoVM {
   productInfo?: ProductInfo;
   @Trace
   collectedStatus: boolean = false;
-  @Trace
-  shareOptions: ShareRecordData = { title: '' };
   @Trace
   reviewList: ProductReviewItem[] = [];
   @Trace
@@ -142,11 +138,6 @@ export class ProductInfoVM {
         },
       });
     }
-  }
-
-  public openShare() {
-    const picker: SharePicker = new SharePicker(this.shareOptions);
-    picker.show(WindowUtil.globalUIContext);
   }
 
   /** 以分屏次窗口方式启动当前商品详情页，实现应用内左右分屏比较 */
@@ -266,13 +257,6 @@ export class ProductInfoVM {
     const res = await ProductApis.getProductDetail(this.productId, this.slotId);
     if (res.code === 0) {
       this.productInfo = res.data;
-      this.shareOptions = {
-        coverUrl: this.productInfo.productDetail.banners[0],
-        thumbUrl: this.productInfo.productDetail.banners[0],
-        title: this.productInfo.productDetail.title,
-        landingPageUrl: ShareUtil.getShareLink(this.productInfo.productDetail.productId),
-      };
-      ShareUtil.initShareData(this.productInfo.productDetail);
       this._getReservedStatus();
     }
   }

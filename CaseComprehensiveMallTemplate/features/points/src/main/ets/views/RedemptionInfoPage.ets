@@ -4,7 +4,6 @@ import { CommonLoading, CommonScroll, ContainerColumn, CustomServiceSheet } from
 import { RedemptionOrderStatus } from '../commons/Enums'
 import { RedemptionInfoVM } from '../viewmodels/RedemptionInfoVM'
 import { PointsUtil } from '../utils/PointsUtil'
-import { buildPointsAddressSheetOptions } from '../utils/PointsAddressUtil'
 
 @Builder
 export function buildRedemptionInfoPage() {
@@ -116,15 +115,6 @@ struct RedemptionInfoPage {
           }
           .layoutWeight(1)
           .alignItems(HorizontalAlign.Start)
-
-          if (order.status === RedemptionOrderStatus.PENDING_SHIPMENT) {
-            Text('修改')
-              .fontSize($r('app.float.font_size_12'))
-              .fontColor($r('app.color.theme_color'))
-              .onClick(() => {
-                this.openAddressSheet(order)
-              })
-          }
         }
         .layoutWeight(1)
       }
@@ -369,19 +359,5 @@ struct RedemptionInfoPage {
       skuInfo: [],
     }
     routerStack.pushPath({ name: RouterMap.POINTS_EXPRESS_INFO, param: orderItemParam })
-  }
-
-  private openAddressSheet(order: RedemptionOrder): void {
-    const options = buildPointsAddressSheetOptions({
-      originalAddress: order.addressInfo,
-      orderId: order.orderId,
-      handleSubmitSuccess: () => {
-        this.vm.loadDetail(order.orderId)
-      },
-    })
-    routerStack.pushPath({
-      name: RouterMap.UPDATE_ADDRESS,
-      param: options,
-    })
   }
 }

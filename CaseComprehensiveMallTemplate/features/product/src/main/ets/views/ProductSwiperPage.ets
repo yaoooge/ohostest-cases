@@ -1,4 +1,3 @@
-import { SharePicker } from 'aggregated_share'
 import {
   BreakpointStorage,
   BreakpointSystem,
@@ -7,11 +6,10 @@ import {
   RouterMap,
   routerStack,
 } from 'lib_foundation'
-import { ProductApis, ProductCardItem, ProductDetailInfo, ProductInfo } from 'lib_network'
+import { ProductApis, ProductCardItem, ProductInfo } from 'lib_network'
 import { CommonSymbol, NavTitleBar } from 'lib_widget'
 import { CardLongTakeDelegate, LongTakeAnimationProperties, LongTakeTransitionParam } from 'module_transition'
 import { ProductOperationButton } from '../components/ProductOperationButton'
-import { ShareUtil } from '../utils/ShareUtil'
 
 @Builder
 export function buildProductSwiperPage() {
@@ -106,10 +104,6 @@ export struct ProductSwiperPage {
             routerStack.pushPath({
               name: RouterMap.PRODUCT_CART,
             })
-          })
-        CommonSymbol({ src: $r('sys.symbol.share') })
-          .onClick(() => {
-            this.handleShare()
           })
       }
       .justifyContent(FlexAlign.End)
@@ -215,18 +209,6 @@ export struct ProductSwiperPage {
       if (res.code === 0) {
         this.productInfo = res.data;
       }
-    }
-  }
-
-  handleShare() {
-    if (this.curProduct) {
-      const picker: SharePicker = new SharePicker({
-        title: this.curProduct.title,
-        coverUrl: this.curProduct.banner,
-        thumbUrl: this.curProduct.banner,
-        landingPageUrl: ShareUtil.getShareLink(this.curProduct.productId),
-      });
-      picker.show(this.getUIContext());
     }
   }
 }

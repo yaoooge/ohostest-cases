@@ -116,9 +116,6 @@ struct RedemptionListPage {
                   },
                 })
               },
-              onModifyAddress: () => {
-                this.vm.openAddressSheet(order)
-              },
               onUrge: () => {
                 this.vm.urgeShipment(order.orderId)
               },
