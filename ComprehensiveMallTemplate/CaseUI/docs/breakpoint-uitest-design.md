@@ -39,8 +39,10 @@
 1. 先将当前 `test_patch.patch` 应用到 `answer`；
 2. 后续新增测试和测试所需组件 ID 直接修改 `answer`；
 3. 用户在 `answer` 中完成代码评审；
-4. 全部用例符合要求后，再将测试相关修改同步到 `swe`；
-5. 最后根据 `swe` 的测试修改重新生成 `test_patch.patch`。
+4. 使用 `ohostest:matrix` 直接验证 `answer`，直至三个设备上的全部用例通过；
+5. 全部用例符合要求后，再将测试相关修改同步到用于制补丁的 SWE 工作副本；
+6. 以干净的 `swe` 为基线重新生成 `test_patch.patch`；
+7. 最后使用 `ohostest:case --run swe` 验证新补丁在 SWE 上的 fail/pass 分类。
 
 在评审通过前，不提前修改 `swe`，也不覆盖现有 `test_patch.patch`。
 
@@ -356,37 +358,87 @@ should_show_four_points_products_on_lg
 
 case-runner 报告中不得出现 `unclassified` 或 `conflict`。
 
-## 10. case-runner 验证
+## 10. 验证流程
 
-实现完成后在 runner 工程执行完整 SWE/Answer 双轮：
+### 10.1 Answer 开发阶段：ohostest:matrix
 
-```bash
-npm --prefix /Users/guoyutong/codeRepo/01-mine/harmonyos-ohostest/harmonyos-ohostest-runner \
-  run ohostest:case -- \
-  --case /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ComprehensiveMallTemplate/CaseUI \
-  --run all
-```
+新增测试开发期间只验证 `answer` 工程，不通过 case 模式重复合成 Answer。
 
-需要缩小问题范围时，分别执行：
+可以按设备分批验证：
 
 ```bash
 npm --prefix /Users/guoyutong/codeRepo/01-mine/harmonyos-ohostest/harmonyos-ohostest-runner \
-  run ohostest:case -- \
-  --case /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ComprehensiveMallTemplate/CaseUI \
-  --run all \
+  run ohostest:matrix -- \
+  --project /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ComprehensiveMallTemplate/CaseUI/answer \
   --device phone
 ```
 
-将 `phone` 分别替换为 `foldable` 或 `tablet`。
+将 `phone` 分别替换为 `foldable` 或 `tablet`，依次验证三个断点。需要只运行当前断点 Suite
+时，可以额外传入：
 
-### 10.1 验收条件
+```bash
+--test-class SmPassToPassTest
+--test-class MdFailToPassTest
+--test-class LgFailToPassTest
+```
 
-完整验证必须满足：
+每条 matrix 命令只传入与设备对应的一个 `--test-class`。
+
+完成分批调试后，执行一次完整 Answer 矩阵：
+
+```bash
+npm --prefix /Users/guoyutong/codeRepo/01-mine/harmonyos-ohostest/harmonyos-ohostest-runner \
+  run ohostest:matrix -- \
+  --project /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ComprehensiveMallTemplate/CaseUI/answer \
+  --device phone \
+  --device foldable \
+  --device tablet
+```
+
+Answer 阶段验收条件：
+
+1. matrix 级 `status` 为 `completed`；
+2. phone、foldable、tablet 均完成执行；
+3. 三个断点 Suite 中的每一条测试均为 `passed`；
+4. 没有 suite failure、用例 failure、`none parsed` 或设备 blocked；
+5. 构建、安装、启动和测试解析均无诊断错误。
+
+只有满足以上条件，才能开始构建新的 SWE 测试补丁。
+
+### 10.2 补丁构建阶段
+
+Answer 全量 matrix 通过后：
+
+1. 保留一份未包含测试修改的干净 `swe` 基线；
+2. 将 `answer` 中的 ohosTest 文件、测试所需组件 ID 和确定性测试支持修改同步到 SWE 工作副本；
+3. 对比干净 `swe` 与该工作副本，生成新的 `test_patch.patch`；
+4. 检查 patch 中只包含测试及测试可观测性修改，不包含 golden 响应式实现；
+5. 使用 `git apply --check` 确认新 patch 能应用到干净 `swe`。
+
+case 目录中最终保留的 `swe` 必须仍是未应用 `test_patch.patch` 的基线，否则 case-runner 会重复应用补丁并失败。
+
+### 10.3 SWE 验证阶段：ohostest:case
+
+新 `test_patch.patch` 和 `metadata.json` 准备完成后，仅执行 SWE：
+
+```bash
+npm --prefix /Users/guoyutong/codeRepo/01-mine/harmonyos-ohostest/harmonyos-ohostest-runner \
+  run ohostest:case -- \
+  --case /Users/guoyutong/codeRepo/01-mine/ohostest-cases/ComprehensiveMallTemplate/CaseUI \
+  --run swe
+```
+
+需要定位单设备问题时，可以附加一个 `--device phone`、`--device foldable` 或
+`--device tablet`；最终验收必须执行不带 `--device` 的完整 SWE 矩阵。
+
+### 10.4 最终验收条件
+
+SWE case 验证必须满足：
 
 1. case 级 `status` 为 `completed`；
 2. phone、foldable、tablet 均完成执行；
-3. 所有 `pass_to_pass` 在 SWE 和 Answer 中都通过；
-4. 所有 `fail_to_pass` 在 SWE 中失败、在 Answer 中通过；
+3. 所有 `pass_to_pass` 在 SWE 中通过；
+4. 所有 `fail_to_pass` 在 SWE 中失败；
 5. 每台设备的 `Incorrect` 为 0；
 6. 报告中没有 `unclassified`、`conflict`、`none parsed`；
 7. 构建、安装、启动和测试解析均无诊断错误。
@@ -405,4 +457,5 @@ npm --prefix /Users/guoyutong/codeRepo/01-mine/harmonyos-ohostest/harmonyos-ohos
 6. 收藏、浏览记录、秒杀和骨架状态；
 7. 更新 `metadata.json`，运行完整 case-runner 双轮验证。
 
-每完成一组页面，先使用对应 `--device` 验证；全部完成后必须执行不带 `--device` 的 `--run all`。
+每完成一组页面，先使用 `ohostest:matrix --device <id>` 验证对应 Answer Suite。所有 Answer
+用例通过后，才生成新测试补丁；最终使用 `ohostest:case --run swe` 完成 SWE 分类验证。
