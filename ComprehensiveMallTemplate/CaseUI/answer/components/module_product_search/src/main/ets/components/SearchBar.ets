@@ -29,6 +29,7 @@ export struct SearchBar {
           .height(24)
           .fillColor($r('app.color.font_color_level1'));
       }
+      .id('mall-search-back')
       .width(40)
       .height(40)
       .borderRadius(Constants.BORDER_RADIUS_CAPSULE)

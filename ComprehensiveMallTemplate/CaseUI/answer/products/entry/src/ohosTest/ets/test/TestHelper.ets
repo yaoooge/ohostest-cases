@@ -1,6 +1,7 @@
 import { Want } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Driver, ON, PointerMatrix, Rect, UiWindow } from '@kit.TestKit';
 import { expect } from '@ohos/hypium';
+import { ProductSearchResultsPageParam, RouterMap, routerStack } from 'lib_foundation';
 
 export const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
 
@@ -39,12 +40,26 @@ export async function prepareHome(): Promise<string> {
 }
 
 export async function returnToHome(driver: Driver): Promise<void> {
-  for (let index = 0; index < 4; index++) {
-    if (await componentExistsById(driver, HOME_ID)) {
+  for (let index = 0; index < 8; index++) {
+    const isSearchPage = await componentExistsById(driver, 'search_bar');
+    const isSearchResults = await componentExistsById(driver, 'mall-display-mode-toggle');
+    const isProductDetail = await componentExistsById(driver, 'mall-product-info-page');
+    if (!isSearchPage && !isSearchResults && !isProductDetail &&
+      await componentExistsById(driver, HOME_ID)) {
       break;
     }
     try {
-      await driver.pressBack();
+      if (!isSearchPage && !isSearchResults && !isProductDetail &&
+        await componentExistsById(driver, 'mall-tab-0')) {
+        const homeTab = await driver.findComponent(ON.id('mall-tab-0'));
+        await homeTab.click();
+      } else if ((isSearchPage || isSearchResults) &&
+        await componentExistsById(driver, 'mall-search-back')) {
+        const searchBack = await driver.findComponent(ON.id('mall-search-back'));
+        await searchBack.click();
+      } else {
+        await driver.pressBack();
+      }
       await driver.waitForIdle(300, 1000);
     } catch (e) {
       console.error('returnToHome pressBack failed: ' + JSON.stringify(e));
@@ -57,14 +72,55 @@ export async function returnToHome(driver: Driver): Promise<void> {
     await driver.waitForIdle(300, 1000);
   }
   await waitForComponentById(driver, 'mall-home-content', 12);
+  await waitForComponentById(driver, 'mall-product-item', 20);
+  await driver.delayMs(500);
 }
 
 export async function openCategory(driver: Driver): Promise<void> {
   await prepareHome();
   const categoryTab = await driver.findComponent(ON.id('mall-tab-1'));
   await categoryTab.click();
-  await waitForComponentById(driver, 'mall-category-products', 12);
-  await waitForComponentById(driver, 'mall-category-item', 12);
+  await waitForComponentById(driver, 'mall-category-products', 20);
+  await waitForComponentById(driver, 'mall-category-item', 20);
+}
+
+export async function submitProductSearch(driver: Driver): Promise<void> {
+  await prepareHome();
+  routerStack.pushPath({
+    name: RouterMap.PRODUCT_SEARCH_RESULTS,
+    param: {
+      keywords: '针织',
+    } as ProductSearchResultsPageParam,
+  }, false);
+  await waitForComponentById(driver, 'mall-display-mode-toggle', 12);
+}
+
+export async function openSearchResults(driver: Driver): Promise<void> {
+  await submitProductSearch(driver);
+  await waitForComponentById(driver, 'mall-display-mode-toggle', 12);
+  await waitForComponentById(driver, 'mall-product-waterflow', 20);
+  await waitForComponentById(driver, 'mall-product-item', 20);
+}
+
+export async function switchToListMode(driver: Driver): Promise<void> {
+  const toggle = await driver.findComponent(ON.id('mall-display-mode-toggle'));
+  await toggle.click();
+  const salesSort = await driver.findComponent(ON.id('mall-sort-sales'));
+  await salesSort.click();
+  await waitForComponentById(driver, 'mall-vertical-skeleton-item', 12);
+  await waitForComponentById(driver, 'mall-list-product-item', 20);
+}
+
+export async function openSearchSkeleton(driver: Driver, listMode: boolean): Promise<void> {
+  await submitProductSearch(driver);
+  if (listMode) {
+    await waitForComponentById(driver, 'mall-display-mode-toggle', 8);
+    const toggle = await driver.findComponent(ON.id('mall-display-mode-toggle'));
+    await toggle.click();
+    await waitForComponentById(driver, 'mall-vertical-skeleton-item', 12);
+    return;
+  }
+  await waitForComponentById(driver, 'mall-horizontal-skeleton-item', 12);
 }
 
 export async function openProductDetail(driver: Driver): Promise<void> {
@@ -76,7 +132,7 @@ export async function openProductDetail(driver: Driver): Promise<void> {
   };
   await delegator.startAbility(want);
   await waitForComponentById(driver, 'mall-product-info-page', 12);
-  await waitForComponentById(driver, 'mall-product-info-card', 12);
+  await waitForComponentById(driver, 'mall-product-info-card', 20);
 }
 
 export async function getWindowVpWidth(driver: Driver, bundleName: string): Promise<number> {
@@ -122,7 +178,7 @@ export async function waitForComponentById(driver: Driver, id: string, retries: 
     await driver.delayMs(300);
   }
   console.error('component not found: ' + id);
-  expect(false).assertTrue();
+  expect('component found: ' + id).assertEqual('component not found: ' + id);
 }
 
 export async function waitForComponentByText(driver: Driver, text: string, retries: number = 8): Promise<void> {
@@ -138,7 +194,7 @@ export async function waitForComponentByText(driver: Driver, text: string, retri
     await driver.delayMs(300);
   }
   console.error('component text not found: ' + text);
-  expect(false).assertTrue();
+  expect('component text found: ' + text).assertEqual('component text not found: ' + text);
 }
 
 export async function getAspectRatioById(driver: Driver, id: string): Promise<number> {
@@ -159,23 +215,30 @@ export async function getComponentVpWidthById(driver: Driver, id: string): Promi
 }
 
 export async function countItemsInFirstRow(driver: Driver, itemId: string): Promise<number> {
-  const items = await driver.findComponents(ON.id(itemId));
-  if (items === null || items === undefined || items.length === 0) {
-    return 0;
-  }
-  let firstTop = Number.MAX_VALUE;
-  for (let index = 0; index < items.length; index++) {
-    const bounds = await items[index].getBounds();
-    firstTop = Math.min(firstTop, bounds.top);
-  }
-  let count = 0;
-  for (let index = 0; index < items.length; index++) {
-    const bounds = await items[index].getBounds();
-    if (Math.abs(bounds.top - firstTop) <= 3) {
-      count++;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    try {
+      const items = await driver.findComponents(ON.id(itemId));
+      if (items !== null && items !== undefined && items.length > 0) {
+        const boundsList: Rect[] = [];
+        let firstTop = Number.MAX_VALUE;
+        for (let index = 0; index < items.length; index++) {
+          const bounds = await items[index].getBounds();
+          boundsList.push(bounds);
+          firstTop = Math.min(firstTop, bounds.top);
+        }
+        let count = 0;
+        for (let index = 0; index < boundsList.length; index++) {
+          if (Math.abs(boundsList[index].top - firstTop) <= 3) {
+            count++;
+          }
+        }
+        return count;
+      }
+    } catch (e) {
     }
+    await driver.delayMs(300);
   }
-  return count;
+  return 0;
 }
 
 export async function isComponentBelow(

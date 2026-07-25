@@ -35,6 +35,7 @@ export struct SortBar {
       });
 
       Text('销量')
+        .id('mall-sort-sales')
         .sortLabelStyle(this.isSortActive([SortTypeMap.SALE]))
         .onClick(() => {
           this.switchSortType(SortTypeMap.SALE);

@@ -7,9 +7,12 @@ import {
   getDriver,
   isComponentBelow,
   openCategory,
+  openSearchResults,
+  openSearchSkeleton,
   pinchInById,
   pinchOutById,
   prepareHome,
+  switchToListMode,
 } from './TestHelper';
 
 export default function mdFailToPassTest() {
@@ -56,5 +59,25 @@ export default function mdFailToPassTest() {
       expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
       done();
     });
+
+    it('should_keep_list_mode_single_column_on_md', Level.LEVEL2, async (done: Function) => {
+      await openSearchResults(driver);
+      await switchToListMode(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-list-product-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_show_three_horizontal_skeleton_columns_on_md', Level.LEVEL2, async (done: Function) => {
+      await openSearchSkeleton(driver, false);
+      expect(await countItemsInFirstRow(driver, 'mall-horizontal-skeleton-item')).assertEqual(3);
+      done();
+    });
+
+    it('should_keep_vertical_skeleton_single_column_on_md', Level.LEVEL2, async (done: Function) => {
+      await openSearchSkeleton(driver, true);
+      expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(1);
+      done();
+    });
+
   });
 }

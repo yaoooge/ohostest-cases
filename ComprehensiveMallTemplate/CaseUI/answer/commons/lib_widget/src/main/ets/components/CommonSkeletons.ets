@@ -35,9 +35,15 @@ export struct ProductListSkeleton {
       Repeat<boolean>(this.getCardList())
         .each((ri: RepeatItem<boolean>) => {
           if (this.isVertical) {
-            VerticalCard({imageSize:this.imageSize})
+            ListItem() {
+              VerticalCard({imageSize:this.imageSize})
+            }
+            .id('mall-vertical-skeleton-item')
           } else {
-            HorizontalCard({imageSize:this.imageSize})
+            ListItem() {
+              HorizontalCard({imageSize:this.imageSize})
+            }
+            .id('mall-horizontal-skeleton-item')
           }
         })
     }

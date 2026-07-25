@@ -11,9 +11,12 @@ import {
   isProductDetailTwoPane,
   openCategory,
   openProductDetail,
+  openSearchResults,
+  openSearchSkeleton,
   pinchInById,
   pinchOutById,
   prepareHome,
+  switchToListMode,
 } from './TestHelper';
 
 export default function lgFailToPassTest() {
@@ -79,5 +82,25 @@ export default function lgFailToPassTest() {
       expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
       done();
     });
+
+    it('should_show_two_list_mode_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openSearchResults(driver);
+      await switchToListMode(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-list-product-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_four_horizontal_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openSearchSkeleton(driver, false);
+      expect(await countItemsInFirstRow(driver, 'mall-horizontal-skeleton-item')).assertEqual(4);
+      done();
+    });
+
+    it('should_show_two_vertical_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openSearchSkeleton(driver, true);
+      expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(2);
+      done();
+    });
+
   });
 }
