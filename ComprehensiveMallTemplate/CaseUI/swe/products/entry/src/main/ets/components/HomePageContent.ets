@@ -37,6 +37,7 @@ export struct HomePageContent {
       })
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
     }
+    .id('mall-home-content')
     .padding({
       left: $r('app.float.space_l'),
       right: $r('app.float.space_l'),
@@ -54,6 +55,7 @@ export struct HomePageContent {
           .draggable(false);
       }, (item: ResourceStr, index: number) => index + JSON.stringify(item));
     }
+    .id('mall-home-banner')
     .width('100%')
     .indicator(false)
     .autoPlay(true)

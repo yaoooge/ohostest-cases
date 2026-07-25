@@ -48,7 +48,7 @@ UITest 只验证横幅容器比例，不比较或识别图片内容。
 
 ### 2.4 用例测试的存放方式
 
-两个 `swe` 必须完全一致，因此不同用例的 UITest 不直接固化进初始 `swe`。每个用例使用自己的 `test_patch.patch`，评测时对对应的 swe/answer 注入相同测试和测试 ID。
+两个 `swe` 必须完全一致。稳定测试 ID 作为基础工程的可测试性契约，直接固化在共同 `swe`，并同步保留在各 answer 中。每个用例的 `test_patch.patch` 只允许修改对应产品的 `ohosTest/` 目录，不得修改 `src/main/` 业务代码。
 
 ## 3. 目标目录
 
@@ -387,8 +387,8 @@ UI answer 不恢复：
 
 ## 9. UITest 工程约束
 
-1. `test_patch.patch` 为关键页面和组件增加稳定 ID。
-2. 测试 ID 同时注入 swe 和 answer，不属于 golden patch。
+1. 关键页面和组件的稳定 ID 固化在共同 swe，并同步存在于 answer。
+2. `test_patch.patch` 只包含 `ohosTest/` 目录；测试 ID 不属于 test patch 或 golden patch。
 3. 几何断言统一转换为 vp，并使用合理容差：
    - 固定长度：建议 ±2vp。
    - 比例：建议误差不超过 0.08。

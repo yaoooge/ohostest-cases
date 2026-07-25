@@ -37,6 +37,7 @@ struct MainEntry {
           .clip(false)
         }, (item: TabListItem, index: number) => index + '__' + item.label);
       }
+      .id('mall-main-entry')
       .scrollable(false)
       .barOverlap(true)
       .height($r('app.string.size_percent_full'))
@@ -95,6 +96,7 @@ struct MainEntry {
         .fontWeight(FontWeight.Medium)
         .margin({ top: $r('app.float.space_xxs') });
     }
+    .id('mall-tab-' + index)
     .justifyContent(FlexAlign.Center)
     .width($r('app.string.size_percent_full'))
     .padding(4)

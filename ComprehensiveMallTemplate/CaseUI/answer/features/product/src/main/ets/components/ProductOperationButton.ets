@@ -30,6 +30,7 @@ export struct ProductOperationButton {
   build() {
     Row() {
       Button('加入购物车')
+        .id('mall-add-to-cart')
         .bottomButtonStyle(BreakpointSystem.isTablet)
         .borderColor($r('app.color.background_color_button_grey'))
         .fontColor($r('app.color.theme_color'))
@@ -45,6 +46,7 @@ export struct ProductOperationButton {
         });
 
       Button(this.isSeckillOngoing ? '立即秒杀' : '立即购买')
+        .id('mall-buy-now')
         .bottomButtonStyle(BreakpointSystem.isTablet)
         .borderColor($r('app.color.theme_color'))
         .backgroundColor($r('app.color.theme_color'))

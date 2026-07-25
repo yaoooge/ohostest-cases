@@ -92,6 +92,7 @@ export struct HomePage {
       .backgroundColor($r('app.color.background_color_grey'))
       .expandSafeArea([SafeAreaType.SYSTEM, SafeAreaType.CUTOUT], [SafeAreaEdge.BOTTOM]);
     }
+    .id('mall-home-page')
     .width($r('app.string.size_percent_full'))
     .height($r('app.string.size_percent_full'))
     .backgroundColor($r('app.color.background_color_grey'))
@@ -124,6 +125,7 @@ export struct HomePage {
             ))
         }
       }
+      .id('mall-home-title-row')
       .height($r('app.float.nav_header_height'))
       .width('100%')
     }
@@ -199,6 +201,7 @@ export struct HomePage {
       left: $r('app.float.space_l'),
       right: $r('app.float.space_l'),
     })
+    .id('mall-home-search')
   }
 
   @Builder

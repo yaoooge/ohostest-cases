@@ -65,9 +65,11 @@ export struct ProductWaterFlow {
               .each((ri: RepeatItem<ProductCardItem>) => {
                 FlowItem() {
                   if (!this.isGrid) {
-                    GridProductCardView({ product: ri.item });
+                    GridProductCardView({ product: ri.item })
+                      .id('mall-product-item');
                   } else {
-                    ListProductCardView({ product: ri.item });
+                    ListProductCardView({ product: ri.item })
+                      .id('mall-list-product-item');
                   }
                 }
                 .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
@@ -81,6 +83,7 @@ export struct ProductWaterFlow {
                 });
               })
           }
+          .id('mall-product-waterflow')
           .cachedCount(4)
           .columnsTemplate(this.vm.columnTemplate)
           .columnsGap(12)

@@ -203,6 +203,7 @@ export struct ProductCategory {
                   .maxLines(1)
                   .textOverflow({ overflow: TextOverflow.Ellipsis })
               }
+              .id('mall-category-item')
               .padding({ bottom: index === this.productList.length - 1 ? 72 : 0 })
               .alignItems(HorizontalAlign.Start)
               .onClick(() => {
@@ -217,6 +218,7 @@ export struct ProductCategory {
         top: $r('app.float.space_m'),
       })
     }
+    .id('mall-category-products')
     .layoutWeight(1)
     .align(Alignment.Top)
     .scrollBar(BarState.Off)

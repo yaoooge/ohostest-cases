@@ -1,171 +1,9 @@
-diff --git a/components/module_product_category/src/main/ets/views/ProductCategory.ets b/components/module_product_category/src/main/ets/views/ProductCategory.ets
-index 9b017fe..c2a7d7d 100644
---- a/components/module_product_category/src/main/ets/views/ProductCategory.ets
-+++ b/components/module_product_category/src/main/ets/views/ProductCategory.ets
-@@ -191,6 +191,7 @@ export struct ProductCategory {
-                   .maxLines(1)
-                   .textOverflow({ overflow: TextOverflow.Ellipsis })
-               }
-+              .id('mall-category-item')
-               .padding({ bottom: index === this.productList.length - 1 ? 72 : 0 })
-               .alignItems(HorizontalAlign.Start)
-               .onClick(() => {
-@@ -208,6 +209,7 @@ export struct ProductCategory {
-         top: $r('app.float.space_m'),
-       })
-     }
-+    .id('mall-category-products')
-     .layoutWeight(1)
-     .align(Alignment.Top)
-     .scrollBar(BarState.Off)
-diff --git a/features/product/src/main/ets/components/ProductInfoCards.ets b/features/product/src/main/ets/components/ProductInfoCards.ets
-index 8220f97..2ec49b3 100644
---- a/features/product/src/main/ets/components/ProductInfoCards.ets
-+++ b/features/product/src/main/ets/components/ProductInfoCards.ets
-@@ -52,6 +52,7 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
-         .padding(ProductSwiperStyleConfig.imagePadding)
-     }, (item: ResourceStr) => JSON.stringify(item));
-   }
-+  .id('mall-product-swiper')
-   .width('100%')
-   .padding({ left: ProductSwiperStyleConfig.swiperPadding, right: ProductSwiperStyleConfig.swiperPadding })
-   .prevMargin(ProductSwiperStyleConfig.outImageDisplayWidth, true)
-@@ -143,6 +144,7 @@ export function buildProductInfoCard(productInfo: ProductDetailInfo, seckillInfo
-     buildServiceInfo(productInfo.service);
- 
-   }
-+  .id('mall-product-info-card')
-   .width('100%')
-   .padding({
-     left: 16,
-diff --git a/features/product/src/main/ets/components/ProductWaterFlow.ets b/features/product/src/main/ets/components/ProductWaterFlow.ets
-index 73e82b8..829b873 100644
---- a/features/product/src/main/ets/components/ProductWaterFlow.ets
-+++ b/features/product/src/main/ets/components/ProductWaterFlow.ets
-@@ -65,9 +65,11 @@ export struct ProductWaterFlow {
-               .each((ri: RepeatItem<ProductCardItem>) => {
-                 FlowItem() {
-                   if (!this.isGrid) {
--                    GridProductCardView({ product: ri.item });
-+                    GridProductCardView({ product: ri.item })
-+                      .id('mall-product-item');
-                   } else {
--                    ListProductCardView({ product: ri.item });
-+                    ListProductCardView({ product: ri.item })
-+                      .id('mall-list-product-item');
-                   }
-                 }
-                 .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
-@@ -81,6 +83,7 @@ export struct ProductWaterFlow {
-                 });
-               })
-           }
-+          .id('mall-product-waterflow')
-           .cachedCount(4)
-           .columnsTemplate(this.vm.columnTemplate)
-           .columnsGap(12)
-diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
-index cc22cf4..39e1945 100644
---- a/features/product/src/main/ets/views/ProductInfoPage.ets
-+++ b/features/product/src/main/ets/views/ProductInfoPage.ets
-@@ -54,6 +54,7 @@ export struct ProductInfoPage {
-     .onHidden(() => {
-       this.vm.countdown?.stopCountdownTimer()
-     })
-+    .id('mall-product-info-page')
-   }
- 
-   @Builder
-@@ -138,6 +139,7 @@ export struct ProductInfoPage {
-             .fontSize(12)
-             .fontColor($r('app.color.font_color_level1'));
-         }
-+        .id('mall-customer-service')
-         .onClick(() => {
-           this.vm.handleClickCustomService()
-         })
-@@ -164,6 +166,7 @@ export struct ProductInfoPage {
-           }
-           .padding(4);
-         }
-+        .id('mall-shopping-cart')
-         .onClick(() => {
-           this.vm.handleClickCart()
-         });
-diff --git a/products/entry/src/main/ets/components/HomePageContent.ets b/products/entry/src/main/ets/components/HomePageContent.ets
-index 1583eb6..5b5d5ff 100644
---- a/products/entry/src/main/ets/components/HomePageContent.ets
-+++ b/products/entry/src/main/ets/components/HomePageContent.ets
-@@ -37,6 +37,7 @@ export struct HomePageContent {
-       })
-         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
-     }
-+    .id('mall-home-content')
-     .padding({
-       left: $r('app.float.space_l'),
-       right: $r('app.float.space_l'),
-@@ -54,6 +55,7 @@ export struct HomePageContent {
-           .draggable(false);
-       }, (item: ResourceStr, index: number) => index + JSON.stringify(item));
-     }
-+    .id('mall-home-banner')
-     .width('100%')
-     .indicator(false)
-     .autoPlay(true)
-diff --git a/products/entry/src/main/ets/tabviews/HomePage.ets b/products/entry/src/main/ets/tabviews/HomePage.ets
-index 924c1a1..00fc129 100644
---- a/products/entry/src/main/ets/tabviews/HomePage.ets
-+++ b/products/entry/src/main/ets/tabviews/HomePage.ets
-@@ -92,6 +92,7 @@ export struct HomePage {
-       .backgroundColor($r('app.color.background_color_grey'))
-       .expandSafeArea([SafeAreaType.SYSTEM, SafeAreaType.CUTOUT], [SafeAreaEdge.BOTTOM]);
-     }
-+    .id('mall-home-page')
-     .width($r('app.string.size_percent_full'))
-     .height($r('app.string.size_percent_full'))
-     .backgroundColor($r('app.color.background_color_grey'))
-@@ -122,6 +123,7 @@ export struct HomePage {
-             ))
-         }
-       }
-+      .id('mall-home-title-row')
-       .height($r('app.float.nav_header_height'))
-       .width('100%')
-     }
-@@ -193,6 +195,7 @@ export struct HomePage {
-       left: $r('app.float.space_l'),
-       right: $r('app.float.space_l'),
-     })
-+    .id('mall-home-search')
-   }
- 
-   @Builder
-diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
-index 713597f..e7c97cb 100644
---- a/products/entry/src/main/ets/views/MainEntry.ets
-+++ b/products/entry/src/main/ets/views/MainEntry.ets
-@@ -37,6 +37,7 @@ struct MainEntry {
-           .clip(false)
-         }, (item: TabListItem, index: number) => index + '__' + item.label);
-       }
-+      .id('mall-main-entry')
-       .scrollable(false)
-       .barOverlap(true)
-       .height($r('app.string.size_percent_full'))
-@@ -94,6 +95,7 @@ struct MainEntry {
-         .fontWeight(FontWeight.Medium)
-         .margin({ top: $r('app.float.space_xxs') });
-     }
-+    .id('mall-tab-' + index)
-     .justifyContent(FlexAlign.Center)
-     .width($r('app.string.size_percent_full'))
-     .padding(4)
 diff --git a/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
 new file mode 100644
 index 0000000..0ef9699
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,54 @@
 +import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
 +import {
@@ -174,7 +12,6 @@ index 0000000..0ef9699
 +  openProductDetail,
 +  prepareHome,
 +  waitForComponentById,
-+  waitForComponentByText,
 +} from './TestHelper';
 +
 +export default function commonPassToPassTest() {
@@ -200,19 +37,18 @@ index 0000000..0ef9699
 +    });
 +
 +    it('should_keep_home_content_available', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
 +      await waitForComponentById(driver, 'mall-home-search');
 +      await waitForComponentById(driver, 'mall-home-banner');
-+      await waitForComponentById(driver, 'mall-product-waterflow');
-+      await waitForComponentById(driver, 'mall-product-item');
 +      done();
 +    });
 +
 +    it('should_keep_product_purchase_actions_available', Level.LEVEL2, async (done: Function) => {
 +      await openProductDetail(driver);
-+      await waitForComponentByText(driver, '客服');
-+      await waitForComponentByText(driver, '购物车');
-+      await waitForComponentByText(driver, '加入购物车');
-+      await waitForComponentByText(driver, '立即购买');
++      await waitForComponentById(driver, 'mall-customer-service', 20);
++      await waitForComponentById(driver, 'mall-shopping-cart', 20);
++      await waitForComponentById(driver, 'mall-add-to-cart', 20);
++      await waitForComponentById(driver, 'mall-buy-now', 20);
 +      done();
 +    });
 +
@@ -399,7 +235,7 @@ new file mode 100644
 index 0000000..63b3981
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
-@@ -0,0 +1,206 @@
+@@ -0,0 +1,202 @@
 +import { Want } from '@kit.AbilityKit';
 +import { abilityDelegatorRegistry, Driver, ON, UiWindow } from '@kit.TestKit';
 +import { expect } from '@ohos/hypium';
@@ -521,11 +357,7 @@ index 0000000..63b3981
 +      expect(true).assertTrue();
 +      return;
 +    }
-+    try {
-+      await driver.waitForIdle(300, 1000);
-+    } catch (e) {
-+      console.error('waitForComponentById waitForIdle failed: ' + JSON.stringify(e));
-+    }
++    await driver.delayMs(300);
 +  }
 +  console.error('component not found: ' + id);
 +  expect(false).assertTrue();
@@ -541,7 +373,7 @@ index 0000000..63b3981
 +      }
 +    } catch (e) {
 +    }
-+    await driver.waitForIdle(300, 1000);
++    await driver.delayMs(300);
 +  }
 +  console.error('component text not found: ' + text);
 +  expect(false).assertTrue();

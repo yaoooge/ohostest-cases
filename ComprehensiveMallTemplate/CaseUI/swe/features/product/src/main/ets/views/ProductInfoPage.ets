@@ -54,6 +54,7 @@ export struct ProductInfoPage {
     .onHidden(() => {
       this.vm.countdown?.stopCountdownTimer()
     })
+    .id('mall-product-info-page')
   }
 
   @Builder
@@ -138,6 +139,7 @@ export struct ProductInfoPage {
             .fontSize(12)
             .fontColor($r('app.color.font_color_level1'));
         }
+        .id('mall-customer-service')
         .onClick(() => {
           this.vm.handleClickCustomService()
         })
@@ -164,6 +166,7 @@ export struct ProductInfoPage {
           }
           .padding(4);
         }
+        .id('mall-shopping-cart')
         .onClick(() => {
           this.vm.handleClickCart()
         });
