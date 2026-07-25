@@ -178,6 +178,63 @@ export async function countItemsInFirstRow(driver: Driver, itemId: string): Prom
   return count;
 }
 
+export async function isComponentBelow(
+  driver: Driver,
+  upperId: string,
+  lowerId: string,
+  tolerance: number = 12,
+): Promise<boolean> {
+  const upper = await driver.findComponent(ON.id(upperId));
+  const lower = await driver.findComponent(ON.id(lowerId));
+  const upperBounds = await upper.getBounds();
+  const lowerBounds = await lower.getBounds();
+  return lowerBounds.top >= upperBounds.bottom - tolerance;
+}
+
+export async function isComponentLeftOf(
+  driver: Driver,
+  leftId: string,
+  rightId: string,
+  tolerance: number = 12,
+): Promise<boolean> {
+  const left = await driver.findComponent(ON.id(leftId));
+  const right = await driver.findComponent(ON.id(rightId));
+  const leftBounds = await left.getBounds();
+  const rightBounds = await right.getBounds();
+  return leftBounds.right <= rightBounds.left + tolerance;
+}
+
+export async function areComponentsOnSameRow(
+  driver: Driver,
+  firstId: string,
+  secondId: string,
+  tolerance: number = 3,
+): Promise<boolean> {
+  const first = await driver.findComponent(ON.id(firstId));
+  const second = await driver.findComponent(ON.id(secondId));
+  const firstBounds = await first.getBounds();
+  const secondBounds = await second.getBounds();
+  return Math.abs(firstBounds.top - secondBounds.top) <= tolerance;
+}
+
+export async function pinchOutById(driver: Driver, id: string, scale: number = 2): Promise<void> {
+  const component = await driver.findComponent(ON.id(id));
+  await component.pinchOut(scale);
+  await driver.waitForIdle(300, 1500);
+}
+
+export async function pinchInById(driver: Driver, id: string, scale: number = 0.5): Promise<void> {
+  const component = await driver.findComponent(ON.id(id));
+  await component.pinchIn(scale);
+  await driver.waitForIdle(300, 1500);
+}
+
+export async function resetPinchById(driver: Driver, id: string): Promise<void> {
+  const component = await driver.findComponent(ON.id(id));
+  await component.pinchOut(1.01);
+  await driver.waitForIdle(300, 1500);
+}
+
 export async function isComponentVerticallyInside(
   driver: Driver,
   childId: string,
