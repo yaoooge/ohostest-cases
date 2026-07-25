@@ -1,0 +1,53 @@
+import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
+import { Driver } from '@kit.TestKit';
+import {
+  assertCurrentBreakpoint,
+  countItemsInFirstRow,
+  getAspectRatioById,
+  getComponentVpWidthById,
+  getDriver,
+  isComponentVerticallyInside,
+  isProductDetailTwoPane,
+  openProductDetail,
+  prepareHome,
+} from './TestHelper';
+
+export default function lgFailToPassTest() {
+  describe('LgFailToPassTest', () => {
+    let driver: Driver;
+    let bundleName: string;
+
+    beforeAll(async () => {
+      driver = getDriver();
+      bundleName = await prepareHome();
+      await assertCurrentBreakpoint(driver, bundleName, 'lg');
+    });
+
+    it('should_place_400vp_search_in_home_title_on_lg', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      const width = await getComponentVpWidthById(driver, 'mall-home-search');
+      expect(Math.abs(width - 400) <= 12).assertTrue();
+      expect(await isComponentVerticallyInside(driver, 'mall-home-search', 'mall-home-title-row')).assertTrue();
+      done();
+    });
+
+    it('should_use_lg_home_banner_ratio_5', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      const ratio = await getAspectRatioById(driver, 'mall-home-banner');
+      expect(Math.abs(ratio - 5) <= 0.2).assertTrue();
+      done();
+    });
+
+    it('should_show_five_product_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(5);
+      done();
+    });
+
+    it('should_show_product_detail_as_two_panes_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openProductDetail(driver);
+      expect(await isProductDetailTwoPane(driver)).assertTrue();
+      done();
+    });
+  });
+}

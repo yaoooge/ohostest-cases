@@ -9,7 +9,6 @@
 - 行列数；
 - 上下、左右排列关系；
 - 组件是否位于指定容器内；
-- 组件宽高及相对窗口、容器的占比；
 - 双指缩放前后的商品列数。
 
 本设计暂不扩展 `CommonPassToPassTest`，也不测试以下内容：
@@ -17,6 +16,8 @@
 - 应用启动、四个主 Tab、通用入口存在性；
 - 首页滚动后搜索框的显隐和收起行为；
 - 背景色、圆角、阴影、字体、颜色等视觉细节；
+- 弹窗、半模态页面和金额明细 Sheet；
+- 新增组件宽度、高度、宽高比等尺寸断言；
 - 搜索、支付、兑换等业务结果；
 - 同一设备运行期间动态切换窗口断点；
 - 测试代码对非目标设备的跳过或兼容逻辑。
@@ -33,11 +34,21 @@
 
 各 Suite 保留 `beforeAll` 中的 `assertCurrentBreakpoint`，用于尽早暴露设备配置错误。不在测试代码中增加条件跳过。
 
+测试开发期间以 `answer` 为唯一评审工程：
+
+1. 先将当前 `test_patch.patch` 应用到 `answer`；
+2. 后续新增测试和测试所需组件 ID 直接修改 `answer`；
+3. 用户在 `answer` 中完成代码评审；
+4. 全部用例符合要求后，再将测试相关修改同步到 `swe`；
+5. 最后根据 `swe` 的测试修改重新生成 `test_patch.patch`。
+
+在评审通过前，不提前修改 `swe`，也不覆盖现有 `test_patch.patch`。
+
 ## 3. 设计原则
 
 ### 3.1 一个用例验证一个响应式行为
 
-列数、相对排列、尺寸约束分别使用独立测试名称。某个页面打不开时允许该页面的多个用例失败，但一个布局断言不应包含其他页面的行为验证。
+列数和相对排列分别使用独立测试名称。某个页面打不开时允许该页面的多个用例失败，但一个布局断言不应包含其他页面的行为验证。
 
 ### 3.2 优先验证实际几何结果
 
@@ -45,8 +56,8 @@
 
 - 5 列商品：统计首行商品数量；
 - 左右分栏：验证轮播图在信息卡左侧，并且两者存在足够的垂直重叠；
-- 底部全宽弹层：验证弹层宽度接近窗口宽度且底边接近窗口底边；
-- 居中窄弹层：验证弹层中心接近窗口中心且宽度接近窗口宽度的 40%。
+- 纵向布局：验证前一个区域位于后一个区域上方；
+- 首页分类分布：验证分类项保持同一行，并覆盖内容区左右两侧。
 
 ### 3.3 只测初始首页布局
 
@@ -59,15 +70,15 @@
 
 不滚动首页，不断言搜索框收起、透明度或可见性变化。
 
-### 3.4 尺寸断言保留容差
+### 3.4 几何位置断言保留容差
 
-考虑 px/vp 换算和浮点布局误差：
+考虑像素取整和浮点布局误差：
 
-- 固定 vp 尺寸：默认容差 `±12vp`；
-- 比例：默认容差 `±5%`；
 - 边界位置：默认容差 `±12px`；
 - 同行判断：组件 `top` 差默认不超过 `3px`；
 - 相对位置判断：允许最多 `12px` 的布局误差。
+
+当前 `test_patch.patch` 已存在的横幅宽高比和 LG 搜索框 400vp 用例保持不变；本轮不再新增任何组件宽高尺寸断言。
 
 ## 4. SM 测试矩阵
 
@@ -91,17 +102,15 @@ SM 用例属于 `pass_to_pass`：基础工程和应用答案都应通过。
 | `should_keep_horizontal_skeleton_two_columns_on_sm` | 打开横向商品骨架状态 | 首行为 2 个骨架卡片 |
 | `should_keep_vertical_skeleton_single_column_on_sm` | 打开纵向商品骨架状态 | 首行为 1 个骨架卡片 |
 | `should_show_product_detail_vertically_on_sm` | 打开商品详情 | 轮播图位于信息卡上方，两者不是左右并排 |
-| `should_keep_product_swiper_square_on_sm` | 打开商品详情 | 轮播宽高比约 1:1，高度不超过约 360vp |
 | `should_show_three_review_media_columns_on_sm` | 打开包含媒体的商品评价 | 评价媒体首行为 3 列 |
 | `should_show_three_review_picker_columns_on_sm` | 打开创建评价页 | 媒体选择器首行为 3 列 |
 | `should_keep_cart_single_column_on_sm` | 打开包含至少两件商品的购物车 | 购物车商品首行为 1 列 |
-| `should_show_full_width_bottom_price_sheet_on_sm` | 打开购物车金额明细 | 弹层宽度接近窗口宽度，底边接近窗口底边 |
 | `should_keep_profile_sections_vertical_on_sm` | 打开个人中心 | 用户信息、签到区、主菜单按从上到下排列 |
 | `should_keep_profile_submenu_single_column_on_sm` | 打开个人中心 | 子菜单首行为 1 列 |
 | `should_keep_order_list_single_column_on_sm` | 打开订单列表 | 订单卡首行为 1 列 |
 | `should_show_two_points_products_on_sm` | 打开积分商城 | 积分商品首行为 2 列 |
 
-SM 共设计 18 个断点用例，其中已有 3 个，新增 15 个。
+SM 共设计 16 个断点用例，其中已有 3 个，新增 13 个。
 
 ## 5. MD 测试矩阵
 
@@ -125,17 +134,16 @@ MD 中原布局已经满足的行为属于 `pass_to_pass`，本任务新增或�
 | `should_show_three_horizontal_skeleton_columns_on_md` | fail-to-pass | 打开横向商品骨架状态 | 首行为 3 列 |
 | `should_keep_vertical_skeleton_single_column_on_md` | pass-to-pass | 打开纵向商品骨架状态 | 首行为 1 列 |
 | `should_show_product_detail_vertically_on_md` | pass-to-pass | 打开商品详情 | 轮播位于信息卡上方 |
-| `should_reveal_adjacent_product_image_on_md` | fail-to-pass | 打开商品详情 | 轮播高度不超过约 360vp，当前图片侧边存在相邻图片可见区域 |
+| `should_reveal_adjacent_product_image_on_md` | fail-to-pass | 打开商品详情 | 当前图片侧边存在相邻图片可见区域 |
 | `should_show_five_review_media_columns_on_md` | fail-to-pass | 打开包含媒体的商品评价 | 评价媒体首行为 5 列 |
 | `should_show_five_review_picker_columns_on_md` | fail-to-pass | 打开创建评价页 | 媒体选择器首行为 5 列 |
 | `should_keep_cart_single_column_on_md` | pass-to-pass | 打开购物车 | 商品首行为 1 列 |
-| `should_show_full_width_bottom_price_sheet_on_md` | pass-to-pass | 打开金额明细 | 弹层宽度接近窗口宽度，底边接近窗口底边 |
 | `should_keep_profile_sections_vertical_on_md` | pass-to-pass | 打开个人中心 | 用户信息、签到区、主菜单按从上到下排列 |
 | `should_keep_profile_submenu_single_column_on_md` | pass-to-pass | 打开个人中心 | 子菜单首行为 1 列 |
 | `should_keep_order_list_single_column_on_md` | pass-to-pass | 打开订单列表 | 订单卡首行为 1 列 |
 | `should_show_three_points_products_on_md` | fail-to-pass | 打开积分商城 | 积分商品首行为 3 列 |
 
-MD 共设计 18 个断点用例，其中已有 3 个，新增 15 个。
+MD 共设计 17 个断点用例，其中已有 3 个，新增 14 个。
 
 ## 6. LG 测试矩阵
 
@@ -163,19 +171,16 @@ LG 响应式布局均属于 `fail_to_pass`。
 | `should_show_two_seckill_columns_on_lg` | 打开秒杀列表 | 秒杀商品首行为 2 列 |
 | `should_show_four_horizontal_skeleton_columns_on_lg` | 打开横向商品骨架状态 | 首行为 4 列 |
 | `should_show_two_vertical_skeleton_columns_on_lg` | 打开纵向商品骨架状态 | 首行为 2 列 |
-| `should_fill_left_pane_with_product_swiper_on_lg` | 打开商品详情 | 轮播不强制 1:1，其高度接近详情内容区高度 |
 | `should_show_five_review_media_columns_on_lg` | 打开包含媒体的商品评价 | 评价媒体首行为 5 列 |
 | `should_show_five_review_picker_columns_on_lg` | 打开创建评价页 | 媒体选择器首行为 5 列 |
-| `should_keep_purchase_buttons_200vp_on_lg` | 打开商品详情 | 加入购物车和立即购买按钮宽度分别约 200vp |
 | `should_show_two_cart_columns_on_lg` | 打开购物车 | 商品首行为 2 列 |
 | `should_remove_extra_bottom_gap_from_cart_on_lg` | 打开购物车 | 底部操作区底边接近窗口可用区域底边，不额外预留手机主导航高度 |
-| `should_center_narrow_price_sheet_on_lg` | 打开金额明细 | 弹层中心接近窗口中心，宽度约为窗口的 40% |
 | `should_place_profile_sections_side_by_side_on_lg` | 打开个人中心 | 用户信息区在左，签到和主菜单区在右，两区域垂直方向有重叠 |
 | `should_show_two_profile_submenu_columns_on_lg` | 打开个人中心 | 子菜单首行为 2 列 |
 | `should_show_two_order_columns_on_lg` | 打开订单列表 | 订单卡首行为 2 列 |
 | `should_show_four_points_products_on_lg` | 打开积分商城 | 积分商品首行为 4 列 |
 
-LG 共设计 24 个断点用例，其中已有 4 个，新增 20 个。
+LG 共设计 21 个断点用例，其中已有 4 个，新增 17 个。
 
 ## 7. TestHelper 设计
 
@@ -194,7 +199,6 @@ openSeckill(driver)
 openOrderList(driver)
 openPointsMall(driver)
 openReviewCreation(driver)
-openCartPriceSheet(driver)
 ```
 
 每个导航 helper 应：
@@ -217,16 +221,14 @@ isComponentVerticallyInside()
 isProductDetailTwoPane()
 ```
 
+前两个尺寸 helper 仅供当前已有用例使用，本轮新增用例不调用它们。
+
 新增：
 
 ```text
-getComponentVpHeightById(driver, id)
-getWindowBounds(driver, bundleName)
 isComponentBelow(driver, upperId, lowerId, tolerance)
 isComponentLeftOf(driver, leftId, rightId, tolerance)
 isComponentBottomAlignedToWindow(driver, id, bundleName, tolerance)
-isComponentCenteredInWindow(driver, id, bundleName, tolerance)
-getComponentWidthRatioToWindow(driver, id, bundleName)
 getFirstRowBounds(driver, itemId)
 performPinch(driver, componentId, scale)
 ```
@@ -247,7 +249,6 @@ mall-review-picker-item
 mall-cart-list
 mall-cart-item
 mall-cart-control-panel
-mall-cart-price-sheet
 
 mall-profile-user-area
 mall-profile-checkin-menu-area
@@ -306,11 +307,9 @@ should_keep_list_mode_single_column_on_sm
 should_keep_horizontal_skeleton_two_columns_on_sm
 should_keep_vertical_skeleton_single_column_on_sm
 should_show_product_detail_vertically_on_sm
-should_keep_product_swiper_square_on_sm
 should_show_three_review_media_columns_on_sm
 should_show_three_review_picker_columns_on_sm
 should_keep_cart_single_column_on_sm
-should_show_full_width_bottom_price_sheet_on_sm
 should_keep_profile_sections_vertical_on_sm
 should_keep_profile_submenu_single_column_on_sm
 should_keep_order_list_single_column_on_sm
@@ -321,7 +320,6 @@ should_keep_list_mode_single_column_on_md
 should_keep_vertical_skeleton_single_column_on_md
 should_show_product_detail_vertically_on_md
 should_keep_cart_single_column_on_md
-should_show_full_width_bottom_price_sheet_on_md
 should_keep_profile_sections_vertical_on_md
 should_keep_profile_submenu_single_column_on_md
 should_keep_order_list_single_column_on_md
@@ -346,13 +344,10 @@ should_show_two_history_columns_on_lg
 should_show_two_seckill_columns_on_lg
 should_show_four_horizontal_skeleton_columns_on_lg
 should_show_two_vertical_skeleton_columns_on_lg
-should_fill_left_pane_with_product_swiper_on_lg
 should_show_five_review_media_columns_on_lg
 should_show_five_review_picker_columns_on_lg
-should_keep_purchase_buttons_200vp_on_lg
 should_show_two_cart_columns_on_lg
 should_remove_extra_bottom_gap_from_cart_on_lg
-should_center_narrow_price_sheet_on_lg
 should_place_profile_sections_side_by_side_on_lg
 should_show_two_profile_submenu_columns_on_lg
 should_show_two_order_columns_on_lg
