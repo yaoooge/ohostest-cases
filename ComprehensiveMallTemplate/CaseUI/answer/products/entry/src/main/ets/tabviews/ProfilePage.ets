@@ -32,6 +32,7 @@ export struct ProfilePage {
                 buildCheckInArea()
                 buildMainMenuArea()
               }
+              .id('mall-profile-checkin-menu-area')
               .height(128)
               .justifyContent(FlexAlign.SpaceBetween)
             }
@@ -102,6 +103,7 @@ function buildUserInfoArea() {
       .alignItems(HorizontalAlign.Start)
       .justifyContent(FlexAlign.SpaceAround);
     }
+    .id('mall-profile-user-area')
   }
 }
 
@@ -124,6 +126,7 @@ function buildCheckInArea() {
     .onClick(() => {
       routerStack.pushPath({ name: RouterMap.POINTS_MALL })
     })
+    .id('mall-profile-checkin-area')
   }
 }
 
@@ -142,6 +145,7 @@ function buildMainMenuArea() {
       })
     }, (item: MainMenuItem) => item.label)
   }
+  .id('mall-profile-main-menu-area')
   .containerStyle()
   .justifyContent(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM ?
     FlexAlign.SpaceBetween :
@@ -204,6 +208,7 @@ function buildSubMenuArea() {
           ProfileUtil.handleSubMenuClick(item.type)
         });
       }
+      .id('mall-profile-submenu-item')
     }, (item: SubMenuItem) => item.label)
   }
   .containerStyle()

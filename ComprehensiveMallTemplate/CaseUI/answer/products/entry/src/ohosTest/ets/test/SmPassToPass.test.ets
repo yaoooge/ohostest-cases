@@ -6,10 +6,12 @@ import {
   getAspectRatioById,
   getDriver,
   isComponentBelow,
+  openCart,
   openCategory,
   openProductDetail,
   openProductReviewMedia,
   openReviewCreation,
+  openProfile,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
@@ -97,6 +99,33 @@ export default function smPassToPassTest() {
     it('should_show_three_review_picker_columns_on_sm', Level.LEVEL2, async (done: Function) => {
       await openReviewCreation(driver);
       expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(3);
+      done();
+    });
+
+    it('should_keep_cart_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openCart(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-cart-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_keep_profile_sections_vertical_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openProfile(driver);
+      expect(await isComponentBelow(
+        driver,
+        'mall-profile-user-area',
+        'mall-profile-checkin-area',
+      )).assertTrue();
+      expect(await isComponentBelow(
+        driver,
+        'mall-profile-checkin-area',
+        'mall-profile-main-menu-area',
+      )).assertTrue();
+      done();
+    });
+
+    it('should_keep_profile_submenu_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openProfile(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(1);
       done();
     });
 

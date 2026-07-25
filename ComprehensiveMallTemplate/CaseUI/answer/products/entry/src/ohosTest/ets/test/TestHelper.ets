@@ -44,12 +44,14 @@ export async function returnToHome(driver: Driver): Promise<void> {
     const isSearchPage = await componentExistsById(driver, 'search_bar');
     const isSearchResults = await componentExistsById(driver, 'mall-display-mode-toggle');
     const isProductDetail = await componentExistsById(driver, 'mall-product-info-page');
-    if (!isSearchPage && !isSearchResults && !isProductDetail &&
+    const isReviewCreation = await componentExistsById(driver, 'mall-review-picker-item');
+    const isOrderList = await componentExistsById(driver, 'mall-order-action-5');
+    if (!isSearchPage && !isSearchResults && !isProductDetail && !isReviewCreation && !isOrderList &&
       await componentExistsById(driver, HOME_ID)) {
       break;
     }
     try {
-      if (!isSearchPage && !isSearchResults && !isProductDetail &&
+      if (!isSearchPage && !isSearchResults && !isProductDetail && !isReviewCreation && !isOrderList &&
         await componentExistsById(driver, 'mall-tab-0')) {
         const homeTab = await driver.findComponent(ON.id('mall-tab-0'));
         await homeTab.click();
@@ -82,6 +84,21 @@ export async function openCategory(driver: Driver): Promise<void> {
   await categoryTab.click();
   await waitForComponentById(driver, 'mall-category-products', 20);
   await waitForComponentById(driver, 'mall-category-item', 20);
+}
+
+export async function openCart(driver: Driver): Promise<void> {
+  await prepareHome();
+  const cartTab = await driver.findComponent(ON.id('mall-tab-2'));
+  await cartTab.click();
+  await waitForComponentCount(driver, 'mall-cart-item', 2, 20);
+  await waitForComponentById(driver, 'mall-cart-control-panel', 12);
+}
+
+export async function openProfile(driver: Driver): Promise<void> {
+  await prepareHome();
+  const profileTab = await driver.findComponent(ON.id('mall-tab-3'));
+  await profileTab.click();
+  await waitForComponentById(driver, 'mall-profile-user-area', 12);
 }
 
 export async function submitProductSearch(driver: Driver): Promise<void> {
@@ -220,6 +237,23 @@ export async function waitForComponentByText(driver: Driver, text: string, retri
   expect('component text found: ' + text).assertEqual('component text not found: ' + text);
 }
 
+export async function waitForComponentCount(
+  driver: Driver,
+  id: string,
+  expectedMinimum: number,
+  retries: number = 8,
+): Promise<void> {
+  for (let index = 0; index < retries; index++) {
+    const components = await driver.findComponents(ON.id(id));
+    if (components !== null && components !== undefined && components.length >= expectedMinimum) {
+      return;
+    }
+    await driver.delayMs(300);
+  }
+  expect('component count at least ' + expectedMinimum + ': ' + id)
+    .assertEqual('component count below ' + expectedMinimum + ': ' + id);
+}
+
 export async function getAspectRatioById(driver: Driver, id: string): Promise<number> {
   const component = await driver.findComponent(ON.id(id));
   const bounds = await component.getBounds();
@@ -310,6 +344,32 @@ export async function isComponentLeftOf(
   const leftBounds = await left.getBounds();
   const rightBounds = await right.getBounds();
   return leftBounds.right <= rightBounds.left + tolerance;
+}
+
+export async function haveVerticalOverlap(
+  driver: Driver,
+  firstId: string,
+  secondId: string,
+): Promise<boolean> {
+  const first = await driver.findComponent(ON.id(firstId));
+  const second = await driver.findComponent(ON.id(secondId));
+  const firstBounds = await first.getBounds();
+  const secondBounds = await second.getBounds();
+  return Math.min(firstBounds.bottom, secondBounds.bottom) -
+    Math.max(firstBounds.top, secondBounds.top) > 3;
+}
+
+export async function isComponentBottomNearWindow(
+  driver: Driver,
+  componentId: string,
+  bundleName: string,
+  tolerance: number = 12,
+): Promise<boolean> {
+  const component = await driver.findComponent(ON.id(componentId));
+  const componentBounds = await component.getBounds();
+  const uiWindow = await driver.findWindow({ bundleName: bundleName, active: true });
+  const windowBounds = await uiWindow.getBounds();
+  return Math.abs(windowBounds.bottom - componentBounds.bottom) <= tolerance;
 }
 
 export async function areComponentsOnSameRow(

@@ -7,12 +7,17 @@ import {
   getAspectRatioById,
   getComponentVpWidthById,
   getDriver,
+  haveVerticalOverlap,
+  isComponentBottomNearWindow,
+  isComponentLeftOf,
   isComponentVerticallyInside,
   isProductDetailTwoPane,
+  openCart,
   openCategory,
   openProductDetail,
   openProductReviewMedia,
   openReviewCreation,
+  openProfile,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
@@ -113,6 +118,43 @@ export default function lgFailToPassTest() {
     it('should_show_five_review_picker_columns_on_lg', Level.LEVEL2, async (done: Function) => {
       await openReviewCreation(driver);
       expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(5);
+      done();
+    });
+
+    it('should_show_two_cart_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openCart(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-cart-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_remove_extra_bottom_gap_from_cart_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openCart(driver);
+      expect(await isComponentBottomNearWindow(
+        driver,
+        'mall-cart-control-panel',
+        bundleName,
+      )).assertTrue();
+      done();
+    });
+
+    it('should_place_profile_sections_side_by_side_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openProfile(driver);
+      expect(await isComponentLeftOf(
+        driver,
+        'mall-profile-user-area',
+        'mall-profile-checkin-menu-area',
+      )).assertTrue();
+      expect(await haveVerticalOverlap(
+        driver,
+        'mall-profile-user-area',
+        'mall-profile-checkin-menu-area',
+      )).assertTrue();
+      done();
+    });
+
+    it('should_show_two_profile_submenu_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openProfile(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(2);
       done();
     });
 

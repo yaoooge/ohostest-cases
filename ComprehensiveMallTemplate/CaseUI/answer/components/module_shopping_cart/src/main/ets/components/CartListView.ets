@@ -46,6 +46,7 @@ export struct CartListView {
             },
           })
         }
+        .id('mall-cart-item')
         .margin({ left: 8, right: 8 })
         .borderRadius(16)
         .transition({ type: TransitionType.Delete, opacity: 0 })
