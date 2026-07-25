@@ -135,6 +135,29 @@ export async function openProductDetail(driver: Driver): Promise<void> {
   await waitForComponentById(driver, 'mall-product-info-card', 20);
 }
 
+export async function openProductReviewMedia(driver: Driver): Promise<void> {
+  if (!await componentExistsById(driver, 'mall-product-info-card')) {
+    await openProductDetail(driver);
+  }
+  await driver.delayMs(3500);
+  const detailScroll = await driver.findComponent(ON.id('mall-product-detail-scroll'));
+  await detailScroll.scrollSearch(ON.id('mall-review-media-item'));
+  await waitForComponentById(driver, 'mall-review-media-item', 2);
+}
+
+export async function openReviewCreation(driver: Driver): Promise<void> {
+  await prepareHome();
+  const profileTab = await driver.findComponent(ON.id('mall-tab-3'));
+  await profileTab.click();
+  await waitForComponentByText(driver, '待评价', 12);
+  const pendingReview = await driver.findComponent(ON.text('待评价'));
+  await pendingReview.click();
+  await waitForComponentById(driver, 'mall-order-action-5', 20);
+  const reviewAction = await driver.findComponent(ON.id('mall-order-action-5'));
+  await reviewAction.click();
+  await waitForComponentById(driver, 'mall-review-picker-item', 12);
+}
+
 export async function getWindowVpWidth(driver: Driver, bundleName: string): Promise<number> {
   const uiWindow: UiWindow = await driver.findWindow({ bundleName: bundleName, active: true });
   const bounds = await uiWindow.getBounds();
@@ -239,6 +262,28 @@ export async function countItemsInFirstRow(driver: Driver, itemId: string): Prom
     await driver.delayMs(300);
   }
   return 0;
+}
+
+export async function countVisibleItemsInside(
+  driver: Driver,
+  itemId: string,
+  containerId: string,
+): Promise<number> {
+  const items = await driver.findComponents(ON.id(itemId));
+  const container = await driver.findComponent(ON.id(containerId));
+  const containerBounds = await container.getBounds();
+  let count = 0;
+  for (let index = 0; index < items.length; index++) {
+    const bounds = await items[index].getBounds();
+    const intersectionWidth = Math.min(bounds.right, containerBounds.right) -
+      Math.max(bounds.left, containerBounds.left);
+    const intersectionHeight = Math.min(bounds.bottom, containerBounds.bottom) -
+      Math.max(bounds.top, containerBounds.top);
+    if (intersectionWidth > 3 && intersectionHeight > 3) {
+      count++;
+    }
+  }
+  return count;
 }
 
 export async function isComponentBelow(

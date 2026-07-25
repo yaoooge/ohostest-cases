@@ -1430,6 +1430,8 @@ export class MockProductData {
       { type: 0, uri: MockImageData.getImageResource(MockImageMap.PRODUCT_10001_PINK) },
       { type: 0, uri: MockImageData.getImageResource(MockImageMap.PRODUCT_10001_STRIPE) },
       { type: 0, uri: MockImageData.getImageResource(MockImageMap.PRODUCT_10001_GREEN) },
+      { type: 0, uri: MockImageData.getImageResource(MockImageMap.PRODUCT_10001_YELLOW) },
+      { type: 0, uri: MockImageData.getImageResource(MockImageMap.PRODUCT_10001_PINK) },
     ],
   };
   public static readonly REVIEW_ITEM_MOCK2: ProductReviewItem = {
@@ -1470,10 +1472,24 @@ export class MockProductData {
         MockProductData.REVIEW_ITEM_MOCK2,
         MockProductData.REVIEW_ITEM_MOCK3]);
     }
+    const layoutReview = data.reviewList.find(
+      review => review.skuCode === MockProductData.REVIEW_ITEM_MOCK1.skuCode,
+    );
+    if (layoutReview) {
+      layoutReview.mediaList = MockProductData.REVIEW_ITEM_MOCK1.mediaList.slice();
+    }
 
     return data.reviewList.filter(
       review => review.productId === productId,
-    );
+    ).sort((left, right) => {
+      if (left.skuCode === MockProductData.REVIEW_ITEM_MOCK1.skuCode) {
+        return -1;
+      }
+      if (right.skuCode === MockProductData.REVIEW_ITEM_MOCK1.skuCode) {
+        return 1;
+      }
+      return 0;
+    });
   }
 
   public static setProductReviewListMock(data: ProductReviewItem[]) {

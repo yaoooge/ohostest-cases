@@ -72,6 +72,7 @@ export struct ProductReviewCard {
                     }
                   }
                 }
+                .id('mall-review-media-item')
               }, (item: ReviewMediaItem, index: number) => index + JSON.stringify(item))
             }
             .width($r('app.string.size_percent_full'))

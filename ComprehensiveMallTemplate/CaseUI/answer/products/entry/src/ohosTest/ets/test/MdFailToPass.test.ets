@@ -2,11 +2,15 @@ import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 import { Driver } from '@kit.TestKit';
 import {
   assertCurrentBreakpoint,
+  countVisibleItemsInside,
   countItemsInFirstRow,
   getAspectRatioById,
   getDriver,
   isComponentBelow,
   openCategory,
+  openProductDetail,
+  openProductReviewMedia,
+  openReviewCreation,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
@@ -76,6 +80,34 @@ export default function mdFailToPassTest() {
     it('should_keep_vertical_skeleton_single_column_on_md', Level.LEVEL2, async (done: Function) => {
       await openSearchSkeleton(driver, true);
       expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_show_product_detail_vertically_on_md', Level.LEVEL2, async (done: Function) => {
+      await openProductDetail(driver);
+      expect(await isComponentBelow(driver, 'mall-product-swiper', 'mall-product-info-card')).assertTrue();
+      done();
+    });
+
+    it('should_show_five_review_media_columns_on_md', Level.LEVEL2, async (done: Function) => {
+      await openProductReviewMedia(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(5);
+      done();
+    });
+
+    it('should_reveal_adjacent_product_image_on_md', Level.LEVEL2, async (done: Function) => {
+      await openProductDetail(driver);
+      expect(await countVisibleItemsInside(
+        driver,
+        'mall-product-swiper-image',
+        'mall-product-swiper',
+      ) >= 2).assertTrue();
+      done();
+    });
+
+    it('should_show_five_review_picker_columns_on_md', Level.LEVEL2, async (done: Function) => {
+      await openReviewCreation(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(5);
       done();
     });
 

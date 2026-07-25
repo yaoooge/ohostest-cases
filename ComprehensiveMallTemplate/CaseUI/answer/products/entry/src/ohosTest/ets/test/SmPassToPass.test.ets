@@ -7,6 +7,9 @@ import {
   getDriver,
   isComponentBelow,
   openCategory,
+  openProductDetail,
+  openProductReviewMedia,
+  openReviewCreation,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
@@ -76,6 +79,24 @@ export default function smPassToPassTest() {
     it('should_keep_vertical_skeleton_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
       await openSearchSkeleton(driver, true);
       expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_show_product_detail_vertically_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openProductDetail(driver);
+      expect(await isComponentBelow(driver, 'mall-product-swiper', 'mall-product-info-card')).assertTrue();
+      done();
+    });
+
+    it('should_show_three_review_media_columns_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openProductReviewMedia(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(3);
+      done();
+    });
+
+    it('should_show_three_review_picker_columns_on_sm', Level.LEVEL2, async (done: Function) => {
+      await openReviewCreation(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(3);
       done();
     });
 

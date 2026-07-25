@@ -11,6 +11,8 @@ import {
   isProductDetailTwoPane,
   openCategory,
   openProductDetail,
+  openProductReviewMedia,
+  openReviewCreation,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
@@ -99,6 +101,18 @@ export default function lgFailToPassTest() {
     it('should_show_two_vertical_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
       await openSearchSkeleton(driver, true);
       expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_five_review_media_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openProductReviewMedia(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(5);
+      done();
+    });
+
+    it('should_show_five_review_picker_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openReviewCreation(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(5);
       done();
     });
 

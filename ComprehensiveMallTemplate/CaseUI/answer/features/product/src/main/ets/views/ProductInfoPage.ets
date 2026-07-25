@@ -108,6 +108,7 @@ export struct ProductInfoPage {
             buildProductDesc(this.vm.productInfo?.productDetail!)
           };
         }
+        .id('mall-product-detail-scroll')
         .edgeEffect(EdgeEffect.Spring)
         .scrollBar(BarState.Off)
         .layoutWeight(1);
@@ -129,6 +130,7 @@ export struct ProductInfoPage {
         buildProductDesc(this.vm.productInfo?.productDetail!)
       };
     }
+    .id('mall-product-detail-scroll')
     .edgeEffect(EdgeEffect.Spring)
     .scrollBar(BarState.Off)
     .layoutWeight(1);
