@@ -5,7 +5,10 @@ import {
   countItemsInFirstRow,
   getAspectRatioById,
   getDriver,
+  isComponentBelow,
   openCategory,
+  pinchInById,
+  pinchOutById,
   prepareHome,
 } from './TestHelper';
 
@@ -29,6 +32,21 @@ export default function smPassToPassTest() {
 
     it('should_keep_sm_product_waterflow_two_columns', Level.LEVEL2, async (done: Function) => {
       await prepareHome();
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_keep_search_below_title_on_sm', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      expect(await isComponentBelow(driver, 'mall-home-title-row', 'mall-home-search')).assertTrue();
+      done();
+    });
+
+    it('should_ignore_product_pinch_on_sm', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      await pinchOutById(driver, 'mall-product-waterflow');
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
+      await pinchInById(driver, 'mall-product-waterflow');
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
       done();
     });

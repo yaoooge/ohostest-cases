@@ -5,7 +5,10 @@ import {
   countItemsInFirstRow,
   getAspectRatioById,
   getDriver,
+  isComponentBelow,
   openCategory,
+  pinchInById,
+  pinchOutById,
   prepareHome,
 } from './TestHelper';
 
@@ -30,6 +33,21 @@ export default function mdFailToPassTest() {
     it('should_show_three_product_columns_on_md', Level.LEVEL2, async (done: Function) => {
       await prepareHome();
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(3);
+      done();
+    });
+
+    it('should_keep_search_below_title_on_md', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      expect(await isComponentBelow(driver, 'mall-home-title-row', 'mall-home-search')).assertTrue();
+      done();
+    });
+
+    it('should_change_product_columns_between_two_and_four_on_md', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      await pinchOutById(driver, 'mall-product-waterflow', 2);
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
+      await pinchInById(driver, 'mall-product-waterflow', 0.5);
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(4);
       done();
     });
 

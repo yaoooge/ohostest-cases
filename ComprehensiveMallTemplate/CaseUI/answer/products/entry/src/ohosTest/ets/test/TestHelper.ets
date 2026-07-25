@@ -1,5 +1,5 @@
 import { Want } from '@kit.AbilityKit';
-import { abilityDelegatorRegistry, Driver, ON, UiWindow } from '@kit.TestKit';
+import { abilityDelegatorRegistry, Driver, ON, PointerMatrix, Rect, UiWindow } from '@kit.TestKit';
 import { expect } from '@ohos/hypium';
 
 export const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
@@ -217,9 +217,76 @@ export async function areComponentsOnSameRow(
   return Math.abs(firstBounds.top - secondBounds.top) <= tolerance;
 }
 
+export async function areItemsSpreadAcrossContainer(
+  driver: Driver,
+  itemId: string,
+  containerId: string,
+): Promise<boolean> {
+  const items = await driver.findComponents(ON.id(itemId));
+  if (items === null || items === undefined || items.length < 2) {
+    return false;
+  }
+  const container = await driver.findComponent(ON.id(containerId));
+  const containerBounds = await container.getBounds();
+  let firstTop = Number.MAX_VALUE;
+  for (let index = 0; index < items.length; index++) {
+    const bounds = await items[index].getBounds();
+    firstTop = Math.min(firstTop, bounds.top);
+  }
+  const firstRowBounds: Rect[] = [];
+  for (let index = 0; index < items.length; index++) {
+    const bounds = await items[index].getBounds();
+    if (Math.abs(bounds.top - firstTop) <= 3) {
+      firstRowBounds.push(bounds);
+    }
+  }
+  if (firstRowBounds.length < 2) {
+    return false;
+  }
+  const first = firstRowBounds[0];
+  const last = firstRowBounds[firstRowBounds.length - 1];
+  const containerWidth = containerBounds.right - containerBounds.left;
+  const firstCenter = (first.left + first.right) / 2;
+  const lastCenter = (last.left + last.right) / 2;
+  return firstCenter <= containerBounds.left + containerWidth * 0.25 &&
+    lastCenter >= containerBounds.left + containerWidth * 0.75;
+}
+
 export async function pinchOutById(driver: Driver, id: string, scale: number = 2): Promise<void> {
+  const uiWindow = await driver.findWindow({ bundleName: sharedBundleName, active: true });
+  const windowBounds = await uiWindow.getBounds();
+  if (await componentExistsById(driver, 'mall-home-scroll')) {
+    const windowCenterX = Math.round((windowBounds.left + windowBounds.right) / 2);
+    const windowHeight = windowBounds.bottom - windowBounds.top;
+    await driver.swipe(
+      windowCenterX,
+      Math.round(windowBounds.top + windowHeight * 0.75),
+      windowCenterX,
+      Math.round(windowBounds.top + windowHeight * 0.3),
+      600,
+    );
+    await driver.waitForIdle(300, 1500);
+  }
   const component = await driver.findComponent(ON.id(id));
-  await component.pinchOut(scale);
+  const bounds = await component.getBounds();
+  const items = await driver.findComponents(ON.id('mall-product-item'));
+  const firstItemBounds = await items[0].getBounds();
+  const secondItemBounds = await items[1].getBounds();
+  const centerX = Math.round((firstItemBounds.right + secondItemBounds.left) / 2);
+  const visibleTop = Math.max(bounds.top, windowBounds.top);
+  const visibleBottom = Math.min(bounds.bottom, windowBounds.bottom);
+  const centerY = Math.round((visibleTop + visibleBottom) / 2);
+  const endRadius = Math.round(Math.min((visibleBottom - visibleTop) / 4, 180));
+  const startRadius = Math.max(12, Math.round(endRadius / scale));
+  const steps = 8;
+  const pointers = PointerMatrix.create(2, steps);
+  for (let step = 0; step < steps; step++) {
+    const progress = step / (steps - 1);
+    const radius = Math.round(startRadius + (endRadius - startRadius) * progress);
+    pointers.setPoint(0, step, { x: centerX, y: centerY - radius });
+    pointers.setPoint(1, step, { x: centerX, y: centerY + radius });
+  }
+  await driver.injectMultiPointerAction(pointers, 600);
   await driver.waitForIdle(300, 1500);
 }
 

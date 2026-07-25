@@ -98,12 +98,14 @@ export struct HomePageContent {
                 .fontSize(12)
                 .fontColor($r('app.color.font_color_level3'));
             }
+            .id('mall-home-category-item')
             .width(60)
             .onClick(() => {
               this.handleClickCategory?.(category.id)
             })
           }, (category: CategoryItem) => category.id)
         }
+        .id('mall-home-category-row')
         .constraintSize({ minWidth: '100%' })
         .padding($r('app.float.space_l'))
         .justifyContent(BreakpointSystem.isTablet ? FlexAlign.SpaceBetween : FlexAlign.Start)

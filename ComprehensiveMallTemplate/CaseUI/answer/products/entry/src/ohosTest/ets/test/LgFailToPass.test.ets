@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 import { Driver } from '@kit.TestKit';
 import {
+  areItemsSpreadAcrossContainer,
   assertCurrentBreakpoint,
   countItemsInFirstRow,
   getAspectRatioById,
@@ -8,7 +9,10 @@ import {
   getDriver,
   isComponentVerticallyInside,
   isProductDetailTwoPane,
+  openCategory,
   openProductDetail,
+  pinchInById,
+  pinchOutById,
   prepareHome,
 } from './TestHelper';
 
@@ -47,6 +51,32 @@ export default function lgFailToPassTest() {
     it('should_show_product_detail_as_two_panes_on_lg', Level.LEVEL2, async (done: Function) => {
       await openProductDetail(driver);
       expect(await isProductDetailTwoPane(driver)).assertTrue();
+      done();
+    });
+
+    it('should_distribute_home_categories_across_available_width_on_lg', Level.LEVEL2,
+      async (done: Function) => {
+        await prepareHome();
+        expect(await areItemsSpreadAcrossContainer(
+          driver,
+          'mall-home-category-item',
+          'mall-home-category-row',
+        )).assertTrue();
+        done();
+      });
+
+    it('should_change_product_columns_between_four_and_six_on_lg', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
+      await pinchOutById(driver, 'mall-product-waterflow', 2);
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(4);
+      await pinchInById(driver, 'mall-product-waterflow', 0.5);
+      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(6);
+      done();
+    });
+
+    it('should_show_four_category_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openCategory(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
       done();
     });
   });
