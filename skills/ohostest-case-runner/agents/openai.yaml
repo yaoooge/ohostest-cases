@@ -1,0 +1,4 @@
+interface:
+  display_name: "OhosTest Case Runner"
+  short_description: "Run HarmonyOS UI tests in case or matrix mode"
+  default_prompt: "Use $ohostest-case-runner to select case or matrix mode, run the requested HarmonyOS UI test validation, and inspect the generated report."
