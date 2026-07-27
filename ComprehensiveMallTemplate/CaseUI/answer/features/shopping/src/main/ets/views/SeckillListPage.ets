@@ -155,6 +155,7 @@ struct SeckillListPage {
                 SeckillUtil.getSeckillProductStyle(ri.item, timeslot.status),
               )
             }
+            .id('mall-seckill-item')
           })
       }
       .lanes(BreakpointSystem.isTablet ? 2 : 1, 12)

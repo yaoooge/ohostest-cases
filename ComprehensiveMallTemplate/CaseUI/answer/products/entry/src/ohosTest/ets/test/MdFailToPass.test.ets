@@ -5,19 +5,22 @@ import {
   countVisibleItemsInside,
   countItemsInFirstRow,
   getAspectRatioById,
+  getCategoryGridColumnCount,
   getDriver,
   isComponentBelow,
   openCart,
-  openCategory,
   openProductDetail,
   openProductReviewMedia,
   openReviewCreation,
   openProfile,
+  openOrderList,
+  openPointsMall,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
   pinchOutById,
   prepareHome,
+  revealHomeProducts,
   switchToListMode,
 } from './TestHelper';
 
@@ -40,7 +43,7 @@ export default function mdFailToPassTest() {
     });
 
     it('should_show_three_product_columns_on_md', Level.LEVEL2, async (done: Function) => {
-      await prepareHome();
+      await revealHomeProducts(driver);
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(3);
       done();
     });
@@ -52,7 +55,7 @@ export default function mdFailToPassTest() {
     });
 
     it('should_change_product_columns_between_two_and_four_on_md', Level.LEVEL2, async (done: Function) => {
-      await prepareHome();
+      await revealHomeProducts(driver);
       await pinchOutById(driver, 'mall-product-waterflow', 2);
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
       await pinchInById(driver, 'mall-product-waterflow', 0.5);
@@ -61,8 +64,7 @@ export default function mdFailToPassTest() {
     });
 
     it('should_show_four_category_columns_on_md', Level.LEVEL2, async (done: Function) => {
-      await openCategory(driver);
-      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
+      expect(await getCategoryGridColumnCount(driver)).assertEqual(4);
       done();
     });
 
@@ -74,14 +76,12 @@ export default function mdFailToPassTest() {
     });
 
     it('should_show_three_horizontal_skeleton_columns_on_md', Level.LEVEL2, async (done: Function) => {
-      await openSearchSkeleton(driver, false);
-      expect(await countItemsInFirstRow(driver, 'mall-horizontal-skeleton-item')).assertEqual(3);
+      expect(await openSearchSkeleton(driver, false)).assertEqual(3);
       done();
     });
 
     it('should_keep_vertical_skeleton_single_column_on_md', Level.LEVEL2, async (done: Function) => {
-      await openSearchSkeleton(driver, true);
-      expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(1);
+      expect(await openSearchSkeleton(driver, true)).assertEqual(1);
       done();
     });
 
@@ -137,6 +137,18 @@ export default function mdFailToPassTest() {
     it('should_keep_profile_submenu_single_column_on_md', Level.LEVEL2, async (done: Function) => {
       await openProfile(driver);
       expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_keep_order_list_single_column_on_md', Level.LEVEL2, async (done: Function) => {
+      await openOrderList(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-order-item')).assertEqual(1);
+      done();
+    });
+
+    it('should_show_three_points_products_on_md', Level.LEVEL2, async (done: Function) => {
+      await openPointsMall(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-points-product-item')).assertEqual(3);
       done();
     });
 

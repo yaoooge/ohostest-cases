@@ -3,6 +3,7 @@ import {
   iData, routerStack, RouterMap, BreakpointSystem, BreakpointTypeEnum,
 } from 'lib_foundation';
 import { ContainerColumn, NavTitleBar } from 'lib_widget';
+import { MainMenuOption, SubMenuOption } from '../commons/Enums';
 import { MainMenuItem, SubMenuItem } from '../commons/Types';
 import { ProfileUtil } from '../utils/ProfileUtil';
 
@@ -117,6 +118,7 @@ function buildCheckInArea() {
         .height(16)
         .fillColor($r('app.color.font_color_level2'))
       Text('签到可领取积分兑换好物')
+        .id('mall-points-entry')
         .fontSize($r('app.float.font_size_14'))
         .fontColor($r('app.color.font_color_level1'))
         .layoutWeight(1)
@@ -140,6 +142,7 @@ function buildMainMenuArea() {
           .height(40)
         Text(item.label).commonLabelStyle()
       }
+      .id(item.type === MainMenuOption.COLLECTION ? 'mall-collection-entry' : 'mall-profile-main-menu-item')
       .onClick(() => {
         ProfileUtil.handleMainMenuClick(item.type)
       })
@@ -164,6 +167,7 @@ function buildOrderInfoArea() {
       Text('全部').commonLabelStyle().margin({ right: 4 }).fontColor($r('app.color.font_color_level2'))
       Image($r('app.media.ic_arrow_right')).commonIconStyle();
     }
+    .id('mall-order-entry')
     .onClick(() => {
       routerStack.pushPathByName(RouterMap.ORDER_LIST, 0);
     })
@@ -203,6 +207,7 @@ function buildSubMenuArea() {
           Blank();
           Image($r('app.media.ic_arrow_right')).commonIconStyle();
         }
+        .id(item.type === SubMenuOption.VIEW_HISTORY ? 'mall-history-entry' : 'mall-profile-submenu-content')
         .width('100%')
         .onClick(() => {
           ProfileUtil.handleSubMenuClick(item.type)

@@ -148,6 +148,7 @@ struct PointsMallPage {
           .backgroundColor($r('app.color.background_color_primary'))
           .borderRadius($r('app.float.border_radius_l'))
         }
+        .id('mall-points-product-item')
       }, (product: UserPointRedemptionSku) => product.skuCode)
     }
     .columnsTemplate(this.vm.columnTemplate)

@@ -54,6 +54,7 @@ export struct HomePage {
           .justifyContent(FlexAlign.Center)
           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
         }
+        .id('mall-home-scroll')
         .scrollBar(BarState.Off)
         .align(Alignment.Top)
         .layoutWeight(1)

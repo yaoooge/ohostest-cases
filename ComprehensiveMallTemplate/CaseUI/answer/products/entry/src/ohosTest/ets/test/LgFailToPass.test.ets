@@ -5,6 +5,7 @@ import {
   assertCurrentBreakpoint,
   countItemsInFirstRow,
   getAspectRatioById,
+  getCategoryGridColumnCount,
   getComponentVpWidthById,
   getDriver,
   haveVerticalOverlap,
@@ -13,16 +14,21 @@ import {
   isComponentVerticallyInside,
   isProductDetailTwoPane,
   openCart,
-  openCategory,
   openProductDetail,
   openProductReviewMedia,
   openReviewCreation,
   openProfile,
+  openOrderList,
+  openPointsMall,
+  openCollection,
+  openHistory,
+  openSeckill,
   openSearchResults,
   openSearchSkeleton,
   pinchInById,
   pinchOutById,
   prepareHome,
+  revealHomeProducts,
   switchToListMode,
 } from './TestHelper';
 
@@ -53,7 +59,7 @@ export default function lgFailToPassTest() {
     });
 
     it('should_show_five_product_columns_on_lg', Level.LEVEL2, async (done: Function) => {
-      await prepareHome();
+      await revealHomeProducts(driver);
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(5);
       done();
     });
@@ -76,7 +82,7 @@ export default function lgFailToPassTest() {
       });
 
     it('should_change_product_columns_between_four_and_six_on_lg', Level.LEVEL2, async (done: Function) => {
-      await prepareHome();
+      await revealHomeProducts(driver);
       await pinchOutById(driver, 'mall-product-waterflow', 2);
       expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(4);
       await pinchInById(driver, 'mall-product-waterflow', 0.5);
@@ -85,8 +91,7 @@ export default function lgFailToPassTest() {
     });
 
     it('should_show_four_category_columns_on_lg', Level.LEVEL2, async (done: Function) => {
-      await openCategory(driver);
-      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
+      expect(await getCategoryGridColumnCount(driver)).assertEqual(4);
       done();
     });
 
@@ -98,14 +103,12 @@ export default function lgFailToPassTest() {
     });
 
     it('should_show_four_horizontal_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
-      await openSearchSkeleton(driver, false);
-      expect(await countItemsInFirstRow(driver, 'mall-horizontal-skeleton-item')).assertEqual(4);
+      expect(await openSearchSkeleton(driver, false)).assertEqual(4);
       done();
     });
 
     it('should_show_two_vertical_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
-      await openSearchSkeleton(driver, true);
-      expect(await countItemsInFirstRow(driver, 'mall-vertical-skeleton-item')).assertEqual(2);
+      expect(await openSearchSkeleton(driver, true)).assertEqual(2);
       done();
     });
 
@@ -155,6 +158,36 @@ export default function lgFailToPassTest() {
     it('should_show_two_profile_submenu_columns_on_lg', Level.LEVEL2, async (done: Function) => {
       await openProfile(driver);
       expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_two_order_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openOrderList(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-order-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_four_points_products_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openPointsMall(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-points-product-item')).assertEqual(4);
+      done();
+    });
+
+    it('should_show_two_collection_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openCollection(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-setting-product-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_two_history_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openHistory(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-setting-product-item')).assertEqual(2);
+      done();
+    });
+
+    it('should_show_two_seckill_columns_on_lg', Level.LEVEL2, async (done: Function) => {
+      await openSeckill(driver);
+      expect(await countItemsInFirstRow(driver, 'mall-seckill-item')).assertEqual(2);
       done();
     });
 

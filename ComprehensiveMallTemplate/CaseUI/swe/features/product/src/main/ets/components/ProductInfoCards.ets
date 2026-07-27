@@ -43,6 +43,7 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
   Swiper() {
     ForEach(imgList, (item: ResourceStr) => {
       Image(item)
+        .id('mall-product-swiper-image')
         .height('100%')
         .constraintSize({
           maxHeight: ProductSwiperStyleConfig.imageMaxHeight,

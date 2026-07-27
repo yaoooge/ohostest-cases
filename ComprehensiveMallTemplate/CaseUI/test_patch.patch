@@ -1,9 +1,9 @@
 diff --git a/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
 new file mode 100644
-index 0000000..0ef9699
+index 0000000..39b2129
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,56 @@
 +import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
 +import {
@@ -20,16 +20,17 @@ index 0000000..0ef9699
 +
 +    beforeAll(async () => {
 +      driver = getDriver();
-+      await prepareHome();
 +    });
 +
 +    it('should_start_mall_successfully', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
 +      await waitForComponentById(driver, 'mall-main-entry');
 +      await waitForComponentById(driver, 'mall-home-page');
 +      done();
 +    });
 +
 +    it('should_show_four_main_tabs', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
 +      for (let index = 0; index < 4; index++) {
 +        await waitForComponentById(driver, 'mall-tab-' + index);
 +      }
@@ -53,6 +54,7 @@ index 0000000..0ef9699
 +    });
 +
 +    it('should_keep_split_action_absent_in_ui_case', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
 +      expect(await componentExistsById(driver, 'mall-split-action')).assertFalse();
 +      done();
 +    });
@@ -60,22 +62,42 @@ index 0000000..0ef9699
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets
 new file mode 100644
-index 0000000..3ed4b39
+index 0000000..f397570
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/LgFailToPass.test.ets
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,195 @@
 +import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
 +import {
++  areItemsSpreadAcrossContainer,
 +  assertCurrentBreakpoint,
 +  countItemsInFirstRow,
 +  getAspectRatioById,
++  getCategoryGridColumnCount,
 +  getComponentVpWidthById,
 +  getDriver,
++  haveVerticalOverlap,
++  isComponentBottomNearWindow,
++  isComponentLeftOf,
 +  isComponentVerticallyInside,
 +  isProductDetailTwoPane,
++  openCart,
 +  openProductDetail,
++  openProductReviewMedia,
++  openReviewCreation,
++  openProfile,
++  openOrderList,
++  openPointsMall,
++  openCollection,
++  openHistory,
++  openSeckill,
++  openSearchResults,
++  openSearchSkeleton,
++  pinchInById,
++  pinchOutById,
 +  prepareHome,
++  revealHomeProducts,
++  switchToListMode,
 +} from './TestHelper';
 +
 +export default function lgFailToPassTest() {
@@ -105,7 +127,7 @@ index 0000000..3ed4b39
 +    });
 +
 +    it('should_show_five_product_columns_on_lg', Level.LEVEL2, async (done: Function) => {
-+      await prepareHome();
++      await revealHomeProducts(driver);
 +      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(5);
 +      done();
 +    });
@@ -115,6 +137,128 @@ index 0000000..3ed4b39
 +      expect(await isProductDetailTwoPane(driver)).assertTrue();
 +      done();
 +    });
++
++    it('should_distribute_home_categories_across_available_width_on_lg', Level.LEVEL2,
++      async (done: Function) => {
++        await prepareHome();
++        expect(await areItemsSpreadAcrossContainer(
++          driver,
++          'mall-home-category-item',
++          'mall-home-category-row',
++        )).assertTrue();
++        done();
++      });
++
++    it('should_change_product_columns_between_four_and_six_on_lg', Level.LEVEL2, async (done: Function) => {
++      await revealHomeProducts(driver);
++      await pinchOutById(driver, 'mall-product-waterflow', 2);
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(4);
++      await pinchInById(driver, 'mall-product-waterflow', 0.5);
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(6);
++      done();
++    });
++
++    it('should_show_four_category_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      expect(await getCategoryGridColumnCount(driver)).assertEqual(4);
++      done();
++    });
++
++    it('should_show_two_list_mode_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openSearchResults(driver);
++      await switchToListMode(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-list-product-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_show_four_horizontal_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, false)).assertEqual(4);
++      done();
++    });
++
++    it('should_show_two_vertical_skeleton_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, true)).assertEqual(2);
++      done();
++    });
++
++    it('should_show_five_review_media_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openProductReviewMedia(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(5);
++      done();
++    });
++
++    it('should_show_five_review_picker_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openReviewCreation(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(5);
++      done();
++    });
++
++    it('should_show_two_cart_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openCart(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-cart-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_remove_extra_bottom_gap_from_cart_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openCart(driver);
++      expect(await isComponentBottomNearWindow(
++        driver,
++        'mall-cart-control-panel',
++        bundleName,
++      )).assertTrue();
++      done();
++    });
++
++    it('should_place_profile_sections_side_by_side_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await isComponentLeftOf(
++        driver,
++        'mall-profile-user-area',
++        'mall-profile-checkin-menu-area',
++      )).assertTrue();
++      expect(await haveVerticalOverlap(
++        driver,
++        'mall-profile-user-area',
++        'mall-profile-checkin-menu-area',
++      )).assertTrue();
++      done();
++    });
++
++    it('should_show_two_profile_submenu_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_show_two_order_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openOrderList(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-order-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_show_four_points_products_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openPointsMall(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-points-product-item')).assertEqual(4);
++      done();
++    });
++
++    it('should_show_two_collection_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openCollection(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-setting-product-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_show_two_history_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openHistory(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-setting-product-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_show_two_seckill_columns_on_lg', Level.LEVEL2, async (done: Function) => {
++      await openSeckill(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-seckill-item')).assertEqual(2);
++      done();
++    });
++
 +  });
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/List.test.ets b/products/entry/src/ohosTest/ets/test/List.test.ets
@@ -136,19 +280,34 @@ index 0000000..c664d46
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets
 new file mode 100644
-index 0000000..4a079ff
+index 0000000..23089ed
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/MdFailToPass.test.ets
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,156 @@
 +import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
 +import {
 +  assertCurrentBreakpoint,
++  countVisibleItemsInside,
 +  countItemsInFirstRow,
 +  getAspectRatioById,
++  getCategoryGridColumnCount,
 +  getDriver,
-+  openCategory,
++  isComponentBelow,
++  openCart,
++  openProductDetail,
++  openProductReviewMedia,
++  openReviewCreation,
++  openProfile,
++  openOrderList,
++  openPointsMall,
++  openSearchResults,
++  openSearchSkeleton,
++  pinchInById,
++  pinchOutById,
 +  prepareHome,
++  revealHomeProducts,
++  switchToListMode,
 +} from './TestHelper';
 +
 +export default function mdFailToPassTest() {
@@ -170,33 +329,146 @@ index 0000000..4a079ff
 +    });
 +
 +    it('should_show_three_product_columns_on_md', Level.LEVEL2, async (done: Function) => {
-+      await prepareHome();
++      await revealHomeProducts(driver);
 +      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(3);
 +      done();
 +    });
 +
-+    it('should_show_four_category_columns_on_md', Level.LEVEL2, async (done: Function) => {
-+      await openCategory(driver);
-+      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(4);
++    it('should_keep_search_below_title_on_md', Level.LEVEL2, async (done: Function) => {
++      await prepareHome();
++      expect(await isComponentBelow(driver, 'mall-home-title-row', 'mall-home-search')).assertTrue();
 +      done();
 +    });
++
++    it('should_change_product_columns_between_two_and_four_on_md', Level.LEVEL2, async (done: Function) => {
++      await revealHomeProducts(driver);
++      await pinchOutById(driver, 'mall-product-waterflow', 2);
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
++      await pinchInById(driver, 'mall-product-waterflow', 0.5);
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(4);
++      done();
++    });
++
++    it('should_show_four_category_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      expect(await getCategoryGridColumnCount(driver)).assertEqual(4);
++      done();
++    });
++
++    it('should_keep_list_mode_single_column_on_md', Level.LEVEL2, async (done: Function) => {
++      await openSearchResults(driver);
++      await switchToListMode(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-list-product-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_show_three_horizontal_skeleton_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, false)).assertEqual(3);
++      done();
++    });
++
++    it('should_keep_vertical_skeleton_single_column_on_md', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, true)).assertEqual(1);
++      done();
++    });
++
++    it('should_show_product_detail_vertically_on_md', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail(driver);
++      expect(await isComponentBelow(driver, 'mall-product-swiper', 'mall-product-info-card')).assertTrue();
++      done();
++    });
++
++    it('should_show_five_review_media_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      await openProductReviewMedia(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(5);
++      done();
++    });
++
++    it('should_reveal_adjacent_product_image_on_md', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail(driver);
++      expect(await countVisibleItemsInside(
++        driver,
++        'mall-product-swiper-image',
++        'mall-product-swiper',
++      ) >= 2).assertTrue();
++      done();
++    });
++
++    it('should_show_five_review_picker_columns_on_md', Level.LEVEL2, async (done: Function) => {
++      await openReviewCreation(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(5);
++      done();
++    });
++
++    it('should_keep_cart_single_column_on_md', Level.LEVEL2, async (done: Function) => {
++      await openCart(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-cart-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_keep_profile_sections_vertical_on_md', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await isComponentBelow(
++        driver,
++        'mall-profile-user-area',
++        'mall-profile-checkin-area',
++      )).assertTrue();
++      expect(await isComponentBelow(
++        driver,
++        'mall-profile-checkin-area',
++        'mall-profile-main-menu-area',
++      )).assertTrue();
++      done();
++    });
++
++    it('should_keep_profile_submenu_single_column_on_md', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_keep_order_list_single_column_on_md', Level.LEVEL2, async (done: Function) => {
++      await openOrderList(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-order-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_show_three_points_products_on_md', Level.LEVEL2, async (done: Function) => {
++      await openPointsMall(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-points-product-item')).assertEqual(3);
++      done();
++    });
++
 +  });
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
 new file mode 100644
-index 0000000..ba65609
+index 0000000..40d2c16
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,145 @@
 +import { beforeAll, describe, expect, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
 +import {
 +  assertCurrentBreakpoint,
 +  countItemsInFirstRow,
 +  getAspectRatioById,
++  getCategoryGridColumnCount,
 +  getDriver,
-+  openCategory,
++  isComponentBelow,
++  openCart,
++  openProductDetail,
++  openProductReviewMedia,
++  openReviewCreation,
++  openProfile,
++  openOrderList,
++  openPointsMall,
++  openSearchResults,
++  openSearchSkeleton,
++  pinchInById,
++  pinchOutById,
 +  prepareHome,
++  revealHomeProducts,
++  switchToListMode,
 +} from './TestHelper';
 +
 +export default function smPassToPassTest() {
@@ -218,27 +490,117 @@ index 0000000..ba65609
 +    });
 +
 +    it('should_keep_sm_product_waterflow_two_columns', Level.LEVEL2, async (done: Function) => {
++      await revealHomeProducts(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
++      done();
++    });
++
++    it('should_keep_search_below_title_on_sm', Level.LEVEL2, async (done: Function) => {
 +      await prepareHome();
++      expect(await isComponentBelow(driver, 'mall-home-title-row', 'mall-home-search')).assertTrue();
++      done();
++    });
++
++    it('should_ignore_product_pinch_on_sm', Level.LEVEL2, async (done: Function) => {
++      await revealHomeProducts(driver);
++      await pinchOutById(driver, 'mall-product-waterflow');
++      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
++      await pinchInById(driver, 'mall-product-waterflow');
 +      expect(await countItemsInFirstRow(driver, 'mall-product-item')).assertEqual(2);
 +      done();
 +    });
 +
 +    it('should_keep_sm_category_grid_two_columns', Level.LEVEL2, async (done: Function) => {
-+      await openCategory(driver);
-+      expect(await countItemsInFirstRow(driver, 'mall-category-item')).assertEqual(2);
++      expect(await getCategoryGridColumnCount(driver)).assertEqual(2);
 +      done();
 +    });
++
++    it('should_keep_list_mode_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openSearchResults(driver);
++      await switchToListMode(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-list-product-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_keep_horizontal_skeleton_two_columns_on_sm', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, false)).assertEqual(2);
++      done();
++    });
++
++    it('should_keep_vertical_skeleton_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
++      expect(await openSearchSkeleton(driver, true)).assertEqual(1);
++      done();
++    });
++
++    it('should_show_product_detail_vertically_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openProductDetail(driver);
++      expect(await isComponentBelow(driver, 'mall-product-swiper', 'mall-product-info-card')).assertTrue();
++      done();
++    });
++
++    it('should_show_three_review_media_columns_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openProductReviewMedia(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-media-item')).assertEqual(3);
++      done();
++    });
++
++    it('should_show_three_review_picker_columns_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openReviewCreation(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-review-picker-item')).assertEqual(3);
++      done();
++    });
++
++    it('should_keep_cart_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openCart(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-cart-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_keep_profile_sections_vertical_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await isComponentBelow(
++        driver,
++        'mall-profile-user-area',
++        'mall-profile-checkin-area',
++      )).assertTrue();
++      expect(await isComponentBelow(
++        driver,
++        'mall-profile-checkin-area',
++        'mall-profile-main-menu-area',
++      )).assertTrue();
++      done();
++    });
++
++    it('should_keep_profile_submenu_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openProfile(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-profile-submenu-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_keep_order_list_single_column_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openOrderList(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-order-item')).assertEqual(1);
++      done();
++    });
++
++    it('should_show_two_points_products_on_sm', Level.LEVEL2, async (done: Function) => {
++      await openPointsMall(driver);
++      expect(await countItemsInFirstRow(driver, 'mall-points-product-item')).assertEqual(2);
++      done();
++    });
++
 +  });
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/TestHelper.ets b/products/entry/src/ohosTest/ets/test/TestHelper.ets
 new file mode 100644
-index 0000000..63b3981
+index 0000000..6559673
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,609 @@
 +import { Want } from '@kit.AbilityKit';
-+import { abilityDelegatorRegistry, Driver, ON, UiWindow } from '@kit.TestKit';
++import { abilityDelegatorRegistry, Driver, ON, PointerMatrix, Rect, UiWindow } from '@kit.TestKit';
 +import { expect } from '@ohos/hypium';
++import { ProductSearchResultsPageParam, RouterMap, routerStack } from 'lib_foundation';
 +
 +export const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
 +
@@ -277,36 +639,190 @@ index 0000000..63b3981
 +}
 +
 +export async function returnToHome(driver: Driver): Promise<void> {
++  await restoreHomeShell(driver);
++  await revealHomeComponent(driver, 'mall-home-search', false);
++  await driver.delayMs(500);
++}
++
++async function restoreHomeShell(driver: Driver): Promise<void> {
++  if (routerStack.size() > 1) {
++    routerStack.popToName(RouterMap.MAIN_ENTRY, false);
++    await driver.delayMs(300);
++    await driver.waitForIdle(300, 1500);
++  }
++  if (!await componentExistsById(driver, 'mall-main-entry')) {
++    routerStack.replacePath({
++      name: RouterMap.MAIN_ENTRY,
++    }, false);
++    await driver.delayMs(300);
++    await driver.waitForIdle(300, 1500);
++  }
++  await waitForComponentById(driver, 'mall-main-entry', 12);
 +  for (let index = 0; index < 4; index++) {
-+    if (await componentExistsById(driver, HOME_ID)) {
-+      break;
-+    }
-+    try {
-+      await driver.pressBack();
-+      await driver.waitForIdle(300, 1000);
-+    } catch (e) {
-+      console.error('returnToHome pressBack failed: ' + JSON.stringify(e));
-+    }
++    await waitForComponentById(driver, 'mall-tab-' + index, 12);
 +  }
++  const homeTab = await driver.findComponent(ON.id('mall-tab-0'));
++  await homeTab.click();
++  await driver.waitForIdle(300, 1000);
 +  await waitForComponentById(driver, HOME_ID, 12);
-+  if (await componentExistsById(driver, 'mall-tab-0')) {
-+    const homeTab = await driver.findComponent(ON.id('mall-tab-0'));
-+    await homeTab.click();
-+    await driver.waitForIdle(300, 1000);
-+  }
 +  await waitForComponentById(driver, 'mall-home-content', 12);
 +}
 +
-+export async function openCategory(driver: Driver): Promise<void> {
++async function prepareHomeForTab(driver: Driver): Promise<void> {
++  await restoreHomeShell(driver);
++}
++
++export async function revealHomeProducts(driver: Driver): Promise<void> {
 +  await prepareHome();
-+  const categoryTab = await driver.findComponent(ON.id('mall-tab-1'));
-+  await categoryTab.click();
-+  await waitForComponentById(driver, 'mall-category-products', 12);
-+  await waitForComponentById(driver, 'mall-category-item', 12);
++  await revealHomeComponent(driver, 'mall-product-item');
++}
++
++async function revealHomeComponent(
++  driver: Driver,
++  componentId: string,
++  scrollUp: boolean = true,
++): Promise<void> {
++  const homeScroll = await driver.findComponent(ON.id('mall-home-scroll'));
++  const scrollBounds = await homeScroll.getBounds();
++  const uiWindow = await driver.findWindow({ bundleName: sharedBundleName, active: true });
++  const windowBounds = await uiWindow.getBounds();
++  const visibleTop = Math.max(scrollBounds.top, windowBounds.top);
++  const visibleBottom = Math.min(scrollBounds.bottom, windowBounds.bottom);
++  const centerX = Math.round((Math.max(scrollBounds.left, windowBounds.left) +
++    Math.min(scrollBounds.right, windowBounds.right)) / 2);
++  const visibleHeight = visibleBottom - visibleTop;
++  const startY = Math.round(visibleTop + visibleHeight * 0.8);
++  const endY = Math.round(visibleTop + visibleHeight * 0.25);
++  for (let attempt = 0; attempt < 6; attempt++) {
++    if (await componentExistsById(driver, componentId)) {
++      return;
++    }
++    if (scrollUp) {
++      await driver.swipe(centerX, startY, centerX, endY, 500);
++    } else {
++      await driver.swipe(centerX, endY, centerX, startY, 500);
++    }
++    await driver.waitForIdle(200, 800);
++  }
++  await waitForComponentById(driver, componentId, 4);
++}
++
++export async function getCategoryGridColumnCount(driver: Driver): Promise<number> {
++  await prepareHomeForTab(driver);
++  routerStack.pushPathByName(RouterMap.PRODUCT_CATEGORY, '1');
++  return await countTransientItemsInFirstRow(driver, 'mall-category-skeleton-item');
++}
++
++export async function openCart(driver: Driver): Promise<void> {
++  await prepareHomeForTab(driver);
++  await waitForComponentById(driver, 'mall-tab-2', 12);
++  const cartTab = await driver.findComponent(ON.id('mall-tab-2'));
++  await cartTab.click();
++  await waitForComponentCount(driver, 'mall-cart-item', 2, 20);
++  await waitForComponentById(driver, 'mall-cart-control-panel', 12);
++}
++
++export async function openProfile(driver: Driver): Promise<void> {
++  await prepareHomeForTab(driver);
++  await waitForComponentById(driver, 'mall-tab-3', 12);
++  const profileTab = await driver.findComponent(ON.id('mall-tab-3'));
++  await profileTab.click();
++  await waitForComponentById(driver, 'mall-profile-user-area', 12);
++}
++
++export async function openOrderList(driver: Driver): Promise<void> {
++  await openProfile(driver);
++  const orderEntry = await driver.findComponent(ON.id('mall-order-entry'));
++  await orderEntry.click();
++  await waitForComponentCount(driver, 'mall-order-item', 2, 20);
++}
++
++export async function openPointsMall(driver: Driver): Promise<void> {
++  await openProfile(driver);
++  const pointsEntry = await driver.findComponent(ON.id('mall-points-entry'));
++  await pointsEntry.click();
++  await waitForComponentCount(driver, 'mall-points-product-item', 2, 20);
++}
++
++export async function openCollection(driver: Driver): Promise<void> {
++  await openProfile(driver);
++  const collectionEntry = await driver.findComponent(ON.id('mall-collection-entry'));
++  await collectionEntry.click();
++  await waitForComponentCount(driver, 'mall-setting-product-item', 2, 20);
++}
++
++export async function openHistory(driver: Driver): Promise<void> {
++  await openProfile(driver);
++  const historyEntry = await driver.findComponent(ON.id('mall-history-entry'));
++  await historyEntry.click();
++  await waitForComponentCount(driver, 'mall-setting-product-item', 2, 20);
++}
++
++export async function openSeckill(driver: Driver): Promise<void> {
++  await prepareHomeForTab(driver);
++  routerStack.pushPath({
++    name: RouterMap.PRODUCT_SECKILL,
++  }, false);
++  await driver.delayMs(5000);
++  if (await componentExistsByText(driver, '允许')) {
++    const allowButton = await driver.findComponent(ON.text('允许'));
++    await allowButton.click();
++  }
++  await waitForComponentCount(driver, 'mall-seckill-item', 1, 20);
++}
++
++export async function submitProductSearch(driver: Driver): Promise<void> {
++  await prepareHomeForTab(driver);
++  routerStack.pushPath({
++    name: RouterMap.PRODUCT_SEARCH_RESULTS,
++    param: {
++      keywords: '针织',
++    } as ProductSearchResultsPageParam,
++  }, false);
++  await waitForComponentById(driver, 'mall-display-mode-toggle', 12);
++}
++
++export async function openSearchResults(driver: Driver): Promise<void> {
++  await submitProductSearch(driver);
++  await waitForComponentById(driver, 'mall-display-mode-toggle', 12);
++  await waitForComponentById(driver, 'mall-product-waterflow', 20);
++  await waitForComponentById(driver, 'mall-product-item', 20);
++}
++
++export async function switchToListMode(driver: Driver): Promise<void> {
++  const toggle = await driver.findComponent(ON.id('mall-display-mode-toggle'));
++  await toggle.click();
++  const salesSort = await driver.findComponent(ON.id('mall-sort-sales'));
++  await salesSort.click();
++  await waitForComponentById(driver, 'mall-vertical-skeleton-item', 12);
++  await waitForComponentById(driver, 'mall-list-product-item', 20);
++}
++
++export async function openSearchSkeleton(driver: Driver, listMode: boolean): Promise<number> {
++  await prepareHomeForTab(driver);
++  routerStack.pushPath({
++    name: RouterMap.PRODUCT_SEARCH_RESULTS,
++    param: {
++      keywords: '针织',
++    } as ProductSearchResultsPageParam,
++  }, false);
++  if (listMode) {
++    for (let attempt = 0; attempt < 20; attempt++) {
++      const toggles = await driver.findComponents(ON.id('mall-display-mode-toggle'));
++      if (toggles !== null && toggles !== undefined && toggles.length > 0) {
++        await toggles[0].click();
++        return await countTransientItemsInFirstRow(driver, 'mall-vertical-skeleton-item');
++      }
++      await driver.delayMs(50);
++    }
++    expect('display mode toggle found').assertEqual('display mode toggle not found');
++    return 0;
++  }
++  return await countTransientItemsInFirstRow(driver, 'mall-horizontal-skeleton-item');
 +}
 +
 +export async function openProductDetail(driver: Driver): Promise<void> {
-+  await prepareHome();
++  await prepareHomeForTab(driver);
 +  const want: Want = {
 +    bundleName: sharedBundleName,
 +    abilityName: 'EntryAbility',
@@ -314,7 +830,30 @@ index 0000000..63b3981
 +  };
 +  await delegator.startAbility(want);
 +  await waitForComponentById(driver, 'mall-product-info-page', 12);
-+  await waitForComponentById(driver, 'mall-product-info-card', 12);
++  await waitForComponentById(driver, 'mall-product-info-card', 20);
++}
++
++export async function openProductReviewMedia(driver: Driver): Promise<void> {
++  if (!await componentExistsById(driver, 'mall-product-info-card')) {
++    await openProductDetail(driver);
++  }
++  await driver.delayMs(3500);
++  const detailScroll = await driver.findComponent(ON.id('mall-product-detail-scroll'));
++  await detailScroll.scrollSearch(ON.id('mall-review-media-item'));
++  await waitForComponentById(driver, 'mall-review-media-item', 2);
++}
++
++export async function openReviewCreation(driver: Driver): Promise<void> {
++  await prepareHomeForTab(driver);
++  const profileTab = await driver.findComponent(ON.id('mall-tab-3'));
++  await profileTab.click();
++  await waitForComponentByText(driver, '待评价', 12);
++  const pendingReview = await driver.findComponent(ON.text('待评价'));
++  await pendingReview.click();
++  await waitForComponentById(driver, 'mall-order-action-5', 20);
++  const reviewAction = await driver.findComponent(ON.id('mall-order-action-5'));
++  await reviewAction.click();
++  await waitForComponentById(driver, 'mall-review-picker-item', 12);
 +}
 +
 +export async function getWindowVpWidth(driver: Driver, bundleName: string): Promise<number> {
@@ -351,6 +890,15 @@ index 0000000..63b3981
 +  }
 +}
 +
++export async function componentExistsByText(driver: Driver, text: string): Promise<boolean> {
++  try {
++    const component = await driver.findComponent(ON.text(text));
++    return component !== null && component !== undefined;
++  } catch (e) {
++    return false;
++  }
++}
++
 +export async function waitForComponentById(driver: Driver, id: string, retries: number = 8): Promise<void> {
 +  for (let index = 0; index < retries; index++) {
 +    if (await componentExistsById(driver, id)) {
@@ -360,7 +908,7 @@ index 0000000..63b3981
 +    await driver.delayMs(300);
 +  }
 +  console.error('component not found: ' + id);
-+  expect(false).assertTrue();
++  expect('component found: ' + id).assertEqual('component not found: ' + id);
 +}
 +
 +export async function waitForComponentByText(driver: Driver, text: string, retries: number = 8): Promise<void> {
@@ -376,7 +924,24 @@ index 0000000..63b3981
 +    await driver.delayMs(300);
 +  }
 +  console.error('component text not found: ' + text);
-+  expect(false).assertTrue();
++  expect('component text found: ' + text).assertEqual('component text not found: ' + text);
++}
++
++export async function waitForComponentCount(
++  driver: Driver,
++  id: string,
++  expectedMinimum: number,
++  retries: number = 8,
++): Promise<void> {
++  for (let index = 0; index < retries; index++) {
++    const components = await driver.findComponents(ON.id(id));
++    if (components !== null && components !== undefined && components.length >= expectedMinimum) {
++      return;
++    }
++    await driver.delayMs(300);
++  }
++  expect('component count at least ' + expectedMinimum + ': ' + id)
++    .assertEqual('component count below ' + expectedMinimum + ': ' + id);
 +}
 +
 +export async function getAspectRatioById(driver: Driver, id: string): Promise<number> {
@@ -397,23 +962,226 @@ index 0000000..63b3981
 +}
 +
 +export async function countItemsInFirstRow(driver: Driver, itemId: string): Promise<number> {
-+  const items = await driver.findComponents(ON.id(itemId));
-+  if (items === null || items === undefined || items.length === 0) {
-+    return 0;
++  for (let attempt = 0; attempt < 12; attempt++) {
++    try {
++      const items = await driver.findComponents(ON.id(itemId));
++      if (items !== null && items !== undefined && items.length > 0) {
++        const boundsList: Rect[] = [];
++        let firstTop = Number.MAX_VALUE;
++        for (let index = 0; index < items.length; index++) {
++          const bounds = await items[index].getBounds();
++          boundsList.push(bounds);
++          firstTop = Math.min(firstTop, bounds.top);
++        }
++        let count = 0;
++        for (let index = 0; index < boundsList.length; index++) {
++          if (Math.abs(boundsList[index].top - firstTop) <= 3) {
++            count++;
++          }
++        }
++        return count;
++      }
++    } catch (e) {
++    }
++    await driver.delayMs(300);
 +  }
++  return 0;
++}
++
++async function countTransientItemsInFirstRow(driver: Driver, itemId: string): Promise<number> {
++  for (let attempt = 0; attempt < 20; attempt++) {
++    try {
++      const items = await driver.findComponents(ON.id(itemId));
++      if (items !== null && items !== undefined && items.length > 0) {
++        const firstBounds = await items[0].getBounds();
++        let count = 1;
++        for (let index = 1; index < items.length; index++) {
++          const bounds = await items[index].getBounds();
++          if (Math.abs(bounds.top - firstBounds.top) <= 3) {
++            count++;
++          } else if (bounds.top > firstBounds.top + 3) {
++            return count;
++          }
++        }
++        return count;
++      }
++    } catch (e) {
++    }
++    await driver.delayMs(50);
++  }
++  return 0;
++}
++
++export async function countVisibleItemsInside(
++  driver: Driver,
++  itemId: string,
++  containerId: string,
++): Promise<number> {
++  const items = await driver.findComponents(ON.id(itemId));
++  const container = await driver.findComponent(ON.id(containerId));
++  const containerBounds = await container.getBounds();
++  let count = 0;
++  for (let index = 0; index < items.length; index++) {
++    const bounds = await items[index].getBounds();
++    const intersectionWidth = Math.min(bounds.right, containerBounds.right) -
++      Math.max(bounds.left, containerBounds.left);
++    const intersectionHeight = Math.min(bounds.bottom, containerBounds.bottom) -
++      Math.max(bounds.top, containerBounds.top);
++    if (intersectionWidth > 3 && intersectionHeight > 3) {
++      count++;
++    }
++  }
++  return count;
++}
++
++export async function isComponentBelow(
++  driver: Driver,
++  upperId: string,
++  lowerId: string,
++  tolerance: number = 12,
++): Promise<boolean> {
++  const upper = await driver.findComponent(ON.id(upperId));
++  const lower = await driver.findComponent(ON.id(lowerId));
++  const upperBounds = await upper.getBounds();
++  const lowerBounds = await lower.getBounds();
++  return lowerBounds.top >= upperBounds.bottom - tolerance;
++}
++
++export async function isComponentLeftOf(
++  driver: Driver,
++  leftId: string,
++  rightId: string,
++  tolerance: number = 12,
++): Promise<boolean> {
++  const left = await driver.findComponent(ON.id(leftId));
++  const right = await driver.findComponent(ON.id(rightId));
++  const leftBounds = await left.getBounds();
++  const rightBounds = await right.getBounds();
++  return leftBounds.right <= rightBounds.left + tolerance;
++}
++
++export async function haveVerticalOverlap(
++  driver: Driver,
++  firstId: string,
++  secondId: string,
++): Promise<boolean> {
++  const first = await driver.findComponent(ON.id(firstId));
++  const second = await driver.findComponent(ON.id(secondId));
++  const firstBounds = await first.getBounds();
++  const secondBounds = await second.getBounds();
++  return Math.min(firstBounds.bottom, secondBounds.bottom) -
++    Math.max(firstBounds.top, secondBounds.top) > 3;
++}
++
++export async function isComponentBottomNearWindow(
++  driver: Driver,
++  componentId: string,
++  bundleName: string,
++  tolerance: number = 12,
++): Promise<boolean> {
++  const component = await driver.findComponent(ON.id(componentId));
++  const componentBounds = await component.getBounds();
++  const uiWindow = await driver.findWindow({ bundleName: bundleName, active: true });
++  const windowBounds = await uiWindow.getBounds();
++  return Math.abs(windowBounds.bottom - componentBounds.bottom) <= tolerance;
++}
++
++export async function areComponentsOnSameRow(
++  driver: Driver,
++  firstId: string,
++  secondId: string,
++  tolerance: number = 3,
++): Promise<boolean> {
++  const first = await driver.findComponent(ON.id(firstId));
++  const second = await driver.findComponent(ON.id(secondId));
++  const firstBounds = await first.getBounds();
++  const secondBounds = await second.getBounds();
++  return Math.abs(firstBounds.top - secondBounds.top) <= tolerance;
++}
++
++export async function areItemsSpreadAcrossContainer(
++  driver: Driver,
++  itemId: string,
++  containerId: string,
++): Promise<boolean> {
++  const items = await driver.findComponents(ON.id(itemId));
++  if (items === null || items === undefined || items.length < 2) {
++    return false;
++  }
++  const container = await driver.findComponent(ON.id(containerId));
++  const containerBounds = await container.getBounds();
 +  let firstTop = Number.MAX_VALUE;
 +  for (let index = 0; index < items.length; index++) {
 +    const bounds = await items[index].getBounds();
 +    firstTop = Math.min(firstTop, bounds.top);
 +  }
-+  let count = 0;
++  const firstRowBounds: Rect[] = [];
 +  for (let index = 0; index < items.length; index++) {
 +    const bounds = await items[index].getBounds();
 +    if (Math.abs(bounds.top - firstTop) <= 3) {
-+      count++;
++      firstRowBounds.push(bounds);
 +    }
 +  }
-+  return count;
++  if (firstRowBounds.length < 2) {
++    return false;
++  }
++  const first = firstRowBounds[0];
++  const last = firstRowBounds[firstRowBounds.length - 1];
++  const containerWidth = containerBounds.right - containerBounds.left;
++  const firstCenter = (first.left + first.right) / 2;
++  const lastCenter = (last.left + last.right) / 2;
++  return firstCenter <= containerBounds.left + containerWidth * 0.25 &&
++    lastCenter >= containerBounds.left + containerWidth * 0.75;
++}
++
++export async function pinchOutById(driver: Driver, id: string, scale: number = 2): Promise<void> {
++  const uiWindow = await driver.findWindow({ bundleName: sharedBundleName, active: true });
++  const windowBounds = await uiWindow.getBounds();
++  if (await componentExistsById(driver, 'mall-home-scroll')) {
++    const windowCenterX = Math.round((windowBounds.left + windowBounds.right) / 2);
++    const windowHeight = windowBounds.bottom - windowBounds.top;
++    await driver.swipe(
++      windowCenterX,
++      Math.round(windowBounds.top + windowHeight * 0.75),
++      windowCenterX,
++      Math.round(windowBounds.top + windowHeight * 0.3),
++      600,
++    );
++    await driver.waitForIdle(300, 1500);
++  }
++  const component = await driver.findComponent(ON.id(id));
++  const bounds = await component.getBounds();
++  const items = await driver.findComponents(ON.id('mall-product-item'));
++  const firstItemBounds = await items[0].getBounds();
++  const secondItemBounds = await items[1].getBounds();
++  const centerX = Math.round((firstItemBounds.right + secondItemBounds.left) / 2);
++  const visibleTop = Math.max(bounds.top, windowBounds.top);
++  const visibleBottom = Math.min(bounds.bottom, windowBounds.bottom);
++  const centerY = Math.round((visibleTop + visibleBottom) / 2);
++  const endRadius = Math.round(Math.min((visibleBottom - visibleTop) / 4, 180));
++  const startRadius = Math.max(12, Math.round(endRadius / scale));
++  const steps = 8;
++  const pointers = PointerMatrix.create(2, steps);
++  for (let step = 0; step < steps; step++) {
++    const progress = step / (steps - 1);
++    const radius = Math.round(startRadius + (endRadius - startRadius) * progress);
++    pointers.setPoint(0, step, { x: centerX, y: centerY - radius });
++    pointers.setPoint(1, step, { x: centerX, y: centerY + radius });
++  }
++  await driver.injectMultiPointerAction(pointers, 600);
++  await driver.waitForIdle(300, 1500);
++}
++
++export async function pinchInById(driver: Driver, id: string, scale: number = 0.5): Promise<void> {
++  const component = await driver.findComponent(ON.id(id));
++  await component.pinchIn(scale);
++  await driver.waitForIdle(300, 1500);
++}
++
++export async function resetPinchById(driver: Driver, id: string): Promise<void> {
++  const component = await driver.findComponent(ON.id(id));
++  await component.pinchOut(1.01);
++  await driver.waitForIdle(300, 1500);
 +}
 +
 +export async function isComponentVerticallyInside(

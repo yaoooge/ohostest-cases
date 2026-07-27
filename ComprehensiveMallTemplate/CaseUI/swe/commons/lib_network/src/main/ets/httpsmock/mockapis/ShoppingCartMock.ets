@@ -29,10 +29,9 @@ export class ShoppingCartMockApis {
     adapter
       .onGet(RequestUrlMap.CART_LIST)
       .reply(() => {
-        let mockCart: MockCart = this._getMockCart();
         let resList: CartProductInfo[] = [];
-        if (mockCart.data) {
-          const resData = JSON.parse(mockCart.data) as CartDto;
+        const resData = this._getCartData();
+        if (resData.cards.length) {
           resList = resData.cards.map((item: CartSkuItem) => {
             // 显式映射
             return {
@@ -206,11 +205,27 @@ export class ShoppingCartMockApis {
   private _getCartData() {
     let mockCart: MockCart = this._getMockCart();
     if (!mockCart.data) {
-      return {
-        version: 'mock_cart_version_empty',
-        total: 0,
-        cards: [],
+      const cards: CartSkuItem[] = MockProductData.PRODUCT_SKU_TABLE.slice(0, 2).map((sku) => ({
+        productId: sku.productId,
+        skuCode: sku.skuCode,
+        skuDesc: sku.skuDesc,
+        stock: sku.stock,
+        count: 1,
+        banner: sku.banner,
+        title: sku.title,
+        serviceDesc: sku.serviceDesc,
+        price: sku.price,
+        dashPrice: sku.dashPrice,
+        isSelected: false,
+        priceType: PriceType.NORMAL,
+      } as CartSkuItem));
+      const seedData: CartDto = {
+        version: 'mock_cart_version_seeded',
+        total: cards.length,
+        cards,
       } as CartDto;
+      this._setCartData(seedData);
+      return seedData;
     } else {
       return JSON.parse(mockCart.data) as CartDto;
     }

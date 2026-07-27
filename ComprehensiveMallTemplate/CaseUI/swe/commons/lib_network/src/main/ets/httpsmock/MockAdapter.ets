@@ -11,7 +11,7 @@ import instance from '../https/Request';
 
 // 创建mock拦截器
 const mockAdapter = new AxiosMockAdapter(instance, {
-  delayResponse: 300,
+  delayResponse: 2000,
 });
 
 // 全局配置，是否启用mock，当前默认启用

@@ -14,16 +14,17 @@ export default function commonPassToPassTest() {
 
     beforeAll(async () => {
       driver = getDriver();
-      await prepareHome();
     });
 
     it('should_start_mall_successfully', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
       await waitForComponentById(driver, 'mall-main-entry');
       await waitForComponentById(driver, 'mall-home-page');
       done();
     });
 
     it('should_show_four_main_tabs', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
       for (let index = 0; index < 4; index++) {
         await waitForComponentById(driver, 'mall-tab-' + index);
       }
@@ -47,6 +48,7 @@ export default function commonPassToPassTest() {
     });
 
     it('should_keep_split_action_absent_in_ui_case', Level.LEVEL2, async (done: Function) => {
+      await prepareHome();
       expect(await componentExistsById(driver, 'mall-split-action')).assertFalse();
       done();
     });

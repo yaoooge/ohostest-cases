@@ -1,5 +1,5 @@
 import { routerStack } from 'lib_foundation'
-import { ProductReviewCreation } from 'module_product_review'
+import { ProductReviewCreation, ReviewMediaType } from 'module_product_review'
 import { OrderItem, OrderSkuItem, SkuReview } from 'lib_network'
 import { OrderReviewReq } from 'lib_network'
 import { OrderUtil } from '../utils/OrderUtil'
@@ -20,6 +20,12 @@ struct OrderReviewCreatePage {
     NavDestination() {
       ProductReviewCreation({
         skuList: this.skuList,
+        initialMediaList: [
+          { type: ReviewMediaType.IMAGE, uri: $r('app.media.default_avatar') },
+          { type: ReviewMediaType.IMAGE, uri: $r('app.media.default_avatar') },
+          { type: ReviewMediaType.IMAGE, uri: $r('app.media.default_avatar') },
+          { type: ReviewMediaType.IMAGE, uri: $r('app.media.default_avatar') },
+        ],
         handleSubmit: (draft) => {
           const reviews: SkuReview[] = draft.reviewList.map((item) => ({
             productId: item.productId,

@@ -59,6 +59,7 @@ export function buildButtonList(orderInfo: OrderInfo, buttonSize: ControlSize = 
     ForEach(OrderUtil.getButtonList(orderInfo.status), (action: OrderAction) => {
       if (buttonSize === ControlSize.SMALL || (buttonSize === ControlSize.NORMAL && !action.enableHide)) {
         Button(action.label)
+          .id('mall-order-action-' + action.actionType)
           .attributeModifier(new MyButtonModifier(action.style, buttonSize))
           .onClick(() => {
             callback?.(action.actionType)
@@ -155,4 +156,3 @@ export function buildOrderInfoCard(order: OrderItem) {
     })
   }
 }
-

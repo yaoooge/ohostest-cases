@@ -20,24 +20,32 @@
 
 ### 1. 分离“首页就绪”和“商品可见”
 
-`returnToHome()` 执行 `routerStack.replacePath()` 后先调用 `driver.waitForIdle()`，随后只等待：
+`returnToHome()` 先把二级路由通过 `routerStack.popToName()` 弹回已经存在的 `MAIN_ENTRY` 根页面；
+只有根页面节点确实不存在时才使用 `routerStack.replacePath()` 兜底，避免把栈顶替换成第二个同名首页造成
+路由竞态。随后显式切回首页 Tab，并使用有限次数的 Driver 向下手势直到顶部搜索框可见。该流程最终等待：
 
 - `mall-main-entry`
 - `mall-home-page`
 - `mall-home-content`
+- `mall-tab-0` 至 `mall-tab-3`
 
 它不再等待 `mall-product-item`。
 
-新增 `revealHomeProducts()`。该方法先准备首页页壳，再通过 `mall-home-scroll` 的
-`scrollSearch()` 查找 `mall-product-item`，最后等待商品节点稳定出现。
+新增 `revealHomeProducts()`。该方法先准备首页页壳，再在 `mall-home-scroll` 可见区域内执行
+有限次数的向上滑动，每次滑动后检测 `mall-product-item`，最后等待商品节点稳定出现。所有首页
+滚动都使用有界 Driver 手势，不使用 `scrollSearch()` 或 `scrollToTop()`，避免嵌套
+`Scroll + WaterFlow` 的 Component 自动滚动超过 Hypium 单用例超时。
 
 ### 2. 按断言目标选择准备方法
 
 - 启动、主导航、首页内容、Banner、搜索：使用 `prepareHome()`，停留在首页顶部。
 - 首页商品列数、商品卡片和捏合布局：使用 `revealHomeProducts()`。
-- 分类、购物车、我的：先使用 `prepareHome()`，再切换对应 Tab。
-- 秒杀入口：在首页滚动容器内 `scrollSearch()` 到 `mall-seckill-entry` 后点击。
-- 商品详情等直接路由场景：只依赖稳定的首页页壳，不额外要求商品处于首屏。
+- 分类宫格：创建带确定性分类 ID 的分类页，统计与商品卡共用同一网格的加载 Skeleton 首行列数。
+  answer 与 SWE 为 Skeleton 单元添加相同测试 ID；用例不再依赖分类商品请求完成时机。
+- 购物车、我的：只保证首页页壳存在，不改变首页滚动位置，再切换对应 Tab。
+- 切换 Tab 前显式等待目标 Tab 节点，避免页壳已出现但导航节点尚未可交互的短暂窗口。
+- 秒杀、搜索、分类和商品详情等直接路由场景：只恢复首页根路由与主 Tab，不改变首页滚动位置，
+  然后直接进入目标路由。它们不再依赖大 Banner 下方的入口是否可见。
 
 ### 3. 降低套件级联失败
 
@@ -53,6 +61,7 @@ Common 套件的 `beforeAll` 只获取 Driver。每个 Common 用例在自己的
   `beforeAll` 中整体失败。
 - 手机端 `should_keep_sm_category_grid_two_columns` 在路由替换完成后再切换分类页，不再受旧首页
   节点竞态影响。
+- Skeleton 列数读取在瞬态节点句柄失效时重新获取节点，避免加载完成瞬间的陈旧句柄错误。
 - SM 的商品布局用例会主动滚动到商品区后断言。
 - MD/LG 的 fail-to-pass 用例应在各自真实布局断言处失败，而不是在通用准备阶段失败。
 - `test_patch.patch` 重新生成后可干净应用到 SWE，并与 answer 中的 ohosTest 测试树一致。

@@ -34,6 +34,7 @@ export struct ProductList {
               ListItem() {
                 this.buildProductCard(ri.item)
               }
+              .id('mall-setting-product-item')
               .swipeAction({
                 end: this.buildDeleteIcon(ri.item.productId),
               })

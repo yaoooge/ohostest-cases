@@ -135,6 +135,7 @@ struct ProductSearchResultsPage {
           .layoutWeight(1)
 
         CommonSymbol({ src: this.isGrid ? $r('sys.symbol.list_bullet') : $r('sys.symbol.grid') })
+          .id('mall-display-mode-toggle')
           .onClick(() => {
             this.isGrid = !this.isGrid;
           })

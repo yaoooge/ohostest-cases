@@ -154,6 +154,7 @@ struct SeckillListPage {
                 SeckillUtil.getSeckillProductStyle(ri.item, timeslot.status),
               )
             }
+            .id('mall-seckill-item')
           })
       }
       .lanes(1, 12)

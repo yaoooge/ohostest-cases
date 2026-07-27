@@ -86,6 +86,7 @@ export struct CartControlPanel {
         title: '金额明细',
       })
     }
+    .id('mall-cart-control-panel')
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
     .backgroundColor($r('app.color.background_color_primary'))
     .onAreaChange((_ov, nv) => {

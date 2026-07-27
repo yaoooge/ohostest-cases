@@ -30,18 +30,28 @@ import { MockSeckillData } from '../mockdata/MockSeckillData';
 class BaseIDModel implements BaseID{
   productId: string = '';
   slotId?: string;
+
+  constructor(productId: string = '') {
+    this.productId = productId;
+  }
 }
 
 @ObservedV2
 class CollectedProduct {
   @Type(BaseIDModel)
-  @Trace list: BaseIDModel[] = [];
+  @Trace list: BaseIDModel[] = [
+    new BaseIDModel('product_10001'),
+    new BaseIDModel('product_10002'),
+  ];
 }
 
 @ObservedV2
 class ViewHistoryProduct {
   @Type(BaseIDModel)
-  @Trace list: BaseIDModel[] = [];
+  @Trace list: BaseIDModel[] = [
+    new BaseIDModel('product_10001'),
+    new BaseIDModel('product_10002'),
+  ];
 }
 
 const enum MockPersistenceMap {

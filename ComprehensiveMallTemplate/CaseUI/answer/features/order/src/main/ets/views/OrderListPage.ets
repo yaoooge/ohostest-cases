@@ -159,6 +159,7 @@ export struct OrderListPage {
                     })
                   }
                 }
+                .id('mall-order-item')
               })
           }
           .lanes(this.curBreakpoint.value === BreakpointTypeEnum.LG ? 2 : 1, 12)

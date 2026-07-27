@@ -175,6 +175,7 @@ export struct ProductCategory {
                 theme: SkeletonTheme.IMAGE, animate: AnimateType.GRADIENT,
               }).height(96)
             }
+            .id('mall-category-skeleton-item')
           }, (item: number) => item.toString())
         } else {
           ForEach(this.productList, (item: ProductSummaryItem, index: number) => {

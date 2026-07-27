@@ -37,7 +37,7 @@ index a26f663..0a896dc 100644
 -}
 \ No newline at end of file
 +}
-diff --git a/answer/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets b/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets
+diff --git a/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets b/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets
 new file mode 100644
 index 0000000..f500171
 --- /dev/null
@@ -318,7 +318,7 @@ index cd46718..a976643 100644
  
    /**
 diff --git a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets b/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
-index 6cfdee2..12807d3 100644
+index 659b614..6095513 100644
 --- a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
 +++ b/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
 @@ -1,4 +1,5 @@
@@ -346,15 +346,8 @@ index 6cfdee2..12807d3 100644
    }
  
    getCardList(): boolean[] {
-@@ -93,4 +99,4 @@ struct HorizontalCard {
-     }
-     .height(200)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/components/module_product_category/src/main/ets/views/ProductCategory.ets b/components/module_product_category/src/main/ets/views/ProductCategory.ets
-index 9b017fe..c418484 100644
+index c2a7d7d..24d0247 100644
 --- a/components/module_product_category/src/main/ets/views/ProductCategory.ets
 +++ b/components/module_product_category/src/main/ets/views/ProductCategory.ets
 @@ -167,10 +167,19 @@ export struct ProductCategory {
@@ -391,7 +384,7 @@ index 9b017fe..c418484 100644
                Column() {
                  Image(item.banner)
                    .width($r('app.string.size_percent_full'))
-@@ -200,9 +212,6 @@ export struct ProductCategory {
+@@ -201,9 +213,6 @@ export struct ProductCategory {
            }, (item: ProductSummaryItem, index: number) => index + '__' + item.id)
          }
        }
@@ -401,13 +394,6 @@ index 9b017fe..c418484 100644
        .width($r('app.string.size_percent_full'))
        .margin({
          top: $r('app.float.space_m'),
-@@ -214,4 +223,4 @@ export struct ProductCategory {
-     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
-     .edgeEffect(EdgeEffect.Spring)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/components/module_product_filter/src/ohosTest/module.json5 b/components/module_product_filter/src/ohosTest/module.json5
 index 2da48fa..e49dee6 100644
 --- a/components/module_product_filter/src/ohosTest/module.json5
@@ -423,10 +409,10 @@ index 2da48fa..e49dee6 100644
      "deliveryWithInstall": true,
      "installationFree": false
 diff --git a/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets b/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
-index 813c211..b342dc1 100644
+index 70c71b8..940429a 100644
 --- a/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
 +++ b/components/module_product_review/src/main/ets/views/ProductReviewCreation.ets
-@@ -193,9 +193,15 @@ export struct ProductReviewCreation {
+@@ -196,9 +196,15 @@ export struct ProductReviewCreation {
  
    @Builder
    buildMediaPicker(model: SkuReviewModel) {
@@ -444,8 +430,8 @@ index 813c211..b342dc1 100644
            Row() {
              Image($r('app.media.ic_add'))
                .width(24)
-@@ -213,7 +219,10 @@ export struct ProductReviewCreation {
-         }
+@@ -217,7 +223,10 @@ export struct ProductReviewCreation {
+         .id('mall-review-picker-item')
        }
        ForEach(model.mediaList, (item: ReviewMediaItem, index: number) => {
 -        GridItem() {
@@ -456,8 +442,8 @@ index 813c211..b342dc1 100644
            Stack() {
              Image(item.uri)
                .width($r('app.string.size_percent_full'))
-@@ -235,9 +244,6 @@ export struct ProductReviewCreation {
-         }
+@@ -240,9 +249,6 @@ export struct ProductReviewCreation {
+         .id('mall-review-picker-item')
        }, (item: ReviewMediaItem, index: number) => index + '__' + item.uri)
      }
 -    .columnsTemplate('1fr 1fr 1fr')
@@ -467,7 +453,7 @@ index 813c211..b342dc1 100644
      .margin({
        top: $r('app.float.space_m'),
 diff --git a/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets b/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
-index 1a6cc17..9a547c5 100644
+index b256657..79f332c 100644
 --- a/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
 +++ b/components/module_shopping_cart/src/main/ets/components/CartControlPanel.ets
 @@ -1,3 +1,4 @@
@@ -484,15 +470,8 @@ index 1a6cc17..9a547c5 100644
        .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
        .justifyContent(FlexAlign.SpaceBetween)
        .padding({ left: 16, right: 16 })
-@@ -234,4 +235,4 @@ export struct CartControlPanel {
-     .width('100%')
-     .justifyContent(FlexAlign.SpaceBetween)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/components/module_shopping_cart/src/main/ets/components/CartListView.ets b/components/module_shopping_cart/src/main/ets/components/CartListView.ets
-index 039201b..669571b 100644
+index 1fa3859..7ec5418 100644
 --- a/components/module_shopping_cart/src/main/ets/components/CartListView.ets
 +++ b/components/module_shopping_cart/src/main/ets/components/CartListView.ets
 @@ -1,3 +1,4 @@
@@ -509,7 +488,7 @@ index 039201b..669571b 100644
    build() {
      List({ space: 12 }) {
        ForEach(this.listData, (card: ProductModel, index: number) => {
-@@ -54,7 +57,7 @@ export struct CartListView {
+@@ -55,7 +58,7 @@ export struct CartListView {
      }
      .width('100%')
      .height('auto')
@@ -518,13 +497,6 @@ index 039201b..669571b 100644
      .edgeEffect(EdgeEffect.None)
      .margin({ top: 10 })
      .padding({ left: 8, right: 8 })
-@@ -78,4 +81,4 @@ export struct CartListView {
-     }
-     .justifyContent(FlexAlign.SpaceEvenly)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets b/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets
 index 938329f..d08b447 100644
 --- a/components/module_shopping_cart/src/main/ets/components/PopupSheet.ets
@@ -599,7 +571,7 @@ index 814cb37..f4a140f 100644
      "deliveryWithInstall": true,
      "installationFree": false
 diff --git a/features/order/src/main/ets/views/OrderListPage.ets b/features/order/src/main/ets/views/OrderListPage.ets
-index 76255a5..5c8473a 100644
+index deb83c8..d1911c3 100644
 --- a/features/order/src/main/ets/views/OrderListPage.ets
 +++ b/features/order/src/main/ets/views/OrderListPage.ets
 @@ -1,4 +1,4 @@
@@ -617,8 +589,8 @@ index 76255a5..5c8473a 100644
    tabScroller: Scroller = new Scroller()
    vm: OrderListPageVM = new OrderListPageVM();
  
-@@ -159,7 +161,7 @@ export struct OrderListPage {
-                 }
+@@ -160,7 +162,7 @@ export struct OrderListPage {
+                 .id('mall-order-item')
                })
            }
 -          .lanes(1, 12)
@@ -626,13 +598,6 @@ index 76255a5..5c8473a 100644
            .layoutWeight(1)
            .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
            .scrollBar(BarState.Off)
-@@ -223,4 +225,4 @@ function reviewTabStyle(isSelected: boolean) {
-   .fontWeight(FontWeight.Medium)
-   .margin({ left: $r('app.float.space_m') })
-   .fontColor(isSelected ? $r('app.color.theme_color') : $r('app.color.font_color_level1'))
--}
-+}
-\ No newline at end of file
 diff --git a/features/points/src/main/ets/viewmodels/PointsMallVM.ets b/features/points/src/main/ets/viewmodels/PointsMallVM.ets
 index 23c962e..9e74be5 100644
 --- a/features/points/src/main/ets/viewmodels/PointsMallVM.ets
@@ -728,7 +693,7 @@ index a37e770..e48611f 100644
 +}
 \ No newline at end of file
 diff --git a/features/product/src/main/ets/components/ProductOperationButton.ets b/features/product/src/main/ets/components/ProductOperationButton.ets
-index d5c2f0d..57edcd7 100644
+index 8f7c327..76ca4a1 100644
 --- a/features/product/src/main/ets/components/ProductOperationButton.ets
 +++ b/features/product/src/main/ets/components/ProductOperationButton.ets
 @@ -1,4 +1,4 @@
@@ -738,7 +703,6 @@ index d5c2f0d..57edcd7 100644
    PreOrderInfoReq,
    PreOrderItem,
 @@ -31,7 +31,7 @@ export struct ProductOperationButton {
-   build() {
      Row() {
        Button('加入购物车')
          .id('mall-add-to-cart')
@@ -746,8 +710,8 @@ index d5c2f0d..57edcd7 100644
 +        .bottomButtonStyle(BreakpointSystem.isTablet)
          .borderColor($r('app.color.background_color_button_grey'))
          .fontColor($r('app.color.theme_color'))
+         .backgroundColor($r('app.color.background_color_button_grey'))
 @@ -47,7 +47,7 @@ export struct ProductOperationButton {
-         });
  
        Button(this.isSeckillOngoing ? '立即秒杀' : '立即购买')
          .id('mall-buy-now')
@@ -755,6 +719,7 @@ index d5c2f0d..57edcd7 100644
 +        .bottomButtonStyle(BreakpointSystem.isTablet)
          .borderColor($r('app.color.theme_color'))
          .backgroundColor($r('app.color.theme_color'))
+         .borderRadius({
 @@ -139,10 +139,10 @@ export struct ProductOperationButton {
  
  
@@ -769,7 +734,7 @@ index d5c2f0d..57edcd7 100644
    .type(ButtonType.Normal);
  }
 diff --git a/features/product/src/main/ets/components/ProductReviewCard.ets b/features/product/src/main/ets/components/ProductReviewCard.ets
-index a199e44..22984c1 100644
+index 45d9c87..2139e93 100644
 --- a/features/product/src/main/ets/components/ProductReviewCard.ets
 +++ b/features/product/src/main/ets/components/ProductReviewCard.ets
 @@ -49,9 +49,18 @@ export struct ProductReviewCard {
@@ -793,8 +758,8 @@ index a199e44..22984c1 100644
                    Stack() {
                      Image(item.uri)
                        .width($r('app.string.size_percent_full'))
-@@ -65,9 +74,6 @@ export struct ProductReviewCard {
-                 }
+@@ -66,9 +75,6 @@ export struct ProductReviewCard {
+                 .id('mall-review-media-item')
                }, (item: ReviewMediaItem, index: number) => index + JSON.stringify(item))
              }
 -            .columnsTemplate('1fr 1fr 1fr')
@@ -804,7 +769,7 @@ index a199e44..22984c1 100644
              .margin({
                top: $r('app.float.space_m'),
 diff --git a/features/product/src/main/ets/components/ProductWaterFlow.ets b/features/product/src/main/ets/components/ProductWaterFlow.ets
-index 73e82b8..aa862a0 100644
+index 829b873..9df0220 100644
 --- a/features/product/src/main/ets/components/ProductWaterFlow.ets
 +++ b/features/product/src/main/ets/components/ProductWaterFlow.ets
 @@ -3,6 +3,7 @@ import { buildCommonEmptyStatus, ProductListSkeleton } from 'lib_widget';
@@ -815,7 +780,7 @@ index 73e82b8..aa862a0 100644
  
  @ComponentV2
  export struct ProductWaterFlow {
-@@ -103,6 +104,12 @@ export struct ProductWaterFlow {
+@@ -106,6 +107,12 @@ export struct ProductWaterFlow {
            })
            .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
            .animation({ duration: 300, curve: Curve.Smooth })
@@ -828,7 +793,7 @@ index 73e82b8..aa862a0 100644
  
            if (this.vm.showButton) {
              this.buildBackTopButton();
-diff --git a/answer/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets b/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets
+diff --git a/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets b/features/product/src/main/ets/utils/WaterFlowScaleUtil.ets
 new file mode 100644
 index 0000000..138b9a8
 --- /dev/null
@@ -951,7 +916,7 @@ index 985edc1..08c6234 100644
 +}
 \ No newline at end of file
 diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
-index cc22cf4..fcb0f0e 100644
+index 366ed90..43b571c 100644
 --- a/features/product/src/main/ets/views/ProductInfoPage.ets
 +++ b/features/product/src/main/ets/views/ProductInfoPage.ets
 @@ -1,4 +1,4 @@
@@ -984,7 +949,7 @@ index cc22cf4..fcb0f0e 100644
      .onReady((context) => {
        const params = context.pathInfo.param as ProductInfoPageParam | undefined;
        if (params) {
-@@ -78,6 +84,38 @@ export struct ProductInfoPage {
+@@ -79,6 +85,39 @@ export struct ProductInfoPage {
      };
    }
  
@@ -1011,6 +976,7 @@ index cc22cf4..fcb0f0e 100644
 +            buildProductDesc(this.vm.productInfo?.productDetail!)
 +          };
 +        }
++        .id('mall-product-detail-scroll')
 +        .edgeEffect(EdgeEffect.Spring)
 +        .scrollBar(BarState.Off)
 +        .layoutWeight(1);
@@ -1023,7 +989,7 @@ index cc22cf4..fcb0f0e 100644
    @Builder
    buildPhoneDisplay() {
      Scroll() {
-@@ -141,7 +179,7 @@ export struct ProductInfoPage {
+@@ -144,7 +183,7 @@ export struct ProductInfoPage {
          .onClick(() => {
            this.vm.handleClickCustomService()
          })
@@ -1087,7 +1053,7 @@ index e52243f..acda3c9 100644
      "deliveryWithInstall": true,
      "installationFree": false
 diff --git a/features/setting/src/main/ets/components/ProductList.ets b/features/setting/src/main/ets/components/ProductList.ets
-index 2366692..b70e246 100644
+index 2a6eeb7..6d9fd7d 100644
 --- a/features/setting/src/main/ets/components/ProductList.ets
 +++ b/features/setting/src/main/ets/components/ProductList.ets
 @@ -1,4 +1,4 @@
@@ -1096,7 +1062,7 @@ index 2366692..b70e246 100644
  import { ProductCardLabel, ProductCardItem } from 'lib_network'
  import { CommonLoading } from 'lib_widget'
  
-@@ -46,7 +46,7 @@ export struct ProductList {
+@@ -47,7 +47,7 @@ export struct ProductList {
            }
          }
          .layoutWeight(1)
@@ -1105,15 +1071,8 @@ index 2366692..b70e246 100644
          .scrollBar(BarState.Off)
          .onReachEnd(() => {
            this.onReachEnd()
-@@ -197,4 +197,4 @@ export struct ProductList {
-     .height('100%')
-     .justifyContent(FlexAlign.Center)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/features/shopping/src/main/ets/views/SeckillListPage.ets b/features/shopping/src/main/ets/views/SeckillListPage.ets
-index be64874..ec4c688 100644
+index d29d4a0..e4897bc 100644
 --- a/features/shopping/src/main/ets/views/SeckillListPage.ets
 +++ b/features/shopping/src/main/ets/views/SeckillListPage.ets
 @@ -1,3 +1,4 @@
@@ -1121,8 +1080,8 @@ index be64874..ec4c688 100644
  import { SeckillProductInfo, SeckillSession, SeckillStatus, SeckillTimeSlot } from 'lib_network';
  import { NavTitleBar, ProductListSkeleton } from 'lib_widget';
  import { SeckillProductStyle, SeckillUtil } from '../utils/SeckillUtil';
-@@ -156,7 +157,7 @@ struct SeckillListPage {
-             }
+@@ -157,7 +158,7 @@ struct SeckillListPage {
+             .id('mall-seckill-item')
            })
        }
 -      .lanes(1, 12)
@@ -1130,15 +1089,8 @@ index be64874..ec4c688 100644
        .layoutWeight(1)
        .expandSafeArea()
        .scrollBar(BarState.Off)
-@@ -344,4 +345,4 @@ function labelContainerStyle(bgColor: ResourceColor) {
-   .padding(8)
-   .height(40)
-   .justifyContent(FlexAlign.Center)
--}
-+}
-\ No newline at end of file
 diff --git a/products/entry/src/main/ets/components/HomePageContent.ets b/products/entry/src/main/ets/components/HomePageContent.ets
-index 1583eb6..143296b 100644
+index be103e4..483365e 100644
 --- a/products/entry/src/main/ets/components/HomePageContent.ets
 +++ b/products/entry/src/main/ets/components/HomePageContent.ets
 @@ -1,4 +1,10 @@
@@ -1173,7 +1125,7 @@ index 1583eb6..143296b 100644
    build() {
      Column({ space: 12 }) {
        Blank().height(0)
-@@ -57,7 +76,7 @@ export struct HomePageContent {
+@@ -59,7 +78,7 @@ export struct HomePageContent {
      .width('100%')
      .indicator(false)
      .autoPlay(true)
@@ -1182,8 +1134,8 @@ index 1583eb6..143296b 100644
      .clip(true)
      .borderRadius($r('app.float.border_radius_l'));
    }
-@@ -85,7 +104,7 @@ export struct HomePageContent {
-         }
+@@ -89,7 +108,7 @@ export struct HomePageContent {
+         .id('mall-home-category-row')
          .constraintSize({ minWidth: '100%' })
          .padding($r('app.float.space_l'))
 -        .justifyContent(FlexAlign.Start)
@@ -1192,7 +1144,7 @@ index 1583eb6..143296b 100644
        .scrollable(ScrollDirection.Horizontal)
        .scrollBar(BarState.Off)
 diff --git a/products/entry/src/main/ets/tabviews/HomePage.ets b/products/entry/src/main/ets/tabviews/HomePage.ets
-index 924c1a1..9cfb16f 100644
+index 61bd772..d73caa6 100644
 --- a/products/entry/src/main/ets/tabviews/HomePage.ets
 +++ b/products/entry/src/main/ets/tabviews/HomePage.ets
 @@ -1,4 +1,4 @@
@@ -1201,7 +1153,7 @@ index 924c1a1..9cfb16f 100644
  import { CommonLoading, CommonSymbol, NavTitleBar } from 'lib_widget';
  import { HomePageContent } from '../components/HomePageContent';
  import { HomePageVM } from '../viewmodels/HomePageVM';
-@@ -110,7 +110,9 @@ export struct HomePage {
+@@ -112,7 +112,9 @@ export struct HomePage {
            .fontColor($r('app.color.font_color_level1'))
            .fontWeight(FontWeight.Bold)
          Blank()
@@ -1212,7 +1164,7 @@ index 924c1a1..9cfb16f 100644
            CommonSymbol({
              src: $r('sys.symbol.magnifyingglass'),
            })
-@@ -125,23 +127,26 @@ export struct HomePage {
+@@ -128,23 +130,26 @@ export struct HomePage {
        .height($r('app.float.nav_header_height'))
        .width('100%')
      }
@@ -1249,7 +1201,7 @@ index 924c1a1..9cfb16f 100644
    }
  
    @Builder
-@@ -185,9 +190,10 @@ export struct HomePage {
+@@ -188,9 +193,10 @@ export struct HomePage {
          this.vm.jumpToSearchPage(this.getUIContext(), 'search')
        })
      }
@@ -1263,7 +1215,7 @@ index 924c1a1..9cfb16f 100644
      .padding({
        left: $r('app.float.space_l'),
 diff --git a/products/entry/src/main/ets/tabviews/ProfilePage.ets b/products/entry/src/main/ets/tabviews/ProfilePage.ets
-index 8b930db..626f716 100644
+index d702cb8..5c2d678 100644
 --- a/products/entry/src/main/ets/tabviews/ProfilePage.ets
 +++ b/products/entry/src/main/ets/tabviews/ProfilePage.ets
 @@ -1,4 +1,7 @@
@@ -1273,15 +1225,14 @@ index 8b930db..626f716 100644
 +  iData, routerStack, RouterMap, BreakpointSystem, BreakpointTypeEnum,
 +} from 'lib_foundation';
  import { ContainerColumn, NavTitleBar } from 'lib_widget';
+ import { MainMenuOption, SubMenuOption } from '../commons/Enums';
  import { MainMenuItem, SubMenuItem } from '../commons/Types';
- import { ProfileUtil } from '../utils/ProfileUtil';
-@@ -18,9 +21,25 @@ export struct ProfilePage {
+@@ -19,12 +22,26 @@ export struct ProfilePage {
  
        Scroll() {
          Column({ space: 12 }) {
 -          buildUserInfoArea()
--          buildCheckInArea()
--          buildMainMenuArea()
+-          Column({ space: 12 }) {
 +          if (BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.LG) {
 +            Flex({ space: { main: LengthMetrics.vp(16) } }) {
 +              Column() {
@@ -1293,20 +1244,22 @@ index 8b930db..626f716 100644
 +                buildCheckInArea()
 +                buildMainMenuArea()
 +              }
++              .id('mall-profile-checkin-menu-area')
 +              .height(128)
 +              .justifyContent(FlexAlign.SpaceBetween)
 +            }
 +          } else {
 +            buildUserInfoArea()
-+            buildCheckInArea()
-+            buildMainMenuArea()
-+          }
+             buildCheckInArea()
+             buildMainMenuArea()
+           }
+-          .id('mall-profile-checkin-menu-area')
  
            buildOrderInfoArea()
            buildSubMenuArea()
-@@ -124,7 +143,9 @@ function buildMainMenuArea() {
-     }, (item: MainMenuItem) => item.label)
+@@ -133,7 +150,9 @@ function buildMainMenuArea() {
    }
+   .id('mall-profile-main-menu-area')
    .containerStyle()
 -  .justifyContent(FlexAlign.SpaceBetween)
 +  .justifyContent(BreakpointSystem.currentBreakpoint.value === BreakpointTypeEnum.SM ?
@@ -1315,7 +1268,7 @@ index 8b930db..626f716 100644
  }
  
  @Builder
-@@ -154,7 +175,9 @@ function buildOrderInfoArea() {
+@@ -164,7 +183,9 @@ function buildOrderInfoArea() {
      }
      .width('100%')
      .alignItems(VerticalAlign.Center)
@@ -1326,7 +1279,7 @@ index 8b930db..626f716 100644
    }
    .containerStyle();
  }
-@@ -188,7 +211,7 @@ function buildSubMenuArea() {
+@@ -200,7 +221,7 @@ function buildSubMenuArea() {
      strokeWidth: 1,
      startMargin: 32,
    })
@@ -1335,7 +1288,7 @@ index 8b930db..626f716 100644
  }
  
  @Builder
-@@ -238,3 +261,11 @@ function commonIconStyle() {
+@@ -250,3 +271,11 @@ function commonIconStyle() {
    .width(16)
    .fillColor($r('app.color.font_color_level2'));
  }
@@ -1391,7 +1344,7 @@ index bb0a10d..31bc407 100644
      routerStack.registerStack(this.stack)
      this.stack.pushPath({
 diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
-index 713597f..2e4408b 100644
+index e7c97cb..b452405 100644
 --- a/products/entry/src/main/ets/views/MainEntry.ets
 +++ b/products/entry/src/main/ets/views/MainEntry.ets
 @@ -1,7 +1,7 @@
@@ -1403,7 +1356,7 @@ index 713597f..2e4408b 100644
  import { TAB_LIST } from '../commons/Constants';
  import { TabListItem } from '../commons/Types';
  import { MainEntryVM } from '../viewmodels/MainEntryVM';
-@@ -58,7 +58,8 @@ struct MainEntry {
+@@ -59,7 +59,8 @@ struct MainEntry {
      .height($r('app.string.size_percent_full'))
      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
      .hideTitleBar(true)
@@ -1413,13 +1366,6 @@ index 713597f..2e4408b 100644
      .onBackPressed(() => {
        let nowTime = Date.now();
        if (nowTime - this.vm.firstBackTime < 1500) {
-@@ -98,4 +99,4 @@ struct MainEntry {
-     .width($r('app.string.size_percent_full'))
-     .padding(4)
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/products/entry/src/main/module.json5 b/products/entry/src/main/module.json5
 index c0105c2..a0f6781 100644
 --- a/products/entry/src/main/module.json5
@@ -1434,7 +1380,7 @@ index c0105c2..a0f6781 100644
      ],
      "routerMap": "$profile:route_map",
      "deliveryWithInstall": true,
-diff --git a/tests/capability-removal.test.mjs b/swe/tests/capability-removal.test.mjs
+diff --git a/tests/capability-removal.test.mjs b/tests/capability-removal.test.mjs
 deleted file mode 100644
 index 3d8b66a..0000000
 --- a/tests/capability-removal.test.mjs

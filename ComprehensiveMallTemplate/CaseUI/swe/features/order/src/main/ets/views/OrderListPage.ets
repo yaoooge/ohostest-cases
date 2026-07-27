@@ -157,6 +157,7 @@ export struct OrderListPage {
                     })
                   }
                 }
+                .id('mall-order-item')
               })
           }
           .lanes(1, 12)

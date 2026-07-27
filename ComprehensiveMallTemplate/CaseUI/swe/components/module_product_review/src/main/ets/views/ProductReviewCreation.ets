@@ -9,6 +9,8 @@ import { MediaFileUtil } from '../commons/MediaFileUtil';
 export struct ProductReviewCreation {
   @Param
   skuList: OrderSkuItem[] = []
+  @Param
+  initialMediaList: ReviewMediaItem[] = []
   @Local
   draft: ReviewDraftModel = new ReviewDraftModel()
   @Local
@@ -36,6 +38,7 @@ export struct ProductReviewCreation {
         item.productId = sku.productId
         item.skuCode = sku.skuCode
         item.skuDesc = sku.skuDesc
+        item.mediaList = this.initialMediaList.slice()
         this.draft.reviewList.push(item)
       })
     }
@@ -211,6 +214,7 @@ export struct ProductReviewCreation {
             MediaFileUtil.getMediaFromAlbum(model, this.getUIContext())
           })
         }
+        .id('mall-review-picker-item')
       }
       ForEach(model.mediaList, (item: ReviewMediaItem, index: number) => {
         GridItem() {
@@ -233,6 +237,7 @@ export struct ProductReviewCreation {
             }
           }
         }
+        .id('mall-review-picker-item')
       }, (item: ReviewMediaItem, index: number) => index + '__' + item.uri)
     }
     .columnsTemplate('1fr 1fr 1fr')

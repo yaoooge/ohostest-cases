@@ -79,12 +79,14 @@ export struct HomePageContent {
                 .fontSize(12)
                 .fontColor($r('app.color.font_color_level3'));
             }
+            .id('mall-home-category-item')
             .width(60)
             .onClick(() => {
               this.handleClickCategory?.(category.id)
             })
           }, (category: CategoryItem) => category.id)
         }
+        .id('mall-home-category-row')
         .constraintSize({ minWidth: '100%' })
         .padding($r('app.float.space_l'))
         .justifyContent(FlexAlign.Start)
@@ -109,6 +111,7 @@ export struct HomePageContent {
         .width(40)
         .margin({ right: $r('app.float.space_s') })
       Text(type)
+        .id(type === ActivityType.SECKILL ? 'mall-seckill-entry' : 'mall-checkin-entry')
         .fontSize($r('app.float.font_size_14'))
         .fontColor($r('app.color.font_color_level2'))
     }

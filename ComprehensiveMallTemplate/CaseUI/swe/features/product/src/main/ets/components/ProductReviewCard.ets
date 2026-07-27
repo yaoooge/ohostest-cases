@@ -63,6 +63,7 @@ export struct ProductReviewCard {
                     }
                   }
                 }
+                .id('mall-review-media-item')
               }, (item: ReviewMediaItem, index: number) => index + JSON.stringify(item))
             }
             .columnsTemplate('1fr 1fr 1fr')
