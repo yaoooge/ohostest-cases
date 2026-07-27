@@ -1,9 +1,0 @@
-{
-  "module": {
-    "name": "module_product_category",
-    "type": "har",
-    "deviceTypes": [
-      "default"
-    ]
-  }
-}
