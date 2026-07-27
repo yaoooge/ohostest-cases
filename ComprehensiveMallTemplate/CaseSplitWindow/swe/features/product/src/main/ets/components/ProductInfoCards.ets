@@ -52,6 +52,7 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
         .padding(ProductSwiperStyleConfig.imagePadding)
     }, (item: ResourceStr) => JSON.stringify(item));
   }
+  .id('product-swiper')
   .width('100%')
   .padding({ left: ProductSwiperStyleConfig.swiperPadding, right: ProductSwiperStyleConfig.swiperPadding })
   .prevMargin(ProductSwiperStyleConfig.outImageDisplayWidth, true)
@@ -143,6 +144,7 @@ export function buildProductInfoCard(productInfo: ProductDetailInfo, seckillInfo
     buildServiceInfo(productInfo.service);
 
   }
+  .id('product-info-card')
   .width('100%')
   .padding({
     left: 16,

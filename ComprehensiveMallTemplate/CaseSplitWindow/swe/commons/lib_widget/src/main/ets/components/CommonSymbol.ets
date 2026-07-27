@@ -13,6 +13,7 @@ export struct CommonSymbol{
         .fontSize(this.fontSize)
         .fontColor([this.color])
     }
+    .id('common-symbol')
     .width(40)
     .height(40)
     .borderRadius(20)

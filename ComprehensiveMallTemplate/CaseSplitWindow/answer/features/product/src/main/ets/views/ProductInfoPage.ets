@@ -43,6 +43,7 @@ export struct ProductInfoPage {
       // 底部操作栏
       this.buildBottomOperation();
     }
+    .id('product-info-page')
     .hideTitleBar(true)
     .backgroundColor($r('app.color.background_color_primary'))
     .onReady((context) => {
@@ -101,6 +102,7 @@ export struct ProductInfoPage {
           }
         }
       }
+      .id('product-info-header-actions')
       .justifyContent(FlexAlign.End)
       .layoutWeight(1)
     };
@@ -118,6 +120,7 @@ export struct ProductInfoPage {
         buildProductDesc(this.vm.productInfo?.productDetail!)
       };
     }
+    .id('product-info-scroll')
     .edgeEffect(EdgeEffect.Spring)
     .scrollBar(BarState.Off)
     .layoutWeight(1);
@@ -192,6 +195,7 @@ export struct ProductInfoPage {
           }
           .padding(4);
         }
+        .id('product-cart-action')
         .onClick(() => {
           this.vm.handleClickCart()
         });
@@ -203,6 +207,7 @@ export struct ProductInfoPage {
           .layoutWeight(1)
       }
     }
+    .id('product-purchase-actions')
     .width('100%')
     .padding({
       left: 16,

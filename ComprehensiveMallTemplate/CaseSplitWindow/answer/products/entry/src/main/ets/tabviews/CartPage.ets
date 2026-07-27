@@ -128,6 +128,7 @@ struct CartPage {
         },
       })
     }
+    .id('cart-page')
     .transition(TransitionEffect.OPACITY.animation({ duration: 600 }))
     .hideTitleBar(true)
     .backgroundColor($r('app.color.background_color_grey'))

@@ -1,68 +1,3 @@
-diff --git a/commons/lib_widget/src/main/ets/components/CommonSymbol.ets b/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
-index f160837..a1b400e 100644
---- a/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
-+++ b/commons/lib_widget/src/main/ets/components/CommonSymbol.ets
-@@ -15,2 +15,3 @@ export struct CommonSymbol{
-     }
-+    .id('common-symbol')
-     .width(40)
-@@ -26,2 +27,2 @@ export struct CommonSymbol{
-   }
--}
-\ No newline at end of file
-+}
-diff --git a/features/product/src/main/ets/components/ProductInfoCards.ets b/features/product/src/main/ets/components/ProductInfoCards.ets
-index 8220f97..fd5210b 100644
---- a/features/product/src/main/ets/components/ProductInfoCards.ets
-+++ b/features/product/src/main/ets/components/ProductInfoCards.ets
-@@ -54,2 +54,3 @@ export function buildProductSwiper(imgList: ResourceStr[]) {
-   }
-+  .id('product-swiper')
-   .width('100%')
-@@ -145,2 +146,3 @@ export function buildProductInfoCard(productInfo: ProductDetailInfo, seckillInfo
-   }
-+  .id('product-info-card')
-   .width('100%')
-diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
-index cc22cf4..214cef8 100644
---- a/features/product/src/main/ets/views/ProductInfoPage.ets
-+++ b/features/product/src/main/ets/views/ProductInfoPage.ets
-@@ -41,2 +41,3 @@ export struct ProductInfoPage {
-     }
-+    .id('product-info-page')
-     .hideTitleBar(true)
-@@ -75,2 +76,3 @@ export struct ProductInfoPage {
-       }
-+      .id('product-info-header-actions')
-       .justifyContent(FlexAlign.End)
-@@ -92,2 +94,3 @@ export struct ProductInfoPage {
-     }
-+    .id('product-info-scroll')
-     .edgeEffect(EdgeEffect.Spring)
-@@ -166,2 +169,3 @@ export struct ProductInfoPage {
-         }
-+        .id('product-cart-action')
-         .onClick(() => {
-@@ -177,2 +181,3 @@ export struct ProductInfoPage {
-     }
-+    .id('product-purchase-actions')
-     .width('100%')
-diff --git a/products/entry/src/main/ets/tabviews/CartPage.ets b/products/entry/src/main/ets/tabviews/CartPage.ets
-index e857a3d..023f870 100644
---- a/products/entry/src/main/ets/tabviews/CartPage.ets
-+++ b/products/entry/src/main/ets/tabviews/CartPage.ets
-@@ -130,2 +130,3 @@ struct CartPage {
-     }
-+    .id('cart-page')
-     .transition(TransitionEffect.OPACITY.animation({ duration: 600 }))
-diff --git a/products/entry/src/main/ets/views/MainEntry.ets b/products/entry/src/main/ets/views/MainEntry.ets
-index 713597f..a82d827 100644
---- a/products/entry/src/main/ets/views/MainEntry.ets
-+++ b/products/entry/src/main/ets/views/MainEntry.ets
-@@ -57,2 +57,3 @@ struct MainEntry {
-     }
-+    .id('mall-root')
-     .height($r('app.string.size_percent_full'))
 diff --git a/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/CommonPassToPass.test.ets
 new file mode 100644
 index 0000000..4ee4efd
@@ -264,10 +199,10 @@ index 0000000..9167467
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/TestHelper.ets b/products/entry/src/ohosTest/ets/test/TestHelper.ets
 new file mode 100644
-index 0000000..0842786
+index 0000000..239bd4c
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,293 @@
 +import { Want } from '@kit.AbilityKit';
 +import {
 +  abilityDelegatorRegistry,
@@ -398,28 +333,53 @@ index 0000000..0842786
 +  await waitForUiChange(driver);
 +}
 +
-+export async function windowExists(title: string): Promise<boolean> {
++async function findWindowByRole(title: string): Promise<UiWindow | undefined> {
 +  try {
-+    const uiWindow = await getDriver().findWindow({
++    const titledWindow = await getDriver().findWindow({
 +      bundleName: getBundleName(),
 +      title: title,
 +    });
-+    return uiWindow !== null && uiWindow !== undefined;
++    if (titledWindow !== null && titledWindow !== undefined) {
++      return titledWindow;
++    }
 +  } catch (error) {
-+    return false;
 +  }
++
++  const activeStates: boolean[] = [true, false];
++  for (let index = 0; index < activeStates.length; index++) {
++    try {
++      const uiWindow = await getDriver().findWindow({
++        bundleName: getBundleName(),
++        active: activeStates[index],
++      });
++      if (uiWindow === null || uiWindow === undefined) {
++        continue;
++      }
++      const mode = await uiWindow.getWindowMode();
++      if (title === SECOND_WINDOW_TITLE && mode === WindowMode.SECONDARY) {
++        return uiWindow;
++      }
++      if (title === ENTRY_WINDOW_TITLE &&
++        (mode === WindowMode.FULLSCREEN || mode === WindowMode.PRIMARY)) {
++        return uiWindow;
++      }
++    } catch (error) {
++    }
++  }
++  return undefined;
++}
++
++export async function windowExists(title: string): Promise<boolean> {
++  return await findWindowByRole(title) !== undefined;
 +}
 +
 +export async function waitForWindow(title: string, retries: number = 12): Promise<UiWindow> {
 +  for (let index = 0; index < retries; index++) {
-+    try {
-+      return await getDriver().findWindow({
-+        bundleName: getBundleName(),
-+        title: title,
-+      });
-+    } catch (error) {
-+      await waitForUiChange(getDriver());
++    const uiWindow = await findWindowByRole(title);
++    if (uiWindow !== undefined) {
++      return uiWindow;
 +    }
++    await waitForUiChange(getDriver());
 +  }
 +  console.error('window not found: ' + title);
 +  expect(false).assertTrue();
@@ -453,12 +413,11 @@ index 0000000..0842786
 +
 +export async function closeSecondaryWindowIfPresent(): Promise<void> {
 +  try {
-+    const secondWindow = await getDriver().findWindow({
-+      bundleName: getBundleName(),
-+      title: SECOND_WINDOW_TITLE,
-+    });
-+    await secondWindow.close();
-+    await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++    const secondWindow = await findWindowByRole(SECOND_WINDOW_TITLE);
++    if (secondWindow !== undefined) {
++      await secondWindow.close();
++      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++    }
 +  } catch (error) {
 +  }
 +}
@@ -514,13 +473,28 @@ index 0000000..0842786
 +}
 +
 +export async function assertProductDetailIsSingleColumn(driver: Driver): Promise<void> {
-+  await waitForComponentById(driver, 'product-swiper', 16);
-+  await waitForComponentById(driver, 'product-info-card', 16);
-+  const swiper = await driver.findComponent(ON.id('product-swiper'));
-+  const infoCard = await driver.findComponent(ON.id('product-info-card'));
-+  const swiperBounds = await swiper.getBounds();
-+  const infoBounds = await infoCard.getBounds();
-+  expect(infoBounds.top >= swiperBounds.bottom - vp2px(2)).assertTrue();
++  for (let index = 0; index < 16; index++) {
++    let isSingleColumn: boolean | undefined = undefined;
++    try {
++      const swiper = await driver.findComponent(ON.id('product-swiper'));
++      const infoCard = await driver.findComponent(ON.id('product-info-card'));
++      if (swiper === null || swiper === undefined || infoCard === null || infoCard === undefined) {
++        await waitForUiChange(driver);
++        continue;
++      }
++      const swiperBounds = await swiper.getBounds();
++      const infoBounds = await infoCard.getBounds();
++      isSingleColumn = infoBounds.top >= swiperBounds.bottom - vp2px(2);
++    } catch (error) {
++      await waitForUiChange(driver);
++    }
++    if (isSingleColumn !== undefined) {
++      expect(isSingleColumn).assertTrue();
++      return;
++    }
++  }
++  console.error('stable product detail bounds not found');
++  expect(false).assertTrue();
 +}
 diff --git a/products/entry/src/ohosTest/module.json5 b/products/entry/src/ohosTest/module.json5
 new file mode 100644

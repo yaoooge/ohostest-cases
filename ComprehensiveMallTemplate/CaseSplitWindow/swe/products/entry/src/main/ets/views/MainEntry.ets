@@ -55,6 +55,7 @@ struct MainEntry {
       .expandSafeArea([SafeAreaType.SYSTEM],
         [SafeAreaEdge.BOTTOM, SafeAreaEdge.TOP, SafeAreaEdge.START, SafeAreaEdge.END])
     }
+    .id('mall-root')
     .height($r('app.string.size_percent_full'))
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
     .hideTitleBar(true)
