@@ -4,6 +4,8 @@
 export interface ProductInfoPageParam {
   productId: string
   slotId?: string
+  /** 标记该页面实例是否为应用内分屏比较窗口 */
+  isSplitPage?: boolean
 }
 
 /** 商品搜索页 */

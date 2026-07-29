@@ -1,11 +1,4 @@
-import {
-  BreakpointStorage,
-  BreakpointSystem,
-  iData,
-  ProductInfoPageParam,
-  RouterMap,
-  routerStack,
-} from 'lib_foundation'
+import { iData, ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation'
 import { ProductApis, ProductCardItem, ProductInfo } from 'lib_network'
 import { CommonSymbol, NavTitleBar } from 'lib_widget'
 import { CardLongTakeDelegate, LongTakeAnimationProperties, LongTakeTransitionParam } from 'module_transition'
@@ -26,8 +19,6 @@ export struct ProductSwiperPage {
   curIndex: number = 0
   @Local
   isLogin: boolean = iData.global.isLogin;
-  @Local
-  curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
   @Local
   productInfo?: ProductInfo
   @Local

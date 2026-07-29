@@ -16,7 +16,7 @@ class WindowUtil {
    */
   public setUIContext(uiContext: UIContext) {
     this._uiContext = uiContext;
-    this._context = uiContext.getHostContext();
+    this._context = this._uiContext?.getHostContext();
   }
 
   /**

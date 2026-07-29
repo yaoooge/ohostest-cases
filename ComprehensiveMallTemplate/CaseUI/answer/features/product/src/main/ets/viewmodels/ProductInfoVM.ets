@@ -20,8 +20,6 @@ import {
 import { CommonConfirmDialog, CustomServiceSheet } from 'lib_widget';
 import { UtilLog } from '@hw-agconnect/util-log';
 
-const TAG: string = '[ProductInfoVM]'
-
 @ObservedV2
 export class ProductInfoVM {
   @Trace
@@ -44,7 +42,6 @@ export class ProductInfoVM {
   countdown?: CountdownModel;
   @Trace
   currentEventId?: number;
-
   @Computed
   get isLogin() {
     return iData.global.isLogin;

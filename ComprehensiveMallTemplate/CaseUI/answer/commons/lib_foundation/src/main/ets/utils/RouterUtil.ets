@@ -5,24 +5,18 @@ const TAG: string = '[RouterUtil]';
 /**
  * 单窗口路由管理工具。
  */
+@ObservedV2
 class RouterUtil {
   private stack?: NavPathStack;
 
-  /**
-   * 注册应用的唯一根路由栈。
-   */
   public registerStack(stack: NavPathStack): void {
     this.stack = stack;
     UtilLog.info(TAG, 'registerStack');
   }
 
-  /**
-   * 获取应用根路由栈。
-   * @returns NavPathStack 实例，找不到时返回 undefined
-   */
   public getStack(): NavPathStack | undefined {
     if (this.stack === undefined) {
-      UtilLog.warn(TAG, 'getStack: root stack is not registered');
+      UtilLog.warn(TAG, 'getStack: stack not registered');
     }
     return this.stack;
   }
@@ -31,44 +25,49 @@ class RouterUtil {
    * 入栈新页面。
    * @param pathInfo 页面路由信息（name + param）
    * @param animated 是否启用转场动画，默认 true
+   * @param abilityName 可选，指定目标 Ability；不传则路由到当前激活窗口
    */
   public push(pathInfo: NavPathInfo, animated: boolean = true): void {
-    this.stack?.pushPath(pathInfo, animated);
+    this.getStack()?.pushPath(pathInfo, animated);
   }
 
   /**
    * 出栈当前页面。
    * @param result 可选，传递给上一个页面的返回值
    * @param animated 是否启用转场动画，默认 true
+   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
    */
   public pop(result?: Object, animated: boolean = true): void {
-    this.stack?.pop(result, animated);
+    this.getStack()?.pop(result, animated);
   }
 
   /**
    * 替换栈顶页面（出栈当前页，入栈新页，无回退记录）。
    * @param pathInfo 新页面路由信息
    * @param animated 是否启用转场动画，默认 true
+   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
    */
   public replace(pathInfo: NavPathInfo, animated: boolean = true): void {
-    this.stack?.replacePath(pathInfo, animated);
+    this.getStack()?.replacePath(pathInfo, animated);
   }
 
   /**
    * 退栈至指定页面名（保留该页面，弹出其上所有页面）。
    * @param name 目标页面的路由名称
    * @param animated 是否启用转场动画，默认 true
+   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
    */
   public popToName(name: string, animated: boolean = true): void {
-    this.stack?.popToName(name, animated);
+    this.getStack()?.popToName(name, animated);
   }
 
   /**
    * 清空指定 Ability 的路由栈（退回根页面）。
    * @param animated 是否启用转场动画，默认 true
+   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
    */
   public clear(animated: boolean = true): void {
-    this.stack?.clear(animated);
+    this.getStack()?.clear(animated);
   }
 
   /**
@@ -76,16 +75,17 @@ class RouterUtil {
    * 供需要显式传入 NavPathStack 参数的组件使用。
    */
   public getActiveStack(): NavPathStack {
-    if (this.stack === undefined) {
-      UtilLog.warn(TAG, 'getActiveStack: root stack is not registered, returning empty stack');
+    const stack: NavPathStack | undefined = this.getStack();
+    if (stack === undefined) {
+      UtilLog.warn(TAG, 'getActiveStack: no active stack registered, returning empty stack');
       return new NavPathStack();
     }
-    return this.stack;
+    return stack;
   }
 
-  /** 返回根路由栈深度（NavPathStack 同名代理） */
+  /** 返回当前激活路由栈的深度（NavPathStack 同名代理） */
   public size(): number {
-    return this.stack?.size() ?? 0;
+    return this.getStack()?.size() ?? 0;
   }
 
   // ── NavPathStack 同名代理方法 ──────────────────────────────────────────────
@@ -93,32 +93,32 @@ class RouterUtil {
 
   /** 入栈新页面（NavPathStack 同名代理） */
   public pushPath(info: NavPathInfo, animated?: boolean): void {
-    this.stack?.pushPath(info, animated);
+    this.getStack()?.pushPath(info, animated);
   }
 
   /** 按名称入栈（NavPathStack 同名代理） */
   public pushPathByName(name: string, param?: Object, animated?: boolean): void {
-    this.stack?.pushPathByName(name, param, animated);
+    this.getStack()?.pushPathByName(name, param, animated);
   }
 
   /** 替换栈顶页面（NavPathStack 同名代理） */
   public replacePath(info: NavPathInfo, animated?: boolean): void {
-    this.stack?.replacePath(info, animated);
+    this.getStack()?.replacePath(info, animated);
   }
 
   /** 按名称替换栈顶（NavPathStack 同名代理） */
   public replacePathByName(name: string, param?: Object, animated?: boolean): void {
-    this.stack?.replacePathByName(name, param, animated);
+    this.getStack()?.replacePathByName(name, param, animated);
   }
 
   /** 按名称入栈（pushPathByName 别名，供统一风格调用） */
   public pushByName(name: string, param?: Object, animated?: boolean): void {
-    this.stack?.pushPathByName(name, param, animated);
+    this.getStack()?.pushPathByName(name, param, animated);
   }
 
   /** 按名称替换栈顶（replacePathByName 别名，供统一风格调用） */
   public replaceByName(name: string, param?: Object, animated?: boolean): void {
-    this.stack?.replacePathByName(name, param, animated);
+    this.getStack()?.replacePathByName(name, param, animated);
   }
 }
 

@@ -1,4 +1,4 @@
-import { LoadingStatus, WindowUtil } from 'lib_foundation';
+import { LoadingStatus } from 'lib_foundation';
 import { CommonLoading, CommonSymbol, NavTitleBar } from 'lib_widget';
 import { HomePageContent } from '../components/HomePageContent';
 import { HomePageVM } from '../viewmodels/HomePageVM';
@@ -144,7 +144,6 @@ export struct HomePage {
       .width('100%')
       .height(this.searchAreaHeight)
       .justifyContent(FlexAlign.Center)
-      // 容器整体透明度
       .opacity(this.searchAreaHeight / this.MAX_SEARCH_HEIGHT)
       .visibility(this.searchAreaHeight <= 0 ? Visibility.None : Visibility.Visible)
       .backgroundColor($r('app.color.background_color_primary'))

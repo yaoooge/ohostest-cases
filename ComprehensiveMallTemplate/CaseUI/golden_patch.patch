@@ -17,26 +17,6 @@ index 8ecaa09..ab2b054 100644
  export * from './src/main/ets/models/Index';
  
  export * from './src/main/ets/constants/Index';
-diff --git a/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets b/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
-index a26f663..0a896dc 100644
---- a/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
-+++ b/commons/lib_foundation/src/main/ets/constants/RouterParamTypes.ets
-@@ -4,8 +4,6 @@
- export interface ProductInfoPageParam {
-   productId: string
-   slotId?: string
--  /** 标记该页面实例是否为应用内分屏比较窗口 */
--  isSplitPage?: boolean
- }
- 
- /** 商品搜索页 */
-@@ -23,4 +21,4 @@ export interface ProductSearchResultsPageParam {
-   searchImg?: PixelMap
-   /** 秒杀场次ID */
-   slotId?: string
--}
-\ No newline at end of file
-+}
 diff --git a/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets b/commons/lib_foundation/src/main/ets/utils/BreakpointSystem.ets
 new file mode 100644
 index 0000000..f500171
@@ -156,167 +136,6 @@ index 0000000..f500171
 +const breakpointSystem = new BreakpointSystem();
 +
 +export { breakpointSystem as BreakpointSystem };
-diff --git a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
-index 1238243..303c850 100644
---- a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
-+++ b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
-@@ -5,18 +5,24 @@ const TAG: string = '[RouterUtil]';
- /**
-  * 单窗口路由管理工具。
-  */
--@ObservedV2
- class RouterUtil {
-   private stack?: NavPathStack;
- 
-+  /**
-+   * 注册应用的唯一根路由栈。
-+   */
-   public registerStack(stack: NavPathStack): void {
-     this.stack = stack;
-     UtilLog.info(TAG, 'registerStack');
-   }
- 
-+  /**
-+   * 获取应用根路由栈。
-+   * @returns NavPathStack 实例，找不到时返回 undefined
-+   */
-   public getStack(): NavPathStack | undefined {
-     if (this.stack === undefined) {
--      UtilLog.warn(TAG, 'getStack: stack not registered');
-+      UtilLog.warn(TAG, 'getStack: root stack is not registered');
-     }
-     return this.stack;
-   }
-@@ -25,49 +31,44 @@ class RouterUtil {
-    * 入栈新页面。
-    * @param pathInfo 页面路由信息（name + param）
-    * @param animated 是否启用转场动画，默认 true
--   * @param abilityName 可选，指定目标 Ability；不传则路由到当前激活窗口
-    */
-   public push(pathInfo: NavPathInfo, animated: boolean = true): void {
--    this.getStack()?.pushPath(pathInfo, animated);
-+    this.stack?.pushPath(pathInfo, animated);
-   }
- 
-   /**
-    * 出栈当前页面。
-    * @param result 可选，传递给上一个页面的返回值
-    * @param animated 是否启用转场动画，默认 true
--   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
-   public pop(result?: Object, animated: boolean = true): void {
--    this.getStack()?.pop(result, animated);
-+    this.stack?.pop(result, animated);
-   }
- 
-   /**
-    * 替换栈顶页面（出栈当前页，入栈新页，无回退记录）。
-    * @param pathInfo 新页面路由信息
-    * @param animated 是否启用转场动画，默认 true
--   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
-   public replace(pathInfo: NavPathInfo, animated: boolean = true): void {
--    this.getStack()?.replacePath(pathInfo, animated);
-+    this.stack?.replacePath(pathInfo, animated);
-   }
- 
-   /**
-    * 退栈至指定页面名（保留该页面，弹出其上所有页面）。
-    * @param name 目标页面的路由名称
-    * @param animated 是否启用转场动画，默认 true
--   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
-   public popToName(name: string, animated: boolean = true): void {
--    this.getStack()?.popToName(name, animated);
-+    this.stack?.popToName(name, animated);
-   }
- 
-   /**
-    * 清空指定 Ability 的路由栈（退回根页面）。
-    * @param animated 是否启用转场动画，默认 true
--   * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
-   public clear(animated: boolean = true): void {
--    this.getStack()?.clear(animated);
-+    this.stack?.clear(animated);
-   }
- 
-   /**
-@@ -75,17 +76,16 @@ class RouterUtil {
-    * 供需要显式传入 NavPathStack 参数的组件使用。
-    */
-   public getActiveStack(): NavPathStack {
--    const stack: NavPathStack | undefined = this.getStack();
--    if (stack === undefined) {
--      UtilLog.warn(TAG, 'getActiveStack: no active stack registered, returning empty stack');
-+    if (this.stack === undefined) {
-+      UtilLog.warn(TAG, 'getActiveStack: root stack is not registered, returning empty stack');
-       return new NavPathStack();
-     }
--    return stack;
-+    return this.stack;
-   }
- 
--  /** 返回当前激活路由栈的深度（NavPathStack 同名代理） */
-+  /** 返回根路由栈深度（NavPathStack 同名代理） */
-   public size(): number {
--    return this.getStack()?.size() ?? 0;
-+    return this.stack?.size() ?? 0;
-   }
- 
-   // ── NavPathStack 同名代理方法 ──────────────────────────────────────────────
-@@ -93,32 +93,32 @@ class RouterUtil {
- 
-   /** 入栈新页面（NavPathStack 同名代理） */
-   public pushPath(info: NavPathInfo, animated?: boolean): void {
--    this.getStack()?.pushPath(info, animated);
-+    this.stack?.pushPath(info, animated);
-   }
- 
-   /** 按名称入栈（NavPathStack 同名代理） */
-   public pushPathByName(name: string, param?: Object, animated?: boolean): void {
--    this.getStack()?.pushPathByName(name, param, animated);
-+    this.stack?.pushPathByName(name, param, animated);
-   }
- 
-   /** 替换栈顶页面（NavPathStack 同名代理） */
-   public replacePath(info: NavPathInfo, animated?: boolean): void {
--    this.getStack()?.replacePath(info, animated);
-+    this.stack?.replacePath(info, animated);
-   }
- 
-   /** 按名称替换栈顶（NavPathStack 同名代理） */
-   public replacePathByName(name: string, param?: Object, animated?: boolean): void {
--    this.getStack()?.replacePathByName(name, param, animated);
-+    this.stack?.replacePathByName(name, param, animated);
-   }
- 
-   /** 按名称入栈（pushPathByName 别名，供统一风格调用） */
-   public pushByName(name: string, param?: Object, animated?: boolean): void {
--    this.getStack()?.pushPathByName(name, param, animated);
-+    this.stack?.pushPathByName(name, param, animated);
-   }
- 
-   /** 按名称替换栈顶（replacePathByName 别名，供统一风格调用） */
-   public replaceByName(name: string, param?: Object, animated?: boolean): void {
--    this.getStack()?.replacePathByName(name, param, animated);
-+    this.stack?.replacePathByName(name, param, animated);
-   }
- }
- 
-diff --git a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
-index cd46718..a976643 100644
---- a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
-+++ b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
-@@ -16,7 +16,7 @@ class WindowUtil {
-    */
-   public setUIContext(uiContext: UIContext) {
-     this._uiContext = uiContext;
--    this._context = this._uiContext?.getHostContext();
-+    this._context = uiContext.getHostContext();
-   }
- 
-   /**
 diff --git a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets b/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
 index 659b614..6095513 100644
 --- a/commons/lib_widget/src/main/ets/components/CommonSkeletons.ets
@@ -521,13 +340,6 @@ index 938329f..d08b447 100644
          isModal: true,
          maskColor: 0x66000000,
          maskRect: {
-@@ -169,4 +170,4 @@ export struct PopupSheetContent {
-       bottom: $r('app.float.space_s'),
-     })
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/components/module_shopping_cart/src/ohosTest/module.json5 b/components/module_shopping_cart/src/ohosTest/module.json5
 index 923a9ef..1c8873c 100644
 --- a/components/module_shopping_cart/src/ohosTest/module.json5
@@ -689,9 +501,7 @@ index a37e770..e48611f 100644
 +        bottom: 8,
 +      } as Padding : 0;
    }
--}
-+}
-\ No newline at end of file
+ }
 diff --git a/features/product/src/main/ets/components/ProductOperationButton.ets b/features/product/src/main/ets/components/ProductOperationButton.ets
 index 8f7c327..76ca4a1 100644
 --- a/features/product/src/main/ets/components/ProductOperationButton.ets
@@ -858,27 +668,6 @@ index 0000000..138b9a8
 +    }
 +  }
 +}
-diff --git a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
-index 9a2f632..49e456a 100644
---- a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
-+++ b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
-@@ -20,6 +20,8 @@ import {
- import { CommonConfirmDialog, CustomServiceSheet } from 'lib_widget';
- import { UtilLog } from '@hw-agconnect/util-log';
- 
-+const TAG: string = '[ProductInfoVM]'
-+
- @ObservedV2
- export class ProductInfoVM {
-   @Trace
-@@ -42,6 +44,7 @@ export class ProductInfoVM {
-   countdown?: CountdownModel;
-   @Trace
-   currentEventId?: number;
-+
-   @Computed
-   get isLogin() {
-     return iData.global.isLogin;
 diff --git a/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets b/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets
 index 985edc1..08c6234 100644
 --- a/features/product/src/main/ets/viewmodels/ProductWaterFlowVM.ets
@@ -908,13 +697,6 @@ index 985edc1..08c6234 100644
    }
  
    async refreshList() {
-@@ -137,4 +139,4 @@ export class ProductWaterFlowVM {
-       },
-     });
-   }
--}
-+}
-\ No newline at end of file
 diff --git a/features/product/src/main/ets/views/ProductInfoPage.ets b/features/product/src/main/ets/views/ProductInfoPage.ets
 index 366ed90..43b571c 100644
 --- a/features/product/src/main/ets/views/ProductInfoPage.ets
@@ -998,32 +780,6 @@ index 366ed90..43b571c 100644
  
          Badge({
            count: this.vm.isLogin ? this.vm.cartNum : 0,
-diff --git a/features/product/src/main/ets/views/ProductSwiperPage.ets b/features/product/src/main/ets/views/ProductSwiperPage.ets
-index 1f47a05..acd5d10 100644
---- a/features/product/src/main/ets/views/ProductSwiperPage.ets
-+++ b/features/product/src/main/ets/views/ProductSwiperPage.ets
-@@ -1,4 +1,11 @@
--import { iData, ProductInfoPageParam, RouterMap, routerStack } from 'lib_foundation'
-+import {
-+  BreakpointStorage,
-+  BreakpointSystem,
-+  iData,
-+  ProductInfoPageParam,
-+  RouterMap,
-+  routerStack,
-+} from 'lib_foundation'
- import { ProductApis, ProductCardItem, ProductInfo } from 'lib_network'
- import { CommonSymbol, NavTitleBar } from 'lib_widget'
- import { CardLongTakeDelegate, LongTakeAnimationProperties, LongTakeTransitionParam } from 'module_transition'
-@@ -20,6 +27,8 @@ export struct ProductSwiperPage {
-   @Local
-   isLogin: boolean = iData.global.isLogin;
-   @Local
-+  curBreakpoint: BreakpointStorage = BreakpointSystem.currentBreakpoint
-+  @Local
-   productInfo?: ProductInfo
-   @Local
-   longTakeSession: LongTakeAnimationProperties = new LongTakeAnimationProperties();
 diff --git a/features/product/src/main/module.json5 b/features/product/src/main/module.json5
 index 5787dc0..4ea870f 100644
 --- a/features/product/src/main/module.json5
@@ -1144,15 +900,9 @@ index be103e4..483365e 100644
        .scrollable(ScrollDirection.Horizontal)
        .scrollBar(BarState.Off)
 diff --git a/products/entry/src/main/ets/tabviews/HomePage.ets b/products/entry/src/main/ets/tabviews/HomePage.ets
-index 61bd772..d73caa6 100644
+index 61bd772..6b93598 100644
 --- a/products/entry/src/main/ets/tabviews/HomePage.ets
 +++ b/products/entry/src/main/ets/tabviews/HomePage.ets
-@@ -1,4 +1,4 @@
--import { LoadingStatus } from 'lib_foundation';
-+import { LoadingStatus, WindowUtil } from 'lib_foundation';
- import { CommonLoading, CommonSymbol, NavTitleBar } from 'lib_widget';
- import { HomePageContent } from '../components/HomePageContent';
- import { HomePageVM } from '../viewmodels/HomePageVM';
 @@ -112,7 +112,9 @@ export struct HomePage {
            .fontColor($r('app.color.font_color_level1'))
            .fontWeight(FontWeight.Bold)
@@ -1164,7 +914,7 @@ index 61bd772..d73caa6 100644
            CommonSymbol({
              src: $r('sys.symbol.magnifyingglass'),
            })
-@@ -128,23 +130,26 @@ export struct HomePage {
+@@ -128,23 +130,25 @@ export struct HomePage {
        .height($r('app.float.nav_header_height'))
        .width('100%')
      }
@@ -1185,7 +935,6 @@ index 61bd772..d73caa6 100644
 +      .width('100%')
 +      .height(this.searchAreaHeight)
 +      .justifyContent(FlexAlign.Center)
-+      // 容器整体透明度
 +      .opacity(this.searchAreaHeight / this.MAX_SEARCH_HEIGHT)
 +      .visibility(this.searchAreaHeight <= 0 ? Visibility.None : Visibility.Visible)
 +      .backgroundColor($r('app.color.background_color_primary'))
@@ -1201,7 +950,7 @@ index 61bd772..d73caa6 100644
    }
  
    @Builder
-@@ -188,9 +193,10 @@ export struct HomePage {
+@@ -188,9 +192,10 @@ export struct HomePage {
          this.vm.jumpToSearchPage(this.getUIContext(), 'search')
        })
      }
