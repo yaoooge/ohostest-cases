@@ -20,10 +20,6 @@ class WindowUtil {
     this.setActiveContext(abilityName);
   }
 
-  /**
-   * 设置激活状态的context
-   * @param abilityName
-   */
   public setActiveContext(abilityName: string) {
     this._uiContext = this.contextMap.get(abilityName);
     this._context = this._uiContext?.getHostContext();
@@ -53,11 +49,6 @@ class WindowUtil {
     return this._context as common.UIAbilityContext;
   }
 
-  /**
-   * 获取指定 Ability 的 UIAbilityContext
-   * @param abilityName Ability 名称，如 'EntryAbility'、'SecondAbility'
-   * @returns 对应的 UIAbilityContext，未注册时返回 undefined
-   */
   public getUIAbilityContext(abilityName: string): common.UIAbilityContext | undefined {
     const uiCtx: UIContext | undefined = this.contextMap.get(abilityName);
     return uiCtx?.getHostContext() as common.UIAbilityContext | undefined;

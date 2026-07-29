@@ -16,21 +16,18 @@ struct EmptyPage {
     const abilityContext = uiContext.getHostContext() as common.UIAbilityContext;
     const abilityName: string = abilityContext.abilityInfo.name;
     WindowUtil.setUIContext(abilityName, uiContext)
-    routerStack.registerStack(abilityName, this.stack, uiContext)
+    routerStack.registerStack(abilityName, this.stack)
     if (abilityName === 'SecondAbility') {
       routerStack.cloneStackTo('EntryAbility', this.stack);
       splitNavStore.productId = undefined;
       splitNavStore.slotId = undefined;
-      splitNavStore.isSplitPage = undefined;
     } else if (splitNavStore.productId) {
       const navParam: ProductInfoPageParam = {
         productId: splitNavStore.productId,
         slotId: splitNavStore.slotId,
-        isSplitPage: splitNavStore.isSplitPage,
       };
       splitNavStore.productId = undefined;
       splitNavStore.slotId = undefined;
-      splitNavStore.isSplitPage = undefined;
       this.stack.pushPath({
         name: RouterMap.PRODUCT_INFO,
         param: navParam,

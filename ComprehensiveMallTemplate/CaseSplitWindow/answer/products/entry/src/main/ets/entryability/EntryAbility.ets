@@ -27,7 +27,6 @@ export default class EntryAbility extends UIAbility {
       splitNavStore.productId = productId;
       const rawSlotId = want.parameters?.slotId as string | undefined;
       splitNavStore.slotId = rawSlotId && rawSlotId.length > 0 ? rawSlotId : undefined;
-      splitNavStore.isSplitPage = want.parameters?.isSplitPage === true;
     }
   }
 

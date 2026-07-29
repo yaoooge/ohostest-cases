@@ -48,9 +48,7 @@ export class ProductInfoVM {
   @Trace
   currentEventId?: number;
   curWindow?: window.Window
-  /** 当前页面所属的 Ability 名称，由 ProductInfoPage 在 onReady 中注入 */
   abilityName: string = '';
-  /** 保存 entryWindowActive 事件的回调引用，用于取消订阅 */
   private _windowActiveCallback?: (type: WindowStatusType) => void
 
   @Computed
@@ -140,17 +138,11 @@ export class ProductInfoVM {
     }
   }
 
-  /** 以分屏次窗口方式启动当前商品详情页，实现应用内左右分屏比较 */
   public async startSplitScreen(): Promise<void> {
     const context = WindowUtil.globalUIAbilityContext;
     const want: Want = {
       bundleName: context.abilityInfo.bundleName,
       abilityName: 'SecondAbility',
-      parameters: {
-        productId: this.productId,
-        slotId: this.slotId !== undefined ? this.slotId : '',
-        isSplitPage: true,
-      },
     };
     const option: StartOptions = {
       windowMode: AbilityConstant.WindowMode.WINDOW_MODE_SPLIT_SECONDARY,
@@ -163,7 +155,6 @@ export class ProductInfoVM {
     }
   }
 
-  /** 合并分屏。EntryAbility 侧：迁移 SecondAbility 路由栈后关闭 SecondAbility；SecondAbility 侧：关闭自身 */
   public async mergeSplitScreen(): Promise<void> {
     if (!this.isSplitScreen) {
       return;
@@ -285,10 +276,6 @@ export class ProductInfoVM {
     }
   }
 
-  /**
-   * 注册主窗口激活事件监听，仅在 EntryAbility 侧有效。
-   * 当 SecondAbility 被系统导航条关闭、主窗口 SHOWN 事件触发时，同步最新分屏状态。
-   */
   public registerWindowActiveListener(): void {
     if (this.abilityName !== 'EntryAbility') {
       return;
@@ -310,9 +297,6 @@ export class ProductInfoVM {
     })
   }
 
-  /**
-   * 取消主窗口激活事件监听，防止页面销毁后内存泄漏。
-   */
   public unregisterWindowActiveListener(): void {
     if (this.curWindow && this._windowActiveCallback) {
       try {

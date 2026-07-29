@@ -1,159 +1,52 @@
 diff --git a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
-index 1238243..72cae91 100644
+index 1238243..347b93f 100644
 --- a/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
 +++ b/commons/lib_foundation/src/main/ets/utils/RouterUtil.ets
-@@ -1,24 +1,76 @@
-+import { UIContext } from '@kit.ArkUI';
- import { UtilLog } from '@hw-agconnect/util-log';
-+import { common } from '@kit.AbilityKit';
- 
- const TAG: string = '[RouterUtil]';
- 
- /**
-- * 单窗口路由管理工具。
-+ * 多 Ability 路由管理工具。
-+ * 为每个 Ability 维护独立的 NavPathStack，避免多窗口（如分屏）场景下路由互相干扰。
-+ *
-+ * 使用方式：
-+ *  1. 各 Ability 的根组件 aboutToAppear 中调用 registerStack 注册路由栈
-+ *  2. Ability 获得窗口焦点时调用 setActive 更新激活态
-+ *  3. 任意位置调用 routerUtil.push / routerUtil.pop 进行路由
+@@ -7,18 +7,32 @@ const TAG: string = '[RouterUtil]';
   */
  @ObservedV2
  class RouterUtil {
 -  private stack?: NavPathStack;
-+  /** 当前是否处于应用内分屏状态，跨 Ability 响应式共享 */
 +  @Trace isSplitActive: boolean = false;
-+  /** ability 名称 → NavPathStack */
 +  private stackMap: Map<string, NavPathStack> = new Map();
-+  /** 当前激活的 ability 名称 */
 +  private activeAbilityName: string = '';
- 
--  public registerStack(stack: NavPathStack): void {
--    this.stack = stack;
--    UtilLog.info(TAG, 'registerStack');
-+  /**
-+   * 注册指定 Ability 的路由栈。
-+   * 应在各 Ability 根组件的 aboutToAppear 中调用，注册后自动设为激活态。
-+   * @param abilityName Ability 名称，如 'EntryAbility'、'SecondAbility'
-+   * @param stack 该 Ability 对应的 NavPathStack 实例
-+   * @param uiContext 可选，传入后支持通过 UIContext 反查 ability 名称
-+   */
-+  public registerStack(abilityName: string, stack: NavPathStack, uiContext?: UIContext): void {
++
++  public registerStack(abilityName: string, stack: NavPathStack): void {
 +    this.stackMap.set(abilityName, stack);
 +    this.activeAbilityName = abilityName;
 +    UtilLog.info(TAG, `registerStack: ${abilityName}, active -> ${this.activeAbilityName}`);
-   }
- 
--  public getStack(): NavPathStack | undefined {
--    if (this.stack === undefined) {
--      UtilLog.warn(TAG, 'getStack: stack not registered');
-+  /**
-+   * 设置当前激活的 Ability。
-+   * 应在 Ability 窗口获得焦点时调用（如 onWindowStageActive），与 WindowUtil.setActiveContext 配合使用。
-+   * @param abilityName 要激活的 Ability 名称
-+   */
++  }
+
+-  public registerStack(stack: NavPathStack): void {
+-    this.stack = stack;
+-    UtilLog.info(TAG, 'registerStack');
 +  public setActive(abilityName: string): void {
 +    if (this.stackMap.has(abilityName)) {
 +      this.activeAbilityName = abilityName;
 +      UtilLog.info(TAG, `setActive: ${abilityName}`);
 +    } else {
 +      UtilLog.warn(TAG, `setActive: ability '${abilityName}' not registered`);
-     }
--    return this.stack;
-+  }
-+
-+  /**
-+   * 通过 UIContext 反查对应的 Ability 名称。
-+   * @param uiContext UIContext 实例
-+   * @returns ability 名称，未注册时返回 undefined
-+   */
-+  public getAbilityName(uiContext: UIContext): string | undefined {
-+    const context = uiContext.getHostContext() as common.UIAbilityContext;
-+    return context.abilityInfo.name
-+  }
-+
-+  /**
-+   * 获取指定（或当前激活）Ability 的 NavPathStack。
-+   * @param abilityName 可选，不传则使用激活态对应的栈
-+   * @returns NavPathStack 实例，找不到时返回 undefined
-+   */
++    }
+   }
+
+-  public getStack(): NavPathStack | undefined {
+-    if (this.stack === undefined) {
+-      UtilLog.warn(TAG, 'getStack: stack not registered');
 +  public getStack(abilityName?: string): NavPathStack | undefined {
 +    const name: string = abilityName !== undefined ? abilityName : this.activeAbilityName;
 +    const stack: NavPathStack | undefined = this.stackMap.get(name);
 +    if (stack === undefined) {
 +      UtilLog.warn(TAG, `getStack: ability '${name}' not found in stackMap`);
-+    }
+     }
+-    return this.stack;
 +    return stack;
    }
- 
+
    /**
-@@ -27,8 +79,8 @@ class RouterUtil {
-    * @param animated 是否启用转场动画，默认 true
-    * @param abilityName 可选，指定目标 Ability；不传则路由到当前激活窗口
-    */
--  public push(pathInfo: NavPathInfo, animated: boolean = true): void {
--    this.getStack()?.pushPath(pathInfo, animated);
-+  public push(pathInfo: NavPathInfo, animated: boolean = true, abilityName?: string): void {
-+    this.getStack(abilityName)?.pushPath(pathInfo, animated);
-   }
- 
-   /**
-@@ -37,8 +89,8 @@ class RouterUtil {
-    * @param animated 是否启用转场动画，默认 true
-    * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
--  public pop(result?: Object, animated: boolean = true): void {
--    this.getStack()?.pop(result, animated);
-+  public pop(result?: Object, animated: boolean = true, abilityName?: string): void {
-+    this.getStack(abilityName)?.pop(result, animated);
-   }
- 
-   /**
-@@ -47,8 +99,8 @@ class RouterUtil {
-    * @param animated 是否启用转场动画，默认 true
-    * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
--  public replace(pathInfo: NavPathInfo, animated: boolean = true): void {
--    this.getStack()?.replacePath(pathInfo, animated);
-+  public replace(pathInfo: NavPathInfo, animated: boolean = true, abilityName?: string): void {
-+    this.getStack(abilityName)?.replacePath(pathInfo, animated);
-   }
- 
-   /**
-@@ -57,8 +109,8 @@ class RouterUtil {
-    * @param animated 是否启用转场动画，默认 true
-    * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
--  public popToName(name: string, animated: boolean = true): void {
--    this.getStack()?.popToName(name, animated);
-+  public popToName(name: string, animated: boolean = true, abilityName?: string): void {
-+    this.getStack(abilityName)?.popToName(name, animated);
-   }
- 
-   /**
-@@ -66,8 +118,8 @@ class RouterUtil {
-    * @param animated 是否启用转场动画，默认 true
-    * @param abilityName 可选，指定目标 Ability；不传则操作当前激活窗口
-    */
--  public clear(animated: boolean = true): void {
--    this.getStack()?.clear(animated);
-+  public clear(animated: boolean = true, abilityName?: string): void {
-+    this.getStack(abilityName)?.clear(animated);
-   }
- 
-   /**
-@@ -83,9 +135,50 @@ class RouterUtil {
+@@ -83,6 +97,34 @@ class RouterUtil {
      return stack;
    }
- 
-+  /**
-+   * 将指定 Ability 的路由栈逐页复制到目标栈中。
-+   * 用于分屏场景：SecondAbility 启动时复制 EntryAbility 的完整路由历史，
-+   * 使两个窗口拥有相同的页面上下文，用户可在 SecondAbility 中自由导航切换商品。
-+   * @param fromAbilityName 源 Ability 名称
-+   * @param toStack 目标 NavPathStack
-+   */
+
 +  public cloneStackTo(fromAbilityName: string, toStack: NavPathStack): void {
 +    const fromStack: NavPathStack | undefined = this.getStack(fromAbilityName);
 +    if (fromStack === undefined || fromStack.size() === 0) {
@@ -167,12 +60,6 @@ index 1238243..72cae91 100644
 +    UtilLog.info(TAG, `cloneStackTo: cloned ${names.length} pages from '${fromAbilityName}'`);
 +  }
 +
-+  /**
-+   * 将指定 Ability 的路由栈迁移到目标 Ability 的路由栈。
-+   * 用于 EntryAbility 合并分屏时，将 SecondAbility 的浏览历史接管回主窗口。
-+   * @param fromAbilityName 源 Ability 名称
-+   * @param toAbilityName 目标 Ability 名称
-+   */
 +  public migrateStack(fromAbilityName: string, toAbilityName: string): void {
 +    const fromStack: NavPathStack | undefined = this.getStack(fromAbilityName);
 +    const toStack: NavPathStack | undefined = this.getStack(toAbilityName);
@@ -189,26 +76,21 @@ index 1238243..72cae91 100644
 +  }
 +
    /** 返回当前激活路由栈的深度（NavPathStack 同名代理） */
--  public size(): number {
--    return this.getStack()?.size() ?? 0;
-+  public size(abilityName?: string): number {
-+    return this.getStack(abilityName)?.size() ?? 0;
-   }
- 
-   // ── NavPathStack 同名代理方法 ──────────────────────────────────────────────
+   public size(): number {
+     return this.getStack()?.size() ?? 0;
 diff --git a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
-index cd46718..1e2259d 100644
+index cd46718..428d079 100644
 --- a/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
 +++ b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
 @@ -7,6 +7,7 @@ import { UtilLog as Logger } from '@hw-agconnect/util-log';
  const TAG: string = '[WindowUtil]';
- 
+
  class WindowUtil {
 +  private contextMap: Map<string, UIContext> = new Map();
    private _uiContext: UIContext | undefined;
    private _context: Context | undefined;
- 
-@@ -14,8 +15,17 @@ class WindowUtil {
+
+@@ -14,8 +15,13 @@ class WindowUtil {
     * 设置context
     * @param uiContext
     */
@@ -219,24 +101,15 @@ index cd46718..1e2259d 100644
 +    this.setActiveContext(abilityName);
 +  }
 +
-+  /**
-+   * 设置激活状态的context
-+   * @param abilityName
-+   */
 +  public setActiveContext(abilityName: string) {
 +    this._uiContext = this.contextMap.get(abilityName);
      this._context = this._uiContext?.getHostContext();
    }
- 
-@@ -43,6 +53,16 @@ class WindowUtil {
+
+@@ -43,6 +49,11 @@ class WindowUtil {
      return this._context as common.UIAbilityContext;
    }
- 
-+  /**
-+   * 获取指定 Ability 的 UIAbilityContext
-+   * @param abilityName Ability 名称，如 'EntryAbility'、'SecondAbility'
-+   * @returns 对应的 UIAbilityContext，未注册时返回 undefined
-+   */
+
 +  public getUIAbilityContext(abilityName: string): common.UIAbilityContext | undefined {
 +    const uiCtx: UIContext | undefined = this.contextMap.get(abilityName);
 +    return uiCtx?.getHostContext() as common.UIAbilityContext | undefined;
@@ -247,23 +120,19 @@ index cd46718..1e2259d 100644
     * @param options
 diff --git a/features/product/src/main/ets/utils/SplitCapability.ets b/features/product/src/main/ets/utils/SplitCapability.ets
 new file mode 100644
-index 0000000..50930b6
+index 0000000..5459562
 --- /dev/null
 +++ b/features/product/src/main/ets/utils/SplitCapability.ets
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,7 @@
 +const MIN_SPLIT_WINDOW_WIDTH: number = 600;
 +
-+/**
-+ * 仅用于判断当前商品详情窗口是否适合启动应用内分屏。
-+ * 页面布局不消费该状态；进入分屏后始终保留合并入口。
-+ */
 +export class SplitCapability {
 +  public static shouldShowAction(windowWidth: number, isSplitActive: boolean): boolean {
 +    return isSplitActive || windowWidth >= MIN_SPLIT_WINDOW_WIDTH;
 +  }
 +}
 diff --git a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
-index 9a2f632..1a963cd 100644
+index 9a2f632..8c2e6fc 100644
 --- a/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
 +++ b/features/product/src/main/ets/viewmodels/ProductInfoVM.ets
 @@ -1,4 +1,5 @@
@@ -287,17 +156,15 @@ index 9a2f632..1a963cd 100644
 +import { window } from '@kit.ArkUI';
 +
 +const TAG: string = '[ProductInfoVM]'
- 
+
  @ObservedV2
  export class ProductInfoVM {
-@@ -42,6 +47,17 @@ export class ProductInfoVM {
+@@ -42,6 +47,15 @@ export class ProductInfoVM {
    countdown?: CountdownModel;
    @Trace
    currentEventId?: number;
 +  curWindow?: window.Window
-+  /** 当前页面所属的 Ability 名称，由 ProductInfoPage 在 onReady 中注入 */
 +  abilityName: string = '';
-+  /** 保存 entryWindowActive 事件的回调引用，用于取消订阅 */
 +  private _windowActiveCallback?: (type: WindowStatusType) => void
 +
 +  @Computed
@@ -308,9 +175,9 @@ index 9a2f632..1a963cd 100644
    @Computed
    get isLogin() {
      return iData.global.isLogin;
-@@ -68,7 +84,8 @@ export class ProductInfoVM {
+@@ -68,7 +82,8 @@ export class ProductInfoVM {
    }
- 
+
  
 -  public async initData(param: ProductInfoPageParam) {
 +  public async initData(param: ProductInfoPageParam, abilityName: string = 'EntryAbility') {
@@ -318,21 +185,15 @@ index 9a2f632..1a963cd 100644
      this.productId = param.productId;
      this.slotId = param.slotId;
      this.isLoading = true;
-@@ -123,6 +140,53 @@ export class ProductInfoVM {
+@@ -123,6 +138,46 @@ export class ProductInfoVM {
      }
    }
- 
-+  /** 以分屏次窗口方式启动当前商品详情页，实现应用内左右分屏比较 */
+
 +  public async startSplitScreen(): Promise<void> {
 +    const context = WindowUtil.globalUIAbilityContext;
 +    const want: Want = {
 +      bundleName: context.abilityInfo.bundleName,
 +      abilityName: 'SecondAbility',
-+      parameters: {
-+        productId: this.productId,
-+        slotId: this.slotId !== undefined ? this.slotId : '',
-+        isSplitPage: true,
-+      },
 +    };
 +    const option: StartOptions = {
 +      windowMode: AbilityConstant.WindowMode.WINDOW_MODE_SPLIT_SECONDARY,
@@ -345,7 +206,6 @@ index 9a2f632..1a963cd 100644
 +    }
 +  }
 +
-+  /** 合并分屏。EntryAbility 侧：迁移 SecondAbility 路由栈后关闭 SecondAbility；SecondAbility 侧：关闭自身 */
 +  public async mergeSplitScreen(): Promise<void> {
 +    if (!this.isSplitScreen) {
 +      return;
@@ -372,14 +232,10 @@ index 9a2f632..1a963cd 100644
    public handleClickReserveButton() {
      if (!this.productInfo?.seckillInfo || !this.productInfo.timeSlot) {
        return;
-@@ -221,4 +285,42 @@ export class ProductInfoVM {
+@@ -221,4 +276,35 @@ export class ProductInfoVM {
      }
    }
- 
-+  /**
-+   * 注册主窗口激活事件监听，仅在 EntryAbility 侧有效。
-+   * 当 SecondAbility 被系统导航条关闭、主窗口 SHOWN 事件触发时，同步最新分屏状态。
-+   */
+
 +  public registerWindowActiveListener(): void {
 +    if (this.abilityName !== 'EntryAbility') {
 +      return;
@@ -401,9 +257,6 @@ index 9a2f632..1a963cd 100644
 +    })
 +  }
 +
-+  /**
-+   * 取消主窗口激活事件监听，防止页面销毁后内存泄漏。
-+   */
 +  public unregisterWindowActiveListener(): void {
 +    if (this.curWindow && this._windowActiveCallback) {
 +      try {
@@ -429,7 +282,7 @@ index 214cef8..80d8dc1 100644
  import { ProductOperationButton } from '../components/ProductOperationButton';
  import { SeckillStatus } from 'lib_network';
 +import { SplitCapability } from '../utils/SplitCapability';
- 
+
  @Builder
  export function buildProductInfoPage() {
 @@ -21,6 +23,8 @@ export function buildProductInfoPage() {
@@ -438,7 +291,7 @@ index 214cef8..80d8dc1 100644
    vm: ProductInfoVM = new ProductInfoVM()
 +  @Local
 +  windowWidth: number = 0
- 
+
    build() {
      NavDestination() {
 @@ -45,8 +49,12 @@ export struct ProductInfoPage {
@@ -466,12 +319,12 @@ index 214cef8..80d8dc1 100644
 +      this.vm.unregisterWindowActiveListener()
 +    })
    }
- 
+
    @Builder
 @@ -72,6 +86,20 @@ export struct ProductInfoPage {
                this.vm.changeCollectStatus()
              })
- 
+
 +          if (SplitCapability.shouldShowAction(this.windowWidth, this.vm.isSplitScreen)) {
 +            CommonSymbol({
 +              src: this.vm.isSplitScreen
@@ -490,7 +343,7 @@ index 214cef8..80d8dc1 100644
        }
        .id('product-info-header-actions')
 diff --git a/products/entry/src/main/ets/entryability/EntryAbility.ets b/products/entry/src/main/ets/entryability/EntryAbility.ets
-index 90208f4..d4f7c04 100644
+index 90208f4..0d2ee7e 100644
 --- a/products/entry/src/main/ets/entryability/EntryAbility.ets
 +++ b/products/entry/src/main/ets/entryability/EntryAbility.ets
 @@ -3,10 +3,11 @@ import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
@@ -503,10 +356,10 @@ index 90208f4..d4f7c04 100644
  import { UtilLog } from '@hw-agconnect/util-log';
  import { SetupUtil } from '../utils/SetupUtil';
 +import { splitNavStore } from '../utils/SplitNavStore';
- 
+
  const TAG: string = '[EntryAbility]';
- 
-@@ -21,6 +22,13 @@ export default class EntryAbility extends UIAbility {
+
+@@ -21,6 +22,12 @@ export default class EntryAbility extends UIAbility {
      UtilLog.info(TAG, 'set global log config success.');
      ColorModeUtil.applySavedColorMode(this.context);
      SetupUtil.handleWant(want);
@@ -515,15 +368,14 @@ index 90208f4..d4f7c04 100644
 +      splitNavStore.productId = productId;
 +      const rawSlotId = want.parameters?.slotId as string | undefined;
 +      splitNavStore.slotId = rawSlotId && rawSlotId.length > 0 ? rawSlotId : undefined;
-+      splitNavStore.isSplitPage = want.parameters?.isSplitPage === true;
 +    }
    }
- 
+
    onWindowStageCreate(windowStage: window.WindowStage): void {
-@@ -41,6 +49,11 @@ export default class EntryAbility extends UIAbility {
+@@ -41,6 +48,11 @@ export default class EntryAbility extends UIAbility {
      }
    }
- 
+
 +  onWindowStageActive(windowStage: window.WindowStage): void {
 +    routerStack.setActive('EntryAbility');
 +    WindowUtil.setActiveContext('EntryAbility');
@@ -534,33 +386,20 @@ index 90208f4..d4f7c04 100644
      SetupUtil.jumpToTarget();
 diff --git a/products/entry/src/main/ets/secondability/SecondAbility.ets b/products/entry/src/main/ets/secondability/SecondAbility.ets
 new file mode 100644
-index 0000000..23ccfd8
+index 0000000..bd383b2
 --- /dev/null
 +++ b/products/entry/src/main/ets/secondability/SecondAbility.ets
-@@ -0,0 +1,52 @@
-+import { Want } from '@kit.AbilityKit';
+@@ -0,0 +1,39 @@
 +import UIAbility from '@ohos.app.ability.UIAbility';
 +import { KeyboardAvoidMode } from '@ohos.arkui.UIContext';
 +import window from '@ohos.window';
 +import { LoneTakeAnimationsTransition } from 'module_transition';
 +import { UtilLog } from '@hw-agconnect/util-log';
 +import { routerStack, WindowUtil } from 'lib_foundation';
-+import { splitNavStore } from '../utils/SplitNavStore';
 +
 +const TAG: string = '[SecondAbility]';
 +
-+/** 应用内分屏比较窗口 Ability */
 +export default class SecondAbility extends UIAbility {
-+  onCreate(want: Want): void {
-+    const productId = want.parameters?.productId as string | undefined;
-+    if (productId) {
-+      splitNavStore.productId = productId;
-+      const rawSlotId = want.parameters?.slotId as string | undefined;
-+      splitNavStore.slotId = rawSlotId && rawSlotId.length > 0 ? rawSlotId : undefined;
-+      splitNavStore.isSplitPage = true;
-+    }
-+  }
-+
 +  onWindowStageActive(windowStage: window.WindowStage): void {
 +    routerStack.setActive('SecondAbility');
 +    WindowUtil.setActiveContext('SecondAbility');
@@ -592,21 +431,18 @@ index 0000000..23ccfd8
 +}
 diff --git a/products/entry/src/main/ets/utils/SplitNavStore.ets b/products/entry/src/main/ets/utils/SplitNavStore.ets
 new file mode 100644
-index 0000000..ccf2607
+index 0000000..15df4c0
 --- /dev/null
 +++ b/products/entry/src/main/ets/utils/SplitNavStore.ets
-@@ -0,0 +1,9 @@
-+/** 分屏导航参数缓存 */
+@@ -0,0 +1,6 @@
 +class SplitNavStoreData {
 +  productId: string | undefined = undefined;
 +  slotId: string | undefined = undefined;
-+  isSplitPage: boolean | undefined = undefined;
 +}
 +
-+/** 分屏导航参数缓存，供 EntryAbility 写入、Index.ets 读取 */
 +export const splitNavStore: SplitNavStoreData = new SplitNavStoreData();
 diff --git a/products/entry/src/main/ets/views/Index.ets b/products/entry/src/main/ets/views/Index.ets
-index bb0a10d..d931008 100644
+index bb0a10d..f867978 100644
 --- a/products/entry/src/main/ets/views/Index.ets
 +++ b/products/entry/src/main/ets/views/Index.ets
 @@ -1,6 +1,7 @@
@@ -616,11 +452,11 @@ index bb0a10d..d931008 100644
  import { LoneTakeAnimationsTransition } from 'module_transition';
 -import { SetupUtil } from '../utils/SetupUtil';
 +import { splitNavStore } from '../utils/SplitNavStore';
- 
+
  @Entry
  @ComponentV2
-@@ -12,12 +13,33 @@ struct EmptyPage {
- 
+@@ -12,12 +13,30 @@ struct EmptyPage {
+
    aboutToAppear(): void {
      const uiContext = this.getUIContext()
 -    WindowUtil.setUIContext(uiContext)
@@ -632,21 +468,18 @@ index bb0a10d..d931008 100644
 +    const abilityContext = uiContext.getHostContext() as common.UIAbilityContext;
 +    const abilityName: string = abilityContext.abilityInfo.name;
 +    WindowUtil.setUIContext(abilityName, uiContext)
-+    routerStack.registerStack(abilityName, this.stack, uiContext)
++    routerStack.registerStack(abilityName, this.stack)
 +    if (abilityName === 'SecondAbility') {
 +      routerStack.cloneStackTo('EntryAbility', this.stack);
 +      splitNavStore.productId = undefined;
 +      splitNavStore.slotId = undefined;
-+      splitNavStore.isSplitPage = undefined;
 +    } else if (splitNavStore.productId) {
 +      const navParam: ProductInfoPageParam = {
 +        productId: splitNavStore.productId,
 +        slotId: splitNavStore.slotId,
-+        isSplitPage: splitNavStore.isSplitPage,
 +      };
 +      splitNavStore.productId = undefined;
 +      splitNavStore.slotId = undefined;
-+      splitNavStore.isSplitPage = undefined;
 +      this.stack.pushPath({
 +        name: RouterMap.PRODUCT_INFO,
 +        param: navParam,
@@ -657,7 +490,7 @@ index bb0a10d..d931008 100644
 +      }, false)
 +    }
    }
- 
+
    build() {
 diff --git a/products/entry/src/main/module.json5 b/products/entry/src/main/module.json5
 index c0105c2..ad75c24 100644
