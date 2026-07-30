@@ -16,7 +16,7 @@ index 1238243..347b93f 100644
 +    this.activeAbilityName = abilityName;
 +    UtilLog.info(TAG, `registerStack: ${abilityName}, active -> ${this.activeAbilityName}`);
 +  }
-
+ 
 -  public registerStack(stack: NavPathStack): void {
 -    this.stack = stack;
 -    UtilLog.info(TAG, 'registerStack');
@@ -28,7 +28,7 @@ index 1238243..347b93f 100644
 +      UtilLog.warn(TAG, `setActive: ability '${abilityName}' not registered`);
 +    }
    }
-
+ 
 -  public getStack(): NavPathStack | undefined {
 -    if (this.stack === undefined) {
 -      UtilLog.warn(TAG, 'getStack: stack not registered');
@@ -41,12 +41,12 @@ index 1238243..347b93f 100644
 -    return this.stack;
 +    return stack;
    }
-
+ 
    /**
 @@ -83,6 +97,34 @@ class RouterUtil {
      return stack;
    }
-
+ 
 +  public cloneStackTo(fromAbilityName: string, toStack: NavPathStack): void {
 +    const fromStack: NavPathStack | undefined = this.getStack(fromAbilityName);
 +    if (fromStack === undefined || fromStack.size() === 0) {
@@ -84,12 +84,12 @@ index cd46718..428d079 100644
 +++ b/commons/lib_foundation/src/main/ets/utils/WindowUtil.ets
 @@ -7,6 +7,7 @@ import { UtilLog as Logger } from '@hw-agconnect/util-log';
  const TAG: string = '[WindowUtil]';
-
+ 
  class WindowUtil {
 +  private contextMap: Map<string, UIContext> = new Map();
    private _uiContext: UIContext | undefined;
    private _context: Context | undefined;
-
+ 
 @@ -14,8 +15,13 @@ class WindowUtil {
     * 设置context
     * @param uiContext
@@ -105,11 +105,11 @@ index cd46718..428d079 100644
 +    this._uiContext = this.contextMap.get(abilityName);
      this._context = this._uiContext?.getHostContext();
    }
-
+ 
 @@ -43,6 +49,11 @@ class WindowUtil {
      return this._context as common.UIAbilityContext;
    }
-
+ 
 +  public getUIAbilityContext(abilityName: string): common.UIAbilityContext | undefined {
 +    const uiCtx: UIContext | undefined = this.contextMap.get(abilityName);
 +    return uiCtx?.getHostContext() as common.UIAbilityContext | undefined;
@@ -156,7 +156,7 @@ index 9a2f632..8c2e6fc 100644
 +import { window } from '@kit.ArkUI';
 +
 +const TAG: string = '[ProductInfoVM]'
-
+ 
  @ObservedV2
  export class ProductInfoVM {
 @@ -42,6 +47,15 @@ export class ProductInfoVM {
@@ -177,7 +177,7 @@ index 9a2f632..8c2e6fc 100644
      return iData.global.isLogin;
 @@ -68,7 +82,8 @@ export class ProductInfoVM {
    }
-
+ 
  
 -  public async initData(param: ProductInfoPageParam) {
 +  public async initData(param: ProductInfoPageParam, abilityName: string = 'EntryAbility') {
@@ -188,7 +188,7 @@ index 9a2f632..8c2e6fc 100644
 @@ -123,6 +138,46 @@ export class ProductInfoVM {
      }
    }
-
+ 
 +  public async startSplitScreen(): Promise<void> {
 +    const context = WindowUtil.globalUIAbilityContext;
 +    const want: Want = {
@@ -235,7 +235,7 @@ index 9a2f632..8c2e6fc 100644
 @@ -221,4 +276,35 @@ export class ProductInfoVM {
      }
    }
-
+ 
 +  public registerWindowActiveListener(): void {
 +    if (this.abilityName !== 'EntryAbility') {
 +      return;
@@ -282,7 +282,7 @@ index 214cef8..80d8dc1 100644
  import { ProductOperationButton } from '../components/ProductOperationButton';
  import { SeckillStatus } from 'lib_network';
 +import { SplitCapability } from '../utils/SplitCapability';
-
+ 
  @Builder
  export function buildProductInfoPage() {
 @@ -21,6 +23,8 @@ export function buildProductInfoPage() {
@@ -291,7 +291,7 @@ index 214cef8..80d8dc1 100644
    vm: ProductInfoVM = new ProductInfoVM()
 +  @Local
 +  windowWidth: number = 0
-
+ 
    build() {
      NavDestination() {
 @@ -45,8 +49,12 @@ export struct ProductInfoPage {
@@ -319,12 +319,12 @@ index 214cef8..80d8dc1 100644
 +      this.vm.unregisterWindowActiveListener()
 +    })
    }
-
+ 
    @Builder
 @@ -72,6 +86,20 @@ export struct ProductInfoPage {
                this.vm.changeCollectStatus()
              })
-
+ 
 +          if (SplitCapability.shouldShowAction(this.windowWidth, this.vm.isSplitScreen)) {
 +            CommonSymbol({
 +              src: this.vm.isSplitScreen
@@ -356,9 +356,9 @@ index 90208f4..0d2ee7e 100644
  import { UtilLog } from '@hw-agconnect/util-log';
  import { SetupUtil } from '../utils/SetupUtil';
 +import { splitNavStore } from '../utils/SplitNavStore';
-
+ 
  const TAG: string = '[EntryAbility]';
-
+ 
 @@ -21,6 +22,12 @@ export default class EntryAbility extends UIAbility {
      UtilLog.info(TAG, 'set global log config success.');
      ColorModeUtil.applySavedColorMode(this.context);
@@ -370,12 +370,12 @@ index 90208f4..0d2ee7e 100644
 +      splitNavStore.slotId = rawSlotId && rawSlotId.length > 0 ? rawSlotId : undefined;
 +    }
    }
-
+ 
    onWindowStageCreate(windowStage: window.WindowStage): void {
 @@ -41,6 +48,11 @@ export default class EntryAbility extends UIAbility {
      }
    }
-
+ 
 +  onWindowStageActive(windowStage: window.WindowStage): void {
 +    routerStack.setActive('EntryAbility');
 +    WindowUtil.setActiveContext('EntryAbility');
@@ -452,11 +452,11 @@ index bb0a10d..f867978 100644
  import { LoneTakeAnimationsTransition } from 'module_transition';
 -import { SetupUtil } from '../utils/SetupUtil';
 +import { splitNavStore } from '../utils/SplitNavStore';
-
+ 
  @Entry
  @ComponentV2
 @@ -12,12 +13,30 @@ struct EmptyPage {
-
+ 
    aboutToAppear(): void {
      const uiContext = this.getUIContext()
 -    WindowUtil.setUIContext(uiContext)
@@ -490,7 +490,7 @@ index bb0a10d..f867978 100644
 +      }, false)
 +    }
    }
-
+ 
    build() {
 diff --git a/products/entry/src/main/module.json5 b/products/entry/src/main/module.json5
 index c0105c2..ad75c24 100644
