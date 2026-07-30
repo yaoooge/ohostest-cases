@@ -2,7 +2,7 @@
   "case_id": "comprehensive-mall-responsive-ui",
   "golden_patch": "golden_patch.patch",
   "test_patch": "test_patch.patch",
-  "base_project": "swe",
+  "base_project": "task",
   "fail_to_pass": [
     "should_use_md_home_banner_ratio_2_5",
     "should_show_three_product_columns_on_md",

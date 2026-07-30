@@ -2,7 +2,7 @@
   "case_id": "comprehensive-mall-split-shopping",
   "golden_patch": "golden_patch.patch",
   "test_patch": "test_patch.patch",
-  "base_project": "swe",
+  "base_project": "task",
   "fail_to_pass": [
     "should_show_split_action_on_supported_window",
     "should_start_secondary_window_in_split_mode",
