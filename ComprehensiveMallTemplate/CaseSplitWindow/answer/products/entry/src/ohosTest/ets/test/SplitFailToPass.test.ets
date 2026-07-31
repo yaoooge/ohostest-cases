@@ -5,11 +5,11 @@ import {
   clickSplitOrMergeAction,
   ENTRY_WINDOW_TITLE,
   getDriver,
-  getHeaderActionCount,
   openProductDetail,
   PRODUCT_TITLE,
   SECOND_WINDOW_TITLE,
   startSplitSession,
+  waitForHeaderActionCount,
   waitForComponentById,
   waitForComponentByText,
   waitForWindowAbsent,
@@ -23,7 +23,7 @@ export default function splitFailToPassTest() {
 
     it('should_show_split_action_on_supported_window', Level.LEVEL2, async (done: Function) => {
       await openProductDetail();
-      expect(await getHeaderActionCount(driver)).assertEqual(2);
+      await waitForHeaderActionCount(driver, 2);
       done();
     });
 
@@ -44,9 +44,9 @@ export default function splitFailToPassTest() {
     it('should_show_merge_action_in_both_windows', Level.LEVEL2, async (done: Function) => {
       const windows = await startSplitSession();
       await windows.main.focus();
-      expect(await getHeaderActionCount(driver)).assertEqual(2);
+      await waitForHeaderActionCount(driver, 2);
       await windows.secondary.focus();
-      expect(await getHeaderActionCount(driver)).assertEqual(2);
+      await waitForHeaderActionCount(driver, 2);
       done();
     });
 

@@ -207,13 +207,14 @@ export async function waitForWindowMode(
 }
 
 export async function closeSecondaryWindowIfPresent(): Promise<void> {
-  try {
-    const secondWindow = await findWindowByRole(SECOND_WINDOW_TITLE);
-    if (secondWindow !== undefined) {
-      await secondWindow.close();
-      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
-    }
-  } catch (error) {
+  const secondWindow = await findWindowByRole(SECOND_WINDOW_TITLE);
+  if (secondWindow !== undefined) {
+    await secondWindow.close();
+    await waitForWindowAbsent(SECOND_WINDOW_TITLE);
+    const mainWindow = await waitForWindow(ENTRY_WINDOW_TITLE);
+    await waitForWindowMode(mainWindow, WindowMode.FULLSCREEN);
+    await mainWindow.focus();
+    await waitForUiChange(getDriver());
   }
 }
 
@@ -239,9 +240,45 @@ export async function getHeaderActionCount(driver: Driver): Promise<number> {
   return (await getHeaderActions(driver)).length;
 }
 
+async function waitForHeaderActions(
+  driver: Driver,
+  expectedCount: number,
+  retries: number = 16,
+): Promise<Component[]> {
+  let stableMatches: number = 0;
+  let lastCount: number = -1;
+  for (let index = 0; index < retries; index++) {
+    try {
+      const actions = await getHeaderActions(driver);
+      lastCount = actions.length;
+      if (lastCount === expectedCount) {
+        stableMatches++;
+        if (stableMatches >= 2) {
+          return actions;
+        }
+      } else {
+        stableMatches = 0;
+      }
+    } catch (error) {
+      stableMatches = 0;
+    }
+    await waitForUiChange(driver);
+  }
+  console.error(`header action count not stable, expected: ${expectedCount}, actual: ${lastCount}`);
+  expect(lastCount).assertEqual(expectedCount);
+  throw new Error('header action count not stable');
+}
+
+export async function waitForHeaderActionCount(
+  driver: Driver,
+  expectedCount: number,
+  retries: number = 16,
+): Promise<void> {
+  await waitForHeaderActions(driver, expectedCount, retries);
+}
+
 export async function clickSplitOrMergeAction(driver: Driver): Promise<void> {
-  const actions = await getHeaderActions(driver);
-  expect(actions.length >= 2).assertTrue();
+  const actions = await waitForHeaderActions(driver, 2);
   let rightmost = actions[0];
   let rightmostBounds = await rightmost.getBounds();
   for (let index = 1; index < actions.length; index++) {
@@ -258,7 +295,7 @@ export async function clickSplitOrMergeAction(driver: Driver): Promise<void> {
 export async function startSplitSession(): Promise<SplitSession> {
   const driver = getDriver();
   await openProductDetail();
-  expect(await getHeaderActionCount(driver)).assertEqual(2);
+  await waitForHeaderActionCount(driver, 2);
   await clickSplitOrMergeAction(driver);
   const main = await waitForWindow(ENTRY_WINDOW_TITLE);
   const secondary = await waitForWindow(SECOND_WINDOW_TITLE);

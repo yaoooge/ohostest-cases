@@ -83,13 +83,13 @@ index 0000000..b5e533c
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
 new file mode 100644
-index 0000000..a5fa444
+index 0000000..5a0012e
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/SmPassToPass.test.ets
 @@ -0,0 +1,15 @@
-+import { describe, it, expect, Level } from '@ohos/hypium';
++import { describe, it, Level } from '@ohos/hypium';
 +import { Driver } from '@kit.TestKit';
-+import { getDriver, getHeaderActionCount, openProductDetail } from './TestHelper';
++import { getDriver, openProductDetail, waitForHeaderActionCount } from './TestHelper';
 +
 +export default function smPassToPassTest() {
 +  describe('SmPassToPassTest', () => {
@@ -97,14 +97,14 @@ index 0000000..a5fa444
 +
 +    it('should_hide_split_action_on_sm', Level.LEVEL2, async (done: Function) => {
 +      await openProductDetail();
-+      expect(await getHeaderActionCount(driver)).assertEqual(1);
++      await waitForHeaderActionCount(driver, 1);
 +      done();
 +    });
 +  });
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets b/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets
 new file mode 100644
-index 0000000..9167467
+index 0000000..10951b7
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/SplitFailToPass.test.ets
 @@ -0,0 +1,89 @@
@@ -115,11 +115,11 @@ index 0000000..9167467
 +  clickSplitOrMergeAction,
 +  ENTRY_WINDOW_TITLE,
 +  getDriver,
-+  getHeaderActionCount,
 +  openProductDetail,
 +  PRODUCT_TITLE,
 +  SECOND_WINDOW_TITLE,
 +  startSplitSession,
++  waitForHeaderActionCount,
 +  waitForComponentById,
 +  waitForComponentByText,
 +  waitForWindowAbsent,
@@ -133,7 +133,7 @@ index 0000000..9167467
 +
 +    it('should_show_split_action_on_supported_window', Level.LEVEL2, async (done: Function) => {
 +      await openProductDetail();
-+      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      await waitForHeaderActionCount(driver, 2);
 +      done();
 +    });
 +
@@ -154,9 +154,9 @@ index 0000000..9167467
 +    it('should_show_merge_action_in_both_windows', Level.LEVEL2, async (done: Function) => {
 +      const windows = await startSplitSession();
 +      await windows.main.focus();
-+      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      await waitForHeaderActionCount(driver, 2);
 +      await windows.secondary.focus();
-+      expect(await getHeaderActionCount(driver)).assertEqual(2);
++      await waitForHeaderActionCount(driver, 2);
 +      done();
 +    });
 +
@@ -199,10 +199,10 @@ index 0000000..9167467
 +}
 diff --git a/products/entry/src/ohosTest/ets/test/TestHelper.ets b/products/entry/src/ohosTest/ets/test/TestHelper.ets
 new file mode 100644
-index 0000000..239bd4c
+index 0000000..a371bf6
 --- /dev/null
 +++ b/products/entry/src/ohosTest/ets/test/TestHelper.ets
-@@ -0,0 +1,293 @@
+@@ -0,0 +1,330 @@
 +import { Want } from '@kit.AbilityKit';
 +import {
 +  abilityDelegatorRegistry,
@@ -412,13 +412,14 @@ index 0000000..239bd4c
 +}
 +
 +export async function closeSecondaryWindowIfPresent(): Promise<void> {
-+  try {
-+    const secondWindow = await findWindowByRole(SECOND_WINDOW_TITLE);
-+    if (secondWindow !== undefined) {
-+      await secondWindow.close();
-+      await waitForWindowAbsent(SECOND_WINDOW_TITLE);
-+    }
-+  } catch (error) {
++  const secondWindow = await findWindowByRole(SECOND_WINDOW_TITLE);
++  if (secondWindow !== undefined) {
++    await secondWindow.close();
++    await waitForWindowAbsent(SECOND_WINDOW_TITLE);
++    const mainWindow = await waitForWindow(ENTRY_WINDOW_TITLE);
++    await waitForWindowMode(mainWindow, WindowMode.FULLSCREEN);
++    await mainWindow.focus();
++    await waitForUiChange(getDriver());
 +  }
 +}
 +
@@ -444,9 +445,45 @@ index 0000000..239bd4c
 +  return (await getHeaderActions(driver)).length;
 +}
 +
++async function waitForHeaderActions(
++  driver: Driver,
++  expectedCount: number,
++  retries: number = 16,
++): Promise<Component[]> {
++  let stableMatches: number = 0;
++  let lastCount: number = -1;
++  for (let index = 0; index < retries; index++) {
++    try {
++      const actions = await getHeaderActions(driver);
++      lastCount = actions.length;
++      if (lastCount === expectedCount) {
++        stableMatches++;
++        if (stableMatches >= 2) {
++          return actions;
++        }
++      } else {
++        stableMatches = 0;
++      }
++    } catch (error) {
++      stableMatches = 0;
++    }
++    await waitForUiChange(driver);
++  }
++  console.error(`header action count not stable, expected: ${expectedCount}, actual: ${lastCount}`);
++  expect(lastCount).assertEqual(expectedCount);
++  throw new Error('header action count not stable');
++}
++
++export async function waitForHeaderActionCount(
++  driver: Driver,
++  expectedCount: number,
++  retries: number = 16,
++): Promise<void> {
++  await waitForHeaderActions(driver, expectedCount, retries);
++}
++
 +export async function clickSplitOrMergeAction(driver: Driver): Promise<void> {
-+  const actions = await getHeaderActions(driver);
-+  expect(actions.length >= 2).assertTrue();
++  const actions = await waitForHeaderActions(driver, 2);
 +  let rightmost = actions[0];
 +  let rightmostBounds = await rightmost.getBounds();
 +  for (let index = 1; index < actions.length; index++) {
@@ -463,7 +500,7 @@ index 0000000..239bd4c
 +export async function startSplitSession(): Promise<SplitSession> {
 +  const driver = getDriver();
 +  await openProductDetail();
-+  expect(await getHeaderActionCount(driver)).assertEqual(2);
++  await waitForHeaderActionCount(driver, 2);
 +  await clickSplitOrMergeAction(driver);
 +  const main = await waitForWindow(ENTRY_WINDOW_TITLE);
 +  const secondary = await waitForWindow(SECOND_WINDOW_TITLE);
